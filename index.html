@@ -152,22 +152,26 @@
                         </span>
                     </div>
                     <p class="text-xs text-gray-400 mt-0.5">
-                        منظومة قابلة للتوسع الذاتي: الأعطال • الانقطاعات MV • الشكاوى • المحولات • المعايير • المشتركين 4246 • انقطاعات سبت الجارة والقنفذة + إضافة أي شيت تلقائياً
+                        منظومة قابلة للتوسع الذاتي: الأعطال • الانقطاعات MV • الشكاوى • المحولات • المعايير • المشتركين 4246 • انقطاعات محطة سبت الجارة + إضافة أي شيت تلقائياً
                     </p>
                 </div>
             </div>
 
             <!-- شريط الفلاتر التفاعلي العلوي -->
             <div class="flex flex-wrap items-center gap-2">
-                <!-- فلتر المنطقة/المكتب -->
+                <!-- فلتر ومقارن المحطات الموحد (جميع المحطات الـ 12 مع اختيار متعدد) -->
                 <div class="relative">
-                    <select id="filter-zone" class="bg-[#131c31] border border-[#1e293b] focus:border-sky-500 rounded-xl pr-8 pl-8 py-2 text-xs sm:text-sm text-gray-100 font-semibold outline-none appearance-none cursor-pointer">
+                    <select id="filter-zone" class="hidden" aria-hidden="true">
                         <option value="ALL">القطاع: الكل (المجاردة وبارق)</option>
                         <option value="0">مركز خدمات المجاردة</option>
                         <option value="1">مركز خدمات بارق</option>
                     </select>
-                    <i data-lucide="map-pin" class="w-4 h-4 text-sky-400 absolute right-2.5 top-2.5 pointer-events-none"></i>
-                    <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400 absolute left-2.5 top-2.5 pointer-events-none"></i>
+                    <button id="btn-station-picker" type="button" class="bg-[#131c31] hover:bg-[#1e293b] border border-sky-500/40 hover:border-sky-400 rounded-xl px-3 py-2 text-xs sm:text-sm text-gray-100 font-bold flex items-center gap-2 transition-all cursor-pointer shadow-sm">
+                        <i data-lucide="map-pin" class="w-4 h-4 text-sky-400 shrink-0"></i>
+                        <span id="station-picker-label" class="truncate max-w-[210px] sm:max-w-[250px]">المحطات: الكل (3 محطات)</span>
+                        <span id="station-picker-badge" class="px-1.5 py-0.5 rounded-md bg-sky-500/20 text-sky-300 text-[10px] font-extrabold">3</span>
+                        <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400 shrink-0"></i>
+                    </button>
                 </div>
 
                 <!-- فلتر الشهر للانقطاعات الطارئة -->
@@ -232,7 +236,11 @@
                 </button>
                 <button data-tab="interruptions_sj" class="tab-btn flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold text-gray-400 hover:text-gray-200 hover:bg-[#131c31] border border-transparent transition-all whitespace-nowrap cursor-pointer">
                     <i data-lucide="zap" class="w-4 h-4 text-amber-400"></i>
-                    <span>انقطاعات سبت الجارة والقنفذة MV (<span id="tab-sj-int-count">561</span>)</span>
+                    <span>انقطاعات محطة سبت الجارة MV (<span id="tab-sj-int-count">29</span>)</span>
+                </button>
+                <button data-tab="compare_stations" class="tab-btn flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold text-gray-400 hover:text-gray-200 hover:bg-[#131c31] border border-transparent transition-all whitespace-nowrap cursor-pointer">
+                    <i data-lucide="git-compare" class="w-4 h-4 text-sky-400"></i>
+                    <span>مقارنة المحطات (<span id="tab-cmp-stations-count">3</span>)</span>
                 </button>
                 <button data-tab="outages" class="tab-btn flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold text-gray-400 hover:text-gray-200 hover:bg-[#131c31] border border-transparent transition-all whitespace-nowrap cursor-pointer">
                     <i data-lucide="zap-off" class="w-4 h-4"></i>
@@ -529,7 +537,11 @@
                     </button>
                     <button type="button" onclick="switchTab('interruptions_sj')" class="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold text-gray-400 hover:text-amber-300 hover:bg-[#131c31] border border-transparent transition-all cursor-pointer">
                         <i data-lucide="zap" class="w-4 h-4 text-amber-400"></i>
-                        <span>قطاع سبت الجارة والقنفذة (<span id="pill-sj-count-1">561</span> انقطاع / 106 مغذي)</span>
+                        <span>محطة سبت الجارة (<span id="pill-sj-count-1">29</span> انقطاع / 12 مغذي)</span>
+                    </button>
+                    <button type="button" onclick="switchTab('compare_stations')" class="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold text-gray-400 hover:text-sky-300 hover:bg-[#131c31] border border-transparent transition-all cursor-pointer">
+                        <i data-lucide="git-compare" class="w-4 h-4 text-sky-400"></i>
+                        <span>مقارنة المحطات (3)</span>
                     </button>
                 </div>
                 <span class="text-[11px] text-gray-400 px-2">نفس أسلوب العرض التحليلي والرسوم البيانية للانقطاعات الطارئة MV</span>
@@ -669,10 +681,14 @@
                     </button>
                     <button type="button" onclick="switchTab('interruptions_sj')" class="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-extrabold bg-violet-500/20 text-violet-300 border border-violet-500/40 cursor-pointer">
                         <i data-lucide="zap" class="w-4 h-4 text-amber-400"></i>
-                        <span>قطاع سبت الجارة والقنفذة (<span id="pill-sj-count-2">561</span> انقطاع / 106 مغذي)</span>
+                        <span>محطة سبت الجارة (<span id="pill-sj-count-2">29</span> انقطاع / 12 مغذي)</span>
+                    </button>
+                    <button type="button" onclick="switchTab('compare_stations')" class="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold text-gray-400 hover:text-sky-300 hover:bg-[#131c31] border border-transparent transition-all cursor-pointer">
+                        <i data-lucide="git-compare" class="w-4 h-4 text-sky-400"></i>
+                        <span>مقارنة المحطات (3)</span>
                     </button>
                 </div>
-                <span class="text-[11px] text-amber-300/90 px-2 font-semibold">تقرير المغذيات المتعطلة • إدارة الباحة (2026/01/01 – 2026/09/09)</span>
+                <span class="text-[11px] text-amber-300/90 px-2 font-semibold">تقرير مغذيات محطة سبت الجارة (SABT JARA) • (2026/01/01 – 2026/09/09)</span>
             </div>
 
             <!-- شريط التصفية التفصيلية بنفس ستايل المجاردة وبارق (border-violet-500/30) -->
@@ -682,28 +698,30 @@
                         <i data-lucide="sliders-horizontal" class="w-5 h-5"></i>
                     </div>
                     <div>
-                        <h3 class="text-sm font-bold text-white">تصفية تفصيلية لسجل الانقطاعات الطارئة MV — سبت الجارة والقنفذة</h3>
-                        <p class="text-xs text-gray-400">تخصيص حسب المكتب (سبت الجارة / القنفذة / البرك)، المحطة، أو نوع التأثير (كلي ALL / جزئي PART)</p>
+                        <h3 class="text-sm font-bold text-white">تصفية تفصيلية لسجل انقطاعات محطة سبت الجارة (MV — SABT JARA)</h3>
+                        <p class="text-xs text-gray-400">تحليل جميع مغذيات محطة سبت الجارة (12 مغذي — 33 KV) حسب نوع التأثير (كلي ALL / جزئي PART) ومستوى التكرار</p>
                     </div>
                 </div>
 
                 <div class="flex flex-wrap items-center gap-2.5">
-                    <select id="sj-filter-office" class="bg-[#0b1120] border border-[#1e293b] focus:border-violet-500 rounded-xl px-3 py-2 text-xs text-gray-100 font-semibold outline-none cursor-pointer">
-                        <option value="ALL">المكتب: الكل (القنفذة + سبت الجارة + البرك)</option>
-                        <option value="القنفذه / مركز سبت الجارة">مركز سبت الجارة (12 مغذي)</option>
-                        <option value="القنفذه">القنفذة (86 مغذي)</option>
-                        <option value="القنفذه / مركز البرك">مركز البرك (8 مغذيات)</option>
+                    <select id="sj-filter-office" class="hidden" aria-hidden="true">
+                        <option value="ALL">محطة سبت الجارة</option>
                     </select>
 
-                    <select id="sj-filter-sub" class="bg-[#0b1120] border border-[#1e293b] focus:border-violet-500 rounded-xl px-3 py-2 text-xs text-gray-100 font-semibold outline-none cursor-pointer max-w-[230px]">
-                        <option value="ALL">المحطة: جميع المحطات (10)</option>
+                    <select id="sj-filter-sub" class="hidden" aria-hidden="true">
+                        <option value="ALL">سبت الجارة / SABT JARA</option>
                     </select>
+
+                    <span class="px-3 py-2 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-xs font-extrabold text-emerald-300">
+                        المحطة: سبت الجارة / SABT JARA (12 مغذي)
+                    </span>
 
                     <select id="sj-filter-impact" class="bg-[#0b1120] border border-[#1e293b] focus:border-violet-500 rounded-xl px-3 py-2 text-xs text-gray-100 font-semibold outline-none cursor-pointer">
                         <option value="ALL">التأثير: الكل (ALL & PART)</option>
                         <option value="HAS_ALL">به انقطاع كلي (ALL)</option>
                         <option value="HAS_PART">به انقطاع جزئي (PART)</option>
-                        <option value="HIGH_FREQ">عالي التكرار (5 انقطاعات فأكثر)</option>
+                        <option value="HIGH_FREQ">عالي التكرار (3 انقطاعات فأكثر)</option>
+                        <option value="MED_FREQ">متكرر (انقطاعان فأكثر)</option>
                     </select>
                 </div>
             </div>
@@ -715,7 +733,7 @@
                         <div>
                             <p class="text-xs font-bold text-gray-400">إجمالي تكرار الانقطاع MV</p>
                             <div class="flex items-baseline gap-1.5 mt-1.5">
-                                <h2 id="sj-kpi-total" class="text-2xl font-black text-white">561</h2>
+                                <h2 id="sj-kpi-total" class="text-2xl font-black text-white">29</h2>
                                 <span class="text-xs font-bold text-violet-400">انقطاع</span>
                             </div>
                         </div>
@@ -724,8 +742,8 @@
                         </div>
                     </div>
                     <div class="mt-3 pt-2.5 border-t border-[#1e293b] flex items-center justify-between text-[11px]">
-                        <span id="sj-kpi-feeders" class="text-gray-400">المغذيات: 106 | المحطات: 10</span>
-                        <span id="sj-kpi-avg" class="font-bold text-violet-400 bg-violet-500/10 px-1.5 py-0.5 rounded">متوسط 5.3</span>
+                        <span id="sj-kpi-feeders" class="text-gray-400">المغذيات: 12 | الجهد: 33 KV</span>
+                        <span id="sj-kpi-avg" class="font-bold text-violet-400 bg-violet-500/10 px-1.5 py-0.5 rounded">متوسط 2.4</span>
                     </div>
                 </div>
 
@@ -734,9 +752,9 @@
                         <div>
                             <p class="text-xs font-bold text-gray-400">كلي (ALL) مقابل جزئي (PART)</p>
                             <div class="flex items-baseline gap-1.5 mt-1.5">
-                                <h2 id="sj-kpi-all" class="text-2xl font-black text-sky-400">412</h2>
+                                <h2 id="sj-kpi-all" class="text-2xl font-black text-sky-400">20</h2>
                                 <span class="text-xs font-bold text-gray-400">كلي /</span>
-                                <span id="sj-kpi-part" class="text-lg font-black text-emerald-400">149</span>
+                                <span id="sj-kpi-part" class="text-lg font-black text-emerald-400">9</span>
                                 <span class="text-xs font-bold text-gray-400">جزئي</span>
                             </div>
                         </div>
@@ -746,7 +764,7 @@
                     </div>
                     <div class="mt-3 pt-2.5 border-t border-[#1e293b] flex items-center justify-between text-[11px]">
                         <span id="sj-kpi-split-txt" class="text-gray-400">نسبة الانقطاع الكلي</span>
-                        <span id="sj-kpi-all-pct" class="font-bold text-sky-400 bg-sky-500/10 px-1.5 py-0.5 rounded">73.4% ALL</span>
+                        <span id="sj-kpi-all-pct" class="font-bold text-sky-400 bg-sky-500/10 px-1.5 py-0.5 rounded">69.0% ALL</span>
                     </div>
                 </div>
 
@@ -754,14 +772,14 @@
                     <div class="flex items-start justify-between">
                         <div>
                             <p class="text-xs font-bold text-gray-400">إجمالي دقائق المشتركين (CML)</p>
-                            <h2 id="sj-kpi-cml" class="text-2xl font-black text-white mt-1.5">4,789,410</h2>
+                            <h2 id="sj-kpi-cml" class="text-2xl font-black text-white mt-1.5">222,330</h2>
                         </div>
                         <div class="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
                             <i data-lucide="clock" class="w-5 h-5"></i>
                         </div>
                     </div>
                     <div class="mt-3 pt-2.5 border-t border-[#1e293b] flex items-center justify-between text-[11px]">
-                        <span id="sj-kpi-cml-avg" class="text-gray-400">متوسط / مغذي: 45,183</span>
+                        <span id="sj-kpi-cml-avg" class="text-gray-400">متوسط / مغذي: 18,528</span>
                         <span class="font-bold text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded">CML</span>
                     </div>
                 </div>
@@ -770,15 +788,15 @@
                     <div class="flex items-start justify-between">
                         <div class="min-w-0">
                             <p class="text-xs font-bold text-gray-400">المغذي الأعلى تكراراً</p>
-                            <h2 id="sj-kpi-top-feeder" class="text-xl font-black text-rose-400 mt-1.5 font-mono truncate">B410 (33KV)</h2>
+                            <h2 id="sj-kpi-top-feeder" class="text-xl font-black text-rose-400 mt-1.5 font-mono truncate">B417 (33 kv)</h2>
                         </div>
                         <div class="w-10 h-10 rounded-xl bg-rose-500/15 border border-rose-500/30 flex items-center justify-center text-rose-400 shrink-0">
                             <i data-lucide="flame" class="w-5 h-5"></i>
                         </div>
                     </div>
                     <div class="mt-3 pt-2.5 border-t border-[#1e293b] flex items-center justify-between text-[11px] gap-2">
-                        <span id="sj-kpi-top-sub" class="text-gray-400 truncate">محطة البرك</span>
-                        <span id="sj-kpi-top-cnt" class="font-bold text-rose-400 bg-rose-500/10 px-1.5 py-0.5 rounded shrink-0">23 انقطاع</span>
+                        <span id="sj-kpi-top-sub" class="text-gray-400 truncate">سبت الجارة</span>
+                        <span id="sj-kpi-top-cnt" class="font-bold text-rose-400 bg-rose-500/10 px-1.5 py-0.5 rounded shrink-0">8 انقطاعات</span>
                     </div>
                 </div>
             </div>
@@ -796,17 +814,17 @@
                         </div>
 
                         <div class="inline-flex flex-wrap items-center bg-[#0b1120] border border-[#1e293b] rounded-xl p-1 text-xs self-start sm:self-auto gap-0.5" id="sj-office-switcher">
-                            <button type="button" data-sj-off="ALL" class="sj-switch-btn px-2.5 py-1 rounded-lg bg-violet-500/20 text-violet-300 font-bold border border-violet-500/30 transition-all cursor-pointer">
-                                الكل (10 محطات)
+                            <button type="button" data-sj-imp="ALL" class="sj-switch-btn px-2.5 py-1 rounded-lg bg-violet-500/20 text-violet-300 font-bold border border-violet-500/30 transition-all cursor-pointer">
+                                جميع المغذيات (12)
                             </button>
-                            <button type="button" data-sj-off="القنفذه / مركز سبت الجارة" class="sj-switch-btn px-2.5 py-1 rounded-lg text-gray-400 hover:text-emerald-300 font-semibold border border-transparent transition-all cursor-pointer">
-                                سبت الجارة فقط (12)
+                            <button type="button" data-sj-imp="HAS_ALL" class="sj-switch-btn px-2.5 py-1 rounded-lg text-gray-400 hover:text-sky-300 font-semibold border border-transparent transition-all cursor-pointer">
+                                بها انقطاع كلي (ALL)
                             </button>
-                            <button type="button" data-sj-off="القنفذه / مركز البرك" class="sj-switch-btn px-2.5 py-1 rounded-lg text-gray-400 hover:text-amber-300 font-semibold border border-transparent transition-all cursor-pointer">
-                                مركز البرك (8)
+                            <button type="button" data-sj-imp="HAS_PART" class="sj-switch-btn px-2.5 py-1 rounded-lg text-gray-400 hover:text-emerald-300 font-semibold border border-transparent transition-all cursor-pointer">
+                                بها انقطاع جزئي (PART)
                             </button>
-                            <button type="button" data-sj-off="القنفذه" class="sj-switch-btn px-2.5 py-1 rounded-lg text-gray-400 hover:text-sky-300 font-semibold border border-transparent transition-all cursor-pointer">
-                                القنفذة (86)
+                            <button type="button" data-sj-imp="HIGH_FREQ" class="sj-switch-btn px-2.5 py-1 rounded-lg text-gray-400 hover:text-amber-300 font-semibold border border-transparent transition-all cursor-pointer">
+                                الأعلى تكراراً (3+)
                             </button>
                         </div>
                     </div>
@@ -865,7 +883,7 @@
                     <div>
                         <h3 class="text-base font-bold text-white flex items-center gap-2">
                             <i data-lucide="list-ordered" class="w-5 h-5 text-violet-400"></i>
-                            السجل الكامل لانقطاعات المغذيات MV (<span id="sj-table-count">106</span> مغذي)
+                            السجل الكامل لمغذيات محطة سبت الجارة MV (<span id="sj-table-count">12</span> مغذي)
                         </h3>
                         <p class="text-xs text-gray-400 mt-0.5">يعرض المكتب، المحطة، المغذي، الجهد، تكرار الانقطاع الكلي والجزئي، ومؤشر CML</p>
                     </div>
@@ -906,12 +924,231 @@
                 </div>
 
                 <div class="mt-4 pt-3 border-t border-[#1e293b] flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-400">
-                    <div id="sj-page-info">عرض 1 - 20 من أصل 106</div>
+                    <div id="sj-page-info">عرض 1 - 12 من أصل 12</div>
                     <div class="flex items-center gap-2">
                         <button id="sj-prev-page" class="px-3 py-1.5 rounded-lg bg-[#0b1120] border border-[#1e293b] hover:border-gray-600 text-gray-200 disabled:opacity-40 cursor-pointer">السابق</button>
-                        <span id="sj-page-num" class="font-bold text-white px-2">1 / 6</span>
+                        <span id="sj-page-num" class="font-bold text-white px-2">1 / 1</span>
                         <button id="sj-next-page" class="px-3 py-1.5 rounded-lg bg-[#0b1120] border border-[#1e293b] hover:border-gray-600 text-gray-200 disabled:opacity-40 cursor-pointer">التالي</button>
                     </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ===================================================================== -->
+        <!-- قسم التبويب 2C: مقارنة المحطات المتعددة (جميع المحطات الـ 12 وجهاً لوجه) -->
+        <!-- ===================================================================== -->
+        <section id="section-compare-stations-tab" class="hidden space-y-5">
+            <!-- شريط التنقل السريع بين قطاعات MV -->
+            <div class="flex flex-wrap items-center justify-between gap-2 bg-[#0b1120] border border-[#1e293b] rounded-2xl p-2">
+                <div class="flex flex-wrap items-center gap-1.5">
+                    <button type="button" onclick="switchTab('interruptions')" class="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold text-gray-400 hover:text-violet-300 hover:bg-[#131c31] border border-transparent transition-all cursor-pointer">
+                        <i data-lucide="zap" class="w-4 h-4 text-violet-400"></i>
+                        <span>قطاع المجاردة وبارق (147)</span>
+                    </button>
+                    <button type="button" onclick="switchTab('interruptions_sj')" class="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold text-gray-400 hover:text-amber-300 hover:bg-[#131c31] border border-transparent transition-all cursor-pointer">
+                        <i data-lucide="zap" class="w-4 h-4 text-amber-400"></i>
+                        <span>محطة سبت الجارة (29)</span>
+                    </button>
+                    <button type="button" onclick="switchTab('compare_stations')" class="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-extrabold bg-sky-500/20 text-sky-300 border border-sky-500/40 cursor-pointer">
+                        <i data-lucide="git-compare" class="w-4 h-4 text-sky-400"></i>
+                        <span>مقارنة المحطات المتعددة (3)</span>
+                    </button>
+                </div>
+                <button type="button" onclick="openStationPickerModal()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-violet-500/20 hover:bg-violet-500/30 text-violet-300 border border-violet-500/40 text-xs font-bold cursor-pointer">
+                    <i data-lucide="sliders-horizontal" class="w-3.5 h-3.5"></i>
+                    <span>اختيار المحطات من القائمة</span>
+                </button>
+            </div>
+
+            <!-- لوحة تحديد ومقارنة المحطات بضغطة واحدة (Interactive Chips) -->
+            <div class="bg-[#131c31] border border-sky-500/30 rounded-2xl p-4 shadow-xl space-y-3">
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-9 h-9 rounded-xl bg-sky-500/20 text-sky-400 flex items-center justify-center shrink-0">
+                            <i data-lucide="git-compare" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-sm sm:text-base font-extrabold text-white">استوديو مقارنة المحطات (محطة 33 المجاردة • محطة بارق • محطة سبت الجارة)</h3>
+                            <p class="text-xs text-gray-400">اضغط على أي محطة بالأسفل لإضافتها أو إزالتها من المقارنة فوراً، أو اختر مقارنة سريعة جاهزة</p>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-1.5 text-xs">
+                        <button type="button" onclick="applyStationPreset('ALL', true)" class="px-2.5 py-1.5 rounded-xl bg-[#0b1120] hover:bg-sky-500/20 text-sky-300 border border-[#1e293b] hover:border-sky-500/40 font-bold cursor-pointer">الكل (3 محطات)</button>
+                        <button type="button" onclick="applyStationPreset('MB_ONLY', true)" class="px-2.5 py-1.5 rounded-xl bg-[#0b1120] hover:bg-violet-500/20 text-violet-300 border border-[#1e293b] hover:border-violet-500/40 font-bold cursor-pointer">المجاردة vs بارق</button>
+                        <button type="button" onclick="applyStationPreset('M33_SJ', true)" class="px-2.5 py-1.5 rounded-xl bg-[#0b1120] hover:bg-emerald-500/20 text-emerald-300 border border-[#1e293b] hover:border-emerald-500/40 font-bold cursor-pointer">المجاردة vs سبت الجارة</button>
+                        <button type="button" onclick="applyStationPreset('BAREQ_SJ', true)" class="px-2.5 py-1.5 rounded-xl bg-[#0b1120] hover:bg-amber-500/20 text-amber-300 border border-[#1e293b] hover:border-amber-500/40 font-bold cursor-pointer">بارق vs سبت الجارة</button>
+                        <button type="button" onclick="applyStationPreset('SJ_ONLY', true)" class="px-2.5 py-1.5 rounded-xl bg-[#0b1120] hover:bg-rose-500/20 text-rose-300 border border-[#1e293b] hover:border-rose-500/40 font-bold cursor-pointer">سبت الجارة فقط</button>
+                    </div>
+                </div>
+
+                <!-- شارات المحطات الـ 12 التفاعلية -->
+                <div id="cmp-station-chips" class="flex flex-wrap items-center gap-2 pt-2 border-t border-[#1e293b]/80"></div>
+            </div>
+
+            <!-- 4 بطاقات ملخص المقارنة -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+                <div class="bg-[#131c31] border border-[#1e293b] hover:border-violet-500/40 rounded-2xl p-4 shadow-lg">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <p class="text-xs font-bold text-gray-400">إجمالي انقطاعات المحطات المحددة</p>
+                            <div class="flex items-baseline gap-1.5 mt-1.5">
+                                <h2 id="cmp-kpi-int" class="text-2xl font-black text-white">176</h2>
+                                <span class="text-xs font-bold text-violet-400">انقطاع MV</span>
+                            </div>
+                        </div>
+                        <div class="w-10 h-10 rounded-xl bg-violet-500/15 border border-violet-500/30 flex items-center justify-center text-violet-400 shrink-0">
+                            <i data-lucide="zap" class="w-5 h-5"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3 pt-2.5 border-t border-[#1e293b] flex items-center justify-between text-[11px]">
+                        <span id="cmp-kpi-stations-cnt" class="text-gray-400">3 محطات قيد المقارنة</span>
+                        <span id="cmp-kpi-share" class="font-bold text-violet-400 bg-violet-500/10 px-1.5 py-0.5 rounded">100% من الإجمالي</span>
+                    </div>
+                </div>
+
+                <div class="bg-[#131c31] border border-[#1e293b] hover:border-sky-500/40 rounded-2xl p-4 shadow-lg">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <p class="text-xs font-bold text-gray-400">المغذيات المتأثرة ومعدل التكرار</p>
+                            <div class="flex items-baseline gap-1.5 mt-1.5">
+                                <h2 id="cmp-kpi-feeders" class="text-2xl font-black text-sky-400">43</h2>
+                                <span class="text-xs font-bold text-gray-400">مغذي</span>
+                            </div>
+                        </div>
+                        <div class="w-10 h-10 rounded-xl bg-sky-500/15 border border-sky-500/30 flex items-center justify-center text-sky-400 shrink-0">
+                            <i data-lucide="git-branch" class="w-5 h-5"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3 pt-2.5 border-t border-[#1e293b] flex items-center justify-between text-[11px]">
+                        <span id="cmp-kpi-split" class="text-gray-400">كلي: 151 | جزئي: 25</span>
+                        <span id="cmp-kpi-avg" class="font-bold text-sky-400 bg-sky-500/10 px-1.5 py-0.5 rounded">4.1 / مغذي</span>
+                    </div>
+                </div>
+
+                <div class="bg-[#131c31] border border-[#1e293b] hover:border-amber-500/40 rounded-2xl p-4 shadow-lg">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <p class="text-xs font-bold text-gray-400">إجمالي مؤشر CML (دقائق المشتركين)</p>
+                            <h2 id="cmp-kpi-cml" class="text-2xl font-black text-white mt-1.5">3,226,955</h2>
+                        </div>
+                        <div class="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
+                            <i data-lucide="clock" class="w-5 h-5"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3 pt-2.5 border-t border-[#1e293b] flex items-center justify-between text-[11px]">
+                        <span class="text-gray-400">الباحة فعلي • عسير (المدة×المشتركين)</span>
+                        <span class="font-bold text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded">CML</span>
+                    </div>
+                </div>
+
+                <div class="bg-[#131c31] border border-[#1e293b] hover:border-rose-500/40 rounded-2xl p-4 shadow-lg">
+                    <div class="flex items-start justify-between">
+                        <div class="min-w-0">
+                            <p class="text-xs font-bold text-gray-400">الأعلى مقابل الأقل في المقارنة</p>
+                            <h2 id="cmp-kpi-high" class="text-base sm:text-lg font-black text-rose-400 mt-1.5 truncate">محطة بارق / BAREQ (98)</h2>
+                        </div>
+                        <div class="w-10 h-10 rounded-xl bg-rose-500/15 border border-rose-500/30 flex items-center justify-center text-rose-400 shrink-0">
+                            <i data-lucide="trophy" class="w-5 h-5"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3 pt-2.5 border-t border-[#1e293b] flex items-center justify-between text-[11px] gap-2">
+                        <span id="cmp-kpi-low" class="text-emerald-400 font-bold truncate">الأقل: سبت الجارة (29)</span>
+                        <span id="cmp-kpi-ratio" class="font-bold text-rose-400 bg-rose-500/10 px-1.5 py-0.5 rounded shrink-0">3.4x</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- الرسم الرئيسي للمقارنة (أعمدة كلي/جزئي + خط CML) — نفس ستايل الداش بورد -->
+            <div class="bg-[#131c31] border border-[#1e293b] rounded-2xl p-5 shadow-xl flex flex-col">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+                    <div>
+                        <h3 class="text-base font-bold text-white flex items-center gap-2">
+                            <i data-lucide="trending-up" class="w-5 h-5 text-violet-400"></i>
+                            المقارنة المباشرة بين المحطات المختارة: الانقطاعات (كلي vs جزئي) ومؤشر CML
+                        </h3>
+                        <p class="text-xs text-gray-400 mt-0.5">انقر على أي محطة في الرسم للانتقال المباشر لتفاصيلها الكاملة</p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] font-semibold bg-[#0b1120]/70 border border-[#1e293b] rounded-xl px-3 py-2">
+                        <span class="flex items-center gap-1.5 text-sky-400"><span class="w-2.5 h-2.5 rounded-sm bg-[#0ea5e9]"></span> كلي (ALL / A)</span>
+                        <span class="flex items-center gap-1.5 text-emerald-400"><span class="w-2.5 h-2.5 rounded-sm bg-[#10b981]"></span> جزئي (PART / P)</span>
+                        <span class="flex items-center gap-1.5 text-amber-400"><span class="w-3 h-0.5 bg-[#f59e0b] inline-block"></span> مؤشر CML</span>
+                    </div>
+                </div>
+                <div class="relative flex-1 min-h-[320px] w-full">
+                    <canvas id="chart-cmp-main"></canvas>
+                </div>
+            </div>
+
+            <!-- رسمين مقارنين إضافيين: كثافة الأعطال/مغذي + أعلى 12 مغذي عبر المحطات المختارة -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+                <div class="lg:col-span-6 bg-[#131c31] border border-[#1e293b] rounded-2xl p-5 shadow-xl flex flex-col">
+                    <h4 class="text-sm font-bold text-white mb-1 flex items-center gap-2">
+                        <i data-lucide="gauge" class="w-4 h-4 text-amber-400"></i>
+                        معدل تكرار الانقطاع لكل مغذي (كثافة الأعطال / مغذي)
+                    </h4>
+                    <p class="text-[11px] text-gray-400 mb-3">مقياس عادل لمقارنة المحطات الكبيرة والصغيرة بغض النظر عن عدد مغذياتها</p>
+                    <div class="relative flex-1 min-h-[290px]">
+                        <canvas id="chart-cmp-density"></canvas>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-6 bg-[#131c31] border border-[#1e293b] rounded-2xl p-5 shadow-xl flex flex-col">
+                    <h4 class="text-sm font-bold text-white mb-1 flex items-center gap-2">
+                        <i data-lucide="zap" class="w-4 h-4 text-violet-400"></i>
+                        أعلى 12 مغذي انقطاعاً داخل المحطات المختارة فقط
+                    </h4>
+                    <p class="text-[11px] text-gray-400 mb-3">يدمج مغذيات جميع المحطات المحددة لتحديد أكثر المغذيات حرجاً في المقارنة</p>
+                    <div class="relative flex-1 min-h-[290px]">
+                        <canvas id="chart-cmp-topfeeders"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- جدول المقارنة التفصيلية جنباً إلى جنب -->
+            <div class="bg-[#131c31] border border-[#1e293b] rounded-2xl p-5 shadow-xl">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                    <div>
+                        <h3 class="text-base font-bold text-white flex items-center gap-2">
+                            <i data-lucide="table" class="w-5 h-5 text-sky-400"></i>
+                            جدول المقارنة التنفيذية للمحطات (<span id="cmp-table-count">3</span> محطات)
+                        </h3>
+                        <p class="text-xs text-gray-400 mt-0.5">مقارنة شاملة للانقطاعات والمغذيات ومؤشر CML وأعلى مغذي متعطل في كل محطة</p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <select id="sort-cmp-stations" class="bg-[#0b1120] border border-[#1e293b] rounded-xl px-3 py-1.5 text-xs text-gray-200 outline-none cursor-pointer">
+                            <option value="int_desc">الترتيب: الأعلى انقطاعاً</option>
+                            <option value="cml_desc">الترتيب: الأعلى CML</option>
+                            <option value="avg_desc">الترتيب: الأعلى معدل/مغذي</option>
+                            <option value="feeders_desc">الترتيب: الأكثر مغذيات</option>
+                        </select>
+                        <button onclick="exportTableCSV('compare_stations')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 border border-emerald-500/30 text-xs font-bold cursor-pointer">
+                            <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                            <span>تصدير CSV</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-right border-collapse">
+                        <thead>
+                            <tr class="border-b border-[#1e293b] text-xs font-bold text-gray-400 bg-[#0b1120]/70">
+                                <th class="py-3 px-2.5 rounded-tr-lg">#</th>
+                                <th class="py-3 px-2.5">المحطة</th>
+                                <th class="py-3 px-2.5">القطاع / المكتب</th>
+                                <th class="py-3 px-2.5 text-center">المغذيات</th>
+                                <th class="py-3 px-2.5 text-center">إجمالي الانقطاعات</th>
+                                <th class="py-3 px-2.5 text-center">كلي (ALL/A)</th>
+                                <th class="py-3 px-2.5 text-center">جزئي (PART/P)</th>
+                                <th class="py-3 px-2.5 text-center">معدل / مغذي</th>
+                                <th class="py-3 px-2.5 text-center">مؤشر CML</th>
+                                <th class="py-3 px-2.5">أعلى مغذي</th>
+                                <th class="py-3 px-2.5 text-center rounded-tl-lg">التفاصيل</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-cmp-stations" class="divide-y divide-[#1e293b]/60 text-xs"></tbody>
+                    </table>
                 </div>
             </div>
         </section>
@@ -1656,6 +1893,60 @@
         لوحة القيادة الموحدة لموثوقية الشبكة والأعطال والانقطاعات (Executive GIS & Network Reliability) — قطاع كهرباء المجاردة وبارق 2026
     </footer>
 
+    <!-- نافذة اختيار ومقارنة جميع المحطات الـ 12 (متعددة الاختيار للموبايل والكمبيوتر) -->
+    <div id="station-picker-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/75 backdrop-blur-sm p-3 sm:p-4">
+        <div class="bg-[#131c31] border border-sky-500/40 rounded-2xl max-w-lg w-full max-h-[88vh] flex flex-col shadow-2xl overflow-hidden">
+            <!-- رأس النافذة -->
+            <div class="p-4 border-b border-[#1e293b] flex items-center justify-between bg-[#0b1120]/70">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-sky-500/20 border border-sky-500/40 flex items-center justify-center text-sky-400">
+                        <i data-lucide="map-pin" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-sm sm:text-base font-extrabold text-white">اختيار ومقارنة المحطات</h3>
+                        <p class="text-[11px] text-gray-400">اختر محطة واحدة للتصفية أو حدد عدة محطات للمقارنة المباشرة</p>
+                    </div>
+                </div>
+                <button id="btn-close-station-modal" type="button" class="text-gray-400 hover:text-white p-1.5 rounded-lg hover:bg-[#1e293b] cursor-pointer">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- شريط البحث والاختيارات السريعة -->
+            <div class="p-3 border-b border-[#1e293b] space-y-2.5 bg-[#0b1120]/40">
+                <div class="relative">
+                    <input type="text" id="station-modal-search" placeholder="ابحث باسم المحطة (المجاردة، بارق، سبت الجارة...)" class="w-full bg-[#0b1120] border border-[#1e293b] focus:border-sky-500 rounded-xl pr-9 pl-3 py-2 text-xs text-gray-100 placeholder-gray-500 outline-none">
+                    <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute right-3 top-2.5 pointer-events-none"></i>
+                </div>
+                <div class="flex flex-wrap items-center gap-1.5 text-[11px]">
+                    <button type="button" onclick="modalQuickSelect('ALL')" class="px-2.5 py-1 rounded-lg bg-sky-500/15 hover:bg-sky-500/25 text-sky-300 border border-sky-500/30 font-bold cursor-pointer">الكل (3)</button>
+                    <button type="button" onclick="modalQuickSelect('MB_ONLY')" class="px-2.5 py-1 rounded-lg bg-violet-500/15 hover:bg-violet-500/25 text-violet-300 border border-violet-500/30 font-bold cursor-pointer">المجاردة وبارق (2)</button>
+                    <button type="button" onclick="modalQuickSelect('M33_SJ')" class="px-2.5 py-1 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 font-bold cursor-pointer">المجاردة + سبت الجارة</button>
+                    <button type="button" onclick="modalQuickSelect('BAREQ_SJ')" class="px-2.5 py-1 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 font-bold cursor-pointer">بارق + سبت الجارة</button>
+                    <button type="button" onclick="modalQuickSelect('SJ_ONLY')" class="px-2.5 py-1 rounded-lg bg-teal-500/15 hover:bg-teal-500/25 text-teal-300 border border-teal-500/30 font-bold cursor-pointer">سبت الجارة فقط</button>
+                    <button type="button" onclick="modalQuickSelect('NONE')" class="px-2.5 py-1 rounded-lg bg-[#131c31] hover:bg-rose-500/20 text-gray-300 hover:text-rose-300 border border-[#1e293b] font-semibold cursor-pointer">مسح</button>
+                </div>
+            </div>
+
+            <!-- قائمة المحطات مع Checkboxes -->
+            <div id="station-modal-list" class="flex-1 overflow-y-auto p-3 space-y-3"></div>
+
+            <!-- شريط الأزرار السفلي -->
+            <div class="p-3.5 border-t border-[#1e293b] bg-[#0b1120]/80 flex flex-wrap items-center justify-between gap-2">
+                <span id="station-modal-sel-info" class="text-xs font-bold text-gray-300">المحدد: الكل (3 محطات)</span>
+                <div class="flex items-center gap-2">
+                    <button id="btn-station-apply" type="button" class="px-3.5 py-2 rounded-xl bg-[#131c31] hover:bg-[#1e293b] text-gray-100 border border-[#334155] text-xs font-bold cursor-pointer">
+                        تطبيق التصفية
+                    </button>
+                    <button id="btn-station-compare" type="button" class="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-l from-sky-600 to-violet-600 hover:from-sky-500 hover:to-violet-500 text-white text-xs font-extrabold cursor-pointer shadow-lg shadow-violet-500/20">
+                        <i data-lucide="git-compare" class="w-4 h-4"></i>
+                        <span>مقارنة المحدد</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- نافذة رفع وتحديث ملفات Excel / CSV / HTML -->
     <div id="upload-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/75 backdrop-blur-sm p-4">
         <div class="bg-[#131c31] border border-[#1e293b] rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-4">
@@ -1751,8 +2042,11 @@
         let stdLocalSearch = "";
         let sbPage = 1;
         let sbLocalSearch = "";
-        let SJ_FEEDERS = [["القنفذه / مركز البرك", "1", "البرك / البرك", "1", "B410 (33KV) / B410", 207139.67, 23, 13, 10, "الجنوبية", "الباحه"], ["القنفذه", "1", "القنفذة المركزية / القنفذة المركزية", "4", "B403 (33KV) / B403", 92522.95, 17, 7, 10, "الجنوبية", "الباحه"], ["القنفذه", "1", "القنفذة المركزية / القنفذة المركزية", "3", "B411 (33KV) / B411", 102177.7, 16, 10, 6, "الجنوبية", "الباحه"], ["القنفذه", "26", "المظيلف / MUDAYLIF", "8", "B432 (33 KV) / B432", 91024.15, 15, 13, 2, "الجنوبية", "الباحه"], ["القنفذه", "25", "جنوب القوز / QUZ 132/33", "5", "B407 (33 KV) / B407", 227394.12, 14, 12, 2, "الجنوبية", "الباحه"], ["القنفذه", "1", "القنفذة المركزية / القنفذة المركزية", "10", "B412 (33KV) / B412", 77906.88, 13, 3, 10, "الجنوبية", "الباحه"], ["القنفذه", "26", "المظيلف / MUDAYLIF", "4", "B430 (33 KV) / B430", 121280.58, 12, 12, 0, "الجنوبية", "الباحه"], ["القنفذه", "26", "المظيلف / MUDAYLIF", "14", "B428 (33 KV) / B428", 307486.07, 12, 12, 0, "الجنوبية", "الباحه"], ["القنفذه", "27", "القواطع المتنقله بالصفه / SUFFAH MOB", "5", "B431 (33 KV) / B431", 144833.22, 12, 11, 1, "الجنوبية", "الباحه"], ["القنفذه / مركز البرك", "1", "البرك / البرك", "4", "B403 (33KV) / B403", 105814.83, 12, 9, 3, "الجنوبية", "الباحه"], ["القنفذه", "1", "القنفذة المركزية / القنفذة المركزية", "9", "B417 (33KV) / B417", 189918.92, 11, 9, 2, "الجنوبية", "الباحه"], ["القنفذه", "25", "جنوب القوز / QUZ 132/33", "1", "B403 (33 KV) / B403", 30627.6, 11, 10, 1, "الجنوبية", "الباحه"], ["القنفذه", "25", "جنوب القوز / QUZ 132/33", "9", "B420 (33 KV) / B420", 71988.18, 11, 8, 3, "الجنوبية", "الباحه"], ["القنفذه", "25", "جنوب القوز / QUZ 132/33", "14", "B427 (33 KV) / B427", 198081.32, 11, 6, 5, "الجنوبية", "الباحه"], ["القنفذه", "26", "المظيلف / MUDAYLIF", "10", "B407 (33KV) / B407", 45634.55, 11, 10, 1, "الجنوبية", "الباحه"], ["القنفذه / مركز البرك", "2", "حريضة / HEREDA", "2", "B424 (33 KV) / B424", 88353.33, 11, 4, 7, "الجنوبية", "الباحه"], ["القنفذه", "1", "القنفذة المركزية / القنفذة المركزية", "11", "B413 (33 KV) / B413", 36039.37, 10, 9, 1, "الجنوبية", "الباحه"], ["القنفذه", "27", "القواطع المتنقله بالصفه / SUFFAH MOB", "8", "B440 (33 KV) / B440", 84601.62, 10, 5, 5, "الجنوبية", "الباحه"], ["القنفذه", "1", "القنفذة المركزية / القنفذة المركزية", "2", "B409 (33KV) / B409", 65632.67, 9, 7, 2, "الجنوبية", "الباحه"], ["القنفذه", "25", "جنوب القوز / QUZ 132/33", "2", "B404 (33 KV) / B404", 19066.4, 9, 0, 9, "الجنوبية", "الباحه"], ["القنفذه", "26", "المظيلف / MUDAYLIF", "1", "B414 (33 KV) / B414", 62949.68, 9, 5, 4, "الجنوبية", "الباحه"], ["القنفذه", "27", "القواطع المتنقله بالصفه / SUFFAH MOB", "4", "B430 (33 KV) / B430", 149727.03, 9, 4, 5, "الجنوبية", "الباحه"], ["القنفذه / مركز البرك", "1", "البرك / البرك", "2", "B411 (33KV) / B411", 113007.45, 9, 7, 2, "الجنوبية", "الباحه"], ["القنفذه", "1", "القنفذة المركزية / القنفذة المركزية", "16", "B423 (33 KV) / B423", 17064.87, 8, 7, 1, "الجنوبية", "الباحه"], ["القنفذه", "2", "الدوقة / الدوقة", "4", "B410 (33KV) / B410", 25549.82, 8, 6, 2, "الجنوبية", "الباحه"], ["القنفذه", "25", "جنوب القوز / QUZ 132/33", "4", "B406 (33 KV) / B406", 43891.13, 8, 5, 3, "الجنوبية", "الباحه"], ["القنفذه", "26", "المظيلف / MUDAYLIF", "13", "B422 (33 KV) / B422", 128329.13, 8, 8, 0, "الجنوبية", "الباحه"], ["القنفذه / مركز سبت الجارة", "1", "سبت الجاره / SABT JARA", "10", "B417 (33 kv) / B417", 67045.63, 8, 6, 2, "الجنوبية", "الباحه"], ["القنفذه", "1", "القنفذة المركزية / القنفذة المركزية", "5", "B402 (33KV) / B402", 1269.5, 7, 7, 0, "الجنوبية", "الباحه"], ["القنفذه", "24", "شمال القنفذة / QUNFTHA NORTH(132 KV/13.8)", "13", "B337 (13.8 KV) / B337", 96663.4, 7, 6, 1, "الجنوبية", "الباحه"], ["القنفذه", "25", "جنوب القوز / QUZ 132/33", "7", "B410 (33 KV) / B410", 73012.43, 7, 5, 2, "الجنوبية", "الباحه"], ["القنفذه", "25", "جنوب القوز / QUZ 132/33", "12", "B425 (33 KV) / B425", 142220.33, 7, 6, 1, "الجنوبية", "الباحه"], ["القنفذه", "26", "المظيلف / MUDAYLIF", "3", "B410 (33 KV) / B410", 33936.63, 7, 3, 4, "الجنوبية", "الباحه"], ["القنفذه", "27", "القواطع المتنقله بالصفه / SUFFAH MOB", "3", "B426 (33 KV) / B426", 41013.28, 7, 4, 3, "الجنوبية", "الباحه"], ["القنفذه", "27", "القواطع المتنقله بالصفه / SUFFAH MOB", "6", "B432 (33 KV) / B432", 231035.5, 7, 6, 1, "الجنوبية", "الباحه"], ["القنفذه / مركز البرك", "2", "حريضة / HEREDA", "1", "B408 (33 KV) / B408", 76295.63, 7, 5, 2, "الجنوبية", "الباحه"], ["القنفذه", "1", "القنفذة المركزية / القنفذة المركزية", "7", "B405 (33KV) / B405", 43118.97, 6, 2, 4, "الجنوبية", "الباحه"], ["القنفذه", "1", "القنفذة المركزية / القنفذة المركزية", "8", "B401 (33KV) / B401", 67006.53, 6, 2, 4, "الجنوبية", "الباحه"], ["القنفذه", "25", "جنوب القوز / QUZ 132/33", "11", "B423 (33 KV) / B423", 8773.32, 6, 6, 0, "الجنوبية", "الباحه"], ["القنفذه", "26", "المظيلف / MUDAYLIF", "7", "B431 (33 KV) / B431", 89204.03, 6, 6, 0, "الجنوبية", "الباحه"], ["القنفذه", "26", "المظيلف / MUDAYLIF", "11", "B421 (33KV) / B421", 39657.75, 6, 6, 0, "الجنوبية", "الباحه"], ["القنفذه", "27", "القواطع المتنقله بالصفه / SUFFAH MOB", "13", "B448 (33 KV) / B448", 43867.43, 6, 2, 4, "الجنوبية", "الباحه"], ["القنفذه", "4", "القنفذة / القنفذة", "12", "B315 (13.8KV) / B315", 18231.83, 5, 4, 1, "الجنوبية", "الباحه"], ["القنفذه", "25", "جنوب القوز / QUZ 132/33", "16", "B429 (33KV) / B429", 17285.47, 5, 4, 1, "الجنوبية", "الباحه"], ["القنفذه", "27", "القواطع المتنقله بالصفه / SUFFAH MOB", "12", "B447 (33 KV) / B447", 16202.8, 5, 5, 0, "الجنوبية", "الباحه"], ["القنفذه", "1", "القنفذة المركزية / القنفذة المركزية", "15", "B428 (33 KV) / B428", 29192.15, 4, 4, 0, "الجنوبية", "الباحه"], ["القنفذه", "1", "القنفذة المركزية / القنفذة المركزية", "18", "B427 (33 KV) / B427", 2208.77, 4, 4, 0, "الجنوبية", "الباحه"], ["القنفذه", "2", "الدوقة / الدوقة", "1", "B404 (33KV) / B404", 10930.82, 4, 4, 0, "الجنوبية", "الباحه"], ["القنفذه", "2", "الدوقة / الدوقة", "2", "B412 (33KV) / B412", 17956.7, 4, 4, 0, "الجنوبية", "الباحه"], ["القنفذه", "2", "الدوقة / الدوقة", "3", "B409 (33KV) / B409", 5096.75, 4, 4, 0, "الجنوبية", "الباحه"], ["القنفذه", "2", "الدوقة / الدوقة", "6", "B402 (33KV) / B402", 16367.03, 4, 4, 0, "الجنوبية", "الباحه"], ["القنفذه", "2", "الدوقة / الدوقة", "7", "B405 (33KV) / B405", 16313.67, 4, 3, 1, "الجنوبية", "الباحه"], ["القنفذه", "24", "شمال القنفذة / QUNFTHA NORTH(132 KV/13.8)", "19", "B310 (13.8 KV) / B310", 7285.58, 4, 4, 0, "الجنوبية", "الباحه"], ["القنفذه", "25", "جنوب القوز / QUZ 132/33", "3", "B405 (33 KV) / B405", 30999.35, 4, 3, 1, "الجنوبية", "الباحه"], ["القنفذه", "26", "المظيلف / MUDAYLIF", "6", "B412 (33 KV) / B412", 37966.05, 4, 3, 1, "الجنوبية", "الباحه"], ["القنفذه", "27", "القواطع المتنقله بالصفه / SUFFAH MOB", "1", "B424 (33 KV) / B424", 20985.33, 4, 1, 3, "الجنوبية", "الباحه"], ["القنفذه", "27", "القواطع المتنقله بالصفه / SUFFAH MOB", "2", "B425 (33 KV) / B425", 93107.6, 4, 4, 0, "الجنوبية", "الباحه"], ["القنفذه", "27", "القواطع المتنقله بالصفه / SUFFAH MOB", "9", "B441 (33 KV) / B441", 45105.1, 4, 4, 0, "الجنوبية", "الباحه"], ["القنفذه", "27", "القواطع المتنقله بالصفه / SUFFAH MOB", "11", "B446 (33 KV) / B446", 34460.08, 4, 4, 0, "الجنوبية", "الباحه"], ["القنفذه", "4", "القنفذة / القنفذة", "6", "B307 (13.8KV) / B307", 2377.78, 3, 3, 0, "الجنوبية", "الباحه"], ["القنفذه", "24", "شمال القنفذة / QUNFTHA NORTH(132 KV/13.8)", "4", "B313 (13.8 KV) / B313", 12594.47, 3, 3, 0, "الجنوبية", "الباحه"], ["القنفذه", "25", "جنوب القوز / QUZ 132/33", "6", "B409 (33 KV) / B409", 10561.57, 3, 2, 1, "الجنوبية", "الباحه"], ["القنفذه", "26", "المظيلف / MUDAYLIF", "2", "B433 (33 KV) / B433", 13948.75, 3, 2, 1, "الجنوبية", "الباحه"], ["القنفذه", "27", "القواطع المتنقله بالصفه / SUFFAH MOB", "10", "B445 (33 KV) / B445", 7975.95, 3, 3, 0, "الجنوبية", "الباحه"], ["القنفذه / مركز البرك", "1", "البرك / البرك", "6", "B401 (33KV) / B401", 26696.4, 3, 2, 1, "الجنوبية", "الباحه"], ["القنفذه / مركز سبت الجارة", "1", "سبت الجاره / SABT JARA", "11", "B418 (33 KV) / B418", 12335.08, 3, 2, 1, "الجنوبية", "الباحه"], ["القنفذه / مركز سبت الجارة", "1", "سبت الجاره / SABT JARA", "12", "B419 (33 KV) / B419", 23154.83, 3, 2, 1, "الجنوبية", "الباحه"], ["القنفذه", "1", "القنفذة المركزية / القنفذة المركزية", "1", "B410 (33KV) / B410", 4193.38, 2, 2, 0, "الجنوبية", "الباحه"], ["القنفذه", "1", "القنفذة المركزية / القنفذة المركزية", "12", "B416 (33 KV) / B416", 2214.5, 2, 1, 1, "الجنوبية", "الباحه"], ["القنفذه", "1", "القنفذة المركزية / القنفذة المركزية", "17", "B426 (33 KV) / B426", 12326.4, 2, 2, 0, "الجنوبية", "الباحه"], ["القنفذه", "4", "القنفذة / القنفذة", "1", "B317 (13.8KV) / B317", 20610.43, 2, 1, 1, "الجنوبية", "الباحه"], ["القنفذه", "4", "القنفذة / القنفذة", "5", "B309 (13.8KV) / B309", 19728.78, 2, 2, 0, "الجنوبية", "الباحه"], ["القنفذه", "24", "شمال القنفذة / QUNFTHA NORTH(132 KV/13.8)", "6", "B315 (13.8 KV) / B315", 16849.05, 2, 2, 0, "الجنوبية", "الباحه"], ["القنفذه", "24", "شمال القنفذة / QUNFTHA NORTH(132 KV/13.8)", "8", "B322 (13.8 KV) / B322", 18451.05, 2, 2, 0, "الجنوبية", "الباحه"], ["القنفذه", "24", "شمال القنفذة / QUNFTHA NORTH(132 KV/13.8)", "10", "B331 (13.8 KV) / B331", 1371.7, 2, 2, 0, "الجنوبية", "الباحه"], ["القنفذه", "25", "جنوب القوز / QUZ 132/33", "8", "B412 (33 KV) / B412", 29.0, 2, 2, 0, "الجنوبية", "الباحه"], ["القنفذه", "25", "جنوب القوز / QUZ 132/33", "10", "B422 (33 KV) / B422", 5955.55, 2, 2, 0, "الجنوبية", "الباحه"], ["القنفذه", "26", "المظيلف / MUDAYLIF", "15", "B404 (33 KV) / B404", 1090.62, 2, 1, 1, "الجنوبية", "الباحه"], ["القنفذه / مركز البرك", "1", "البرك / البرك", "7", "B414 (33KV) / B414", 8303.63, 2, 2, 0, "الجنوبية", "الباحه"], ["القنفذه / مركز سبت الجارة", "1", "سبت الجاره / SABT JARA", "1", "B409 (33 KV) / B409", 47285.17, 2, 1, 1, "الجنوبية", "الباحه"], ["القنفذه / مركز سبت الجارة", "1", "سبت الجاره / SABT JARA", "3", "B402 (33 KV) / B402", 40614.7, 2, 2, 0, "الجنوبية", "الباحه"], ["القنفذه / مركز سبت الجارة", "1", "سبت الجاره / SABT JARA", "6", "B426 (33 KV) / B426", 9268.0, 2, 0, 2, "الجنوبية", "الباحه"], ["القنفذه / مركز سبت الجارة", "1", "سبت الجاره / SABT JARA", "7", "B427 (33 KV) / B427", 4083.2, 2, 1, 1, "الجنوبية", "الباحه"], ["القنفذه / مركز سبت الجارة", "1", "سبت الجاره / SABT JARA", "13", "B412 (33 KV) / B412", 14658.93, 2, 2, 0, "الجنوبية", "الباحه"], ["القنفذه / مركز سبت الجارة", "1", "سبت الجاره / SABT JARA", "14", "B420 (33 KV) / B420", 1853.13, 2, 2, 0, "الجنوبية", "الباحه"], ["القنفذه", "1", "القنفذة المركزية / القنفذة المركزية", "6", "B407 (33KV) / B407", 3840.0, 1, 1, 0, "الجنوبية", "الباحه"], ["القنفذه", "2", "الدوقة / الدوقة", "8", "B413 (33KV) / B413", 314.6, 1, 0, 1, "الجنوبية", "الباحه"], ["القنفذه", "4", "القنفذة / القنفذة", "3", "B308 (13.8KV) / B308", 6778.95, 1, 1, 0, "الجنوبية", "الباحه"], ["القنفذه", "4", "القنفذة / القنفذة", "4", "B316 (13.8KV) / B316", 20851.75, 1, 1, 0, "الجنوبية", "الباحه"], ["القنفذه", "4", "القنفذة / القنفذة", "7", "B313 (13.8KV) / B313", 8069.63, 1, 1, 0, "الجنوبية", "الباحه"], ["القنفذه", "4", "القنفذة / القنفذة", "8", "B306 (13.8KV) / B306", 709.68, 1, 1, 0, "الجنوبية", "الباحه"], ["القنفذه", "4", "القنفذة / القنفذة", "10", "B302 (13.8KV) / B302", 275.5, 1, 0, 1, "الجنوبية", "الباحه"], ["القنفذه", "4", "القنفذة / القنفذة", "11", "B303 (13.8KV) / B303", 1829.33, 1, 1, 0, "الجنوبية", "الباحه"], ["القنفذه", "24", "شمال القنفذة / QUNFTHA NORTH(132 KV/13.8)", "1", "B304 (13.8 KV) / B304", 565.57, 1, 1, 0, "الجنوبية", "الباحه"], ["القنفذه", "24", "شمال القنفذة / QUNFTHA NORTH(132 KV/13.8)", "9", "B323 (13.8 KV) / B323", 2305.6, 1, 1, 0, "الجنوبية", "الباحه"], ["القنفذه", "24", "شمال القنفذة / QUNFTHA NORTH(132 KV/13.8)", "11", "B332 (13.8 KV) / B332", 18968.52, 1, 1, 0, "الجنوبية", "الباحه"], ["القنفذه", "24", "شمال القنفذة / QUNFTHA NORTH(132 KV/13.8)", "12", "B333 (13.8 KV) / B333", 16365.2, 1, 1, 0, "الجنوبية", "الباحه"], ["القنفذه", "24", "شمال القنفذة / QUNFTHA NORTH(132 KV/13.8)", "14", "B338 (13.8 KV) / B338", 9643.88, 1, 1, 0, "الجنوبية", "الباحه"], ["القنفذه", "24", "شمال القنفذة / QUNFTHA NORTH(132 KV/13.8)", "21", "B341 (13.8 KV) / B341", 1306.27, 1, 1, 0, "الجنوبية", "الباحه"], ["القنفذه", "25", "جنوب القوز / QUZ 132/33", "13", "B426 (33 KV) / B426", 23172.15, 1, 0, 1, "الجنوبية", "الباحه"], ["القنفذه", "25", "جنوب القوز / QUZ 132/33", "15", "B428 (33 KV) / B428", 0.0, 1, 1, 0, "الجنوبية", "الباحه"], ["القنفذه", "26", "المظيلف / MUDAYLIF", "5", "B411 (33 KV) / B411", 1355.47, 1, 1, 0, "الجنوبية", "الباحه"], ["القنفذه / مركز البرك", "1", "البرك / البرك", "9", "B413 (33 KV) / B413", 10636.05, 1, 1, 0, "الجنوبية", "الباحه"], ["القنفذه / مركز سبت الجارة", "1", "سبت الجاره / SABT JARA", "4", "B408 (33 KV) / B408", 109.15, 1, 1, 0, "الجنوبية", "الباحه"], ["القنفذه / مركز سبت الجارة", "1", "سبت الجاره / SABT JARA", "8", "B428 (33 KV) / B428", 1780.35, 1, 1, 0, "الجنوبية", "الباحه"], ["القنفذه / مركز سبت الجارة", "1", "سبت الجاره / SABT JARA", "15", "B423 (33 KV) / B423", 142.0, 1, 0, 1, "الجنوبية", "الباحه"]];
-        let sjState = { office: 'ALL', sub: 'ALL', impact: 'ALL', sort: 'cnt_desc', search: '', page: 1, pageSize: 20 };
+        let SJ_FEEDERS = [["القنفذه / مركز سبت الجارة", "1", "سبت الجاره / SABT JARA", "10", "B417 (33 kv) / B417", 67045.63, 8, 6, 2, "الجنوبية", "الباحه"], ["القنفذه / مركز سبت الجارة", "1", "سبت الجاره / SABT JARA", "11", "B418 (33 KV) / B418", 12335.08, 3, 2, 1, "الجنوبية", "الباحه"], ["القنفذه / مركز سبت الجارة", "1", "سبت الجاره / SABT JARA", "12", "B419 (33 KV) / B419", 23154.83, 3, 2, 1, "الجنوبية", "الباحه"], ["القنفذه / مركز سبت الجارة", "1", "سبت الجاره / SABT JARA", "1", "B409 (33 KV) / B409", 47285.17, 2, 1, 1, "الجنوبية", "الباحه"], ["القنفذه / مركز سبت الجارة", "1", "سبت الجاره / SABT JARA", "3", "B402 (33 KV) / B402", 40614.7, 2, 2, 0, "الجنوبية", "الباحه"], ["القنفذه / مركز سبت الجارة", "1", "سبت الجاره / SABT JARA", "6", "B426 (33 KV) / B426", 9268.0, 2, 0, 2, "الجنوبية", "الباحه"], ["القنفذه / مركز سبت الجارة", "1", "سبت الجاره / SABT JARA", "7", "B427 (33 KV) / B427", 4083.2, 2, 1, 1, "الجنوبية", "الباحه"], ["القنفذه / مركز سبت الجارة", "1", "سبت الجاره / SABT JARA", "13", "B412 (33 KV) / B412", 14658.93, 2, 2, 0, "الجنوبية", "الباحه"], ["القنفذه / مركز سبت الجارة", "1", "سبت الجاره / SABT JARA", "14", "B420 (33 KV) / B420", 1853.13, 2, 2, 0, "الجنوبية", "الباحه"], ["القنفذه / مركز سبت الجارة", "1", "سبت الجاره / SABT JARA", "4", "B408 (33 KV) / B408", 109.15, 1, 1, 0, "الجنوبية", "الباحه"], ["القنفذه / مركز سبت الجارة", "1", "سبت الجاره / SABT JARA", "8", "B428 (33 KV) / B428", 1780.35, 1, 1, 0, "الجنوبية", "الباحه"], ["القنفذه / مركز سبت الجارة", "1", "سبت الجاره / SABT JARA", "15", "B423 (33 KV) / B423", 142.0, 1, 0, 1, "الجنوبية", "الباحه"]];
+        let sjState = { office: 'ALL', sub: 'ALL', multiSubs: [], impact: 'ALL', sort: 'cnt_desc', search: '', page: 1, pageSize: 20 };
+        let selectedStations = new Set(); // فارغة أو تحتوي الكل = عرض جميع المحطات الـ 12
+        let modalDraftStations = new Set();
+        let cmpStationsSort = 'int_desc';
         let CUSTOM_TABS = [];
         let customTabStates = {};
         let customMapLayers = {};
@@ -3419,6 +3713,7 @@
             const secOverview = document.getElementById('section-overview-charts');
             const secInt = document.getElementById('section-interruptions-tab');
             const secSj  = document.getElementById('section-interruptions-sj-tab');
+            const secCmpSt = document.getElementById('section-compare-stations-tab');
             const secOut = document.getElementById('section-outages-tab');
             const secTr = document.getElementById('section-transformers-tab');
             const secCmp = document.getElementById('section-complaints-tab');
@@ -3427,7 +3722,7 @@
             const secSb  = document.getElementById('section-subbase-tab');
             const secCt  = document.getElementById('section-custom-tab');
 
-            [secInsights, secOverview, secInt, secSj, secOut, secTr, secCmp, secMap, secStd, secSb, secCt].forEach(el => {
+            [secInsights, secOverview, secInt, secSj, secCmpSt, secOut, secTr, secCmp, secMap, secStd, secSb, secCt].forEach(el => {
                 if (el) el.classList.add('hidden');
             });
 
@@ -3440,6 +3735,9 @@
             } else if (tabId === 'interruptions_sj') {
                 if (secSj) secSj.classList.remove('hidden');
                 renderSjInterruptionsSection();
+            } else if (tabId === 'compare_stations') {
+                if (secCmpSt) secCmpSt.classList.remove('hidden');
+                renderCompareStationsSection();
             } else if (tabId === 'outages') {
                 secOut.classList.remove('hidden');
             } else if (tabId === 'transformers') {
@@ -3478,12 +3776,19 @@
             let rows = [];
             let filename = "export.csv";
 
-            if (type === 'interruptions_sj') {
+            if (type === 'compare_stations') {
+                const stList = getSelectedStationObjects();
+                headers = ["المحطة", "القطاع / المكتب", "الإدارة", "عدد المغذيات", "إجمالي الانقطاعات", "كلي (ALL/A)", "جزئي (PART/P)", "متوسط الانقطاع/مغذي", "مؤشر CML", "أعلى مغذي", "انقطاعات أعلى مغذي"];
+                rows = stList.map(s => [
+                    `"${s.shortName}"`, `"${s.sectorLabel}"`, `"${s.admin}"`, s.feedersCount, s.totalInt, s.allCnt, s.partCnt, s.avgPerFeeder.toFixed(2), Math.round(s.cml), `"${s.topFeeder}"`, s.topFeederCnt
+                ]);
+                filename = "compare_stations_mv_2026.csv";
+            } else if (type === 'interruptions_sj') {
                 headers = ["المنطقة", "الإدارة", "المكتب", "رمز المحطة", "اسم المحطة", "رمز المغذي", "اسم المغذي", "CML", "تكرار الانقطاع", "انقطاع كلي (ALL)", "انقطاع جزئي (PART)"];
                 rows = getFilteredSjFeeders().map(r => [
                     `"${r[9]}"`, `"${r[10]}"`, `"${r[0]}"`, r[1], `"${r[2]}"`, r[3], `"${r[4]}"`, r[5], r[6], r[7], r[8]
                 ]);
-                filename = "interruptions_sabt_aljarah_qunfudhah.csv";
+                filename = "interruptions_sabt_aljarah.csv";
             } else if (type === 'interruptions') {
                 headers = ["رقم الإشعار", "التاريخ", "الوقت", "المحطة", "المغذي", "نوع الشبكة", "سبب الانقطاع", "الإجراء المتخذ", "المدة (دقيقة)", "المدة (HH:MM:SS)", "مشتركين عادي", "مشتركين VIP", "الإجمالي"];
                 rows = data.intFiltered.map(r => [
@@ -3616,11 +3921,13 @@
                                     }
                                 });
                                 if (newSj.length > 0) {
-                                    SJ_FEEDERS = newSj;
+                                    const onlySabt = newSj.filter(x => (x[2] || '').includes('سبت الجار') || (x[0] || '').includes('سبت الجار'));
+                                    SJ_FEEDERS = onlySabt.length > 0 ? onlySabt : newSj;
                                     sjState.office = 'ALL';
                                     sjState.sub = 'ALL';
                                     sjState.page = 1;
                                     populateSjDropdowns();
+                updateStationPickerButtonUI();
                                     renderSjInterruptionsSection();
                                     handled = true;
                                     logUploadStatus(`تم تحديث قسم انقطاعات المغذيات MV (${fmt(newSj.length)} مغذي / ${fmt(newSj.reduce((a, x) => a + x[6], 0))} انقطاع) من "${file.name}"`);
@@ -4210,10 +4517,12 @@
             return SJ_FEEDERS.filter(r => {
                 const [office, subCode, subName, fCode, fName, cml, cnt, allC, partC] = r;
                 if (sjState.office !== 'ALL' && office !== sjState.office) return false;
+                if (sjState.multiSubs && sjState.multiSubs.length > 0 && !sjState.multiSubs.includes(subName)) return false;
                 if (sjState.sub !== 'ALL' && subName !== sjState.sub) return false;
                 if (sjState.impact === 'HAS_ALL' && allC <= 0) return false;
                 if (sjState.impact === 'HAS_PART' && partC <= 0) return false;
-                if (sjState.impact === 'HIGH_FREQ' && cnt < 5) return false;
+                if (sjState.impact === 'HIGH_FREQ' && cnt < 3) return false;
+                if (sjState.impact === 'MED_FREQ' && cnt < 2) return false;
 
                 if (qGlobal || qLocal) {
                     const hay = `${office} ${subName} ${fName} ${subCode} ${fCode}`.toLowerCase();
@@ -4234,13 +4543,13 @@
             if (p1) p1.textContent = fmt(totAllDatasetInt);
             if (p2) p2.textContent = fmt(totAllDatasetInt);
 
-            // Sync office switcher pills
+            // Sync impact switcher pills for Sabt Al-Jarah
             document.querySelectorAll('.sj-switch-btn').forEach(btn => {
-                const val = btn.dataset.sjOff;
-                if (val === sjState.office) {
-                    if (val.includes('سبت')) btn.className = "sj-switch-btn px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/40 transition-all cursor-pointer";
-                    else if (val.includes('البرك')) btn.className = "sj-switch-btn px-2.5 py-1 rounded-lg bg-amber-500/20 text-amber-300 font-bold border border-amber-500/40 transition-all cursor-pointer";
-                    else if (val === 'القنفذه') btn.className = "sj-switch-btn px-2.5 py-1 rounded-lg bg-sky-500/20 text-sky-300 font-bold border border-sky-500/40 transition-all cursor-pointer";
+                const val = btn.dataset.sjImp;
+                if (val === sjState.impact) {
+                    if (val === 'HAS_ALL') btn.className = "sj-switch-btn px-2.5 py-1 rounded-lg bg-sky-500/20 text-sky-300 font-bold border border-sky-500/40 transition-all cursor-pointer";
+                    else if (val === 'HAS_PART') btn.className = "sj-switch-btn px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/40 transition-all cursor-pointer";
+                    else if (val === 'HIGH_FREQ') btn.className = "sj-switch-btn px-2.5 py-1 rounded-lg bg-amber-500/20 text-amber-300 font-bold border border-amber-500/40 transition-all cursor-pointer";
                     else btn.className = "sj-switch-btn px-2.5 py-1 rounded-lg bg-violet-500/20 text-violet-300 font-bold border border-violet-500/40 transition-all cursor-pointer";
                 } else {
                     btn.className = "sj-switch-btn px-2.5 py-1 rounded-lg text-gray-400 hover:text-gray-200 font-semibold border border-transparent transition-all cursor-pointer";
@@ -4397,7 +4706,7 @@
                 });
             }
             charts.sjFeeders.rawCodes = top12Int.map(r => shortSjFeederCode(r[4]));
-            charts.sjFeeders.data.labels = top12Int.map(r => `${shortSjFeederCode(r[4])} — ${shortSjSubName(r[2]).slice(0, 14)}`);
+            charts.sjFeeders.data.labels = top12Int.map(r => uniqSubs <= 1 ? shortSjFeederCode(r[4]) : `${shortSjFeederCode(r[4])} — ${shortSjSubName(r[2]).slice(0, 14)}`);
             charts.sjFeeders.data.datasets[0].data = top12Int.map(r => r[6]);
             charts.sjFeeders.update();
 
@@ -4421,22 +4730,22 @@
             charts.sjDonut.data.datasets[0].data = [totalAll, totalPart];
             charts.sjDonut.update();
 
-            // Mini office breakdown pills beneath Donut
-            const offOrder = [
-                { key: 'القنفذه / مركز سبت الجارة', name: 'سبت الجارة', color: 'text-emerald-400' },
-                { key: 'القنفذه / مركز البرك', name: 'البرك', color: 'text-amber-400' },
-                { key: 'القنفذه', name: 'القنفذة', color: 'text-sky-400' }
-            ];
-            document.getElementById('sj-office-mini-pills').innerHTML = offOrder.map(o => {
-                const subRows = SJ_FEEDERS.filter(r => r[0] === o.key);
-                const c = subRows.reduce((s, r) => s + r[6], 0);
-                return `
-                    <div class="bg-[#0b1120] border border-[#1e293b] rounded-lg px-2 py-1.5">
-                        <span class="block text-gray-400">${o.name}</span>
-                        <span class="font-extrabold ${o.color}">${fmt(c)} انقطاع</span>
-                    </div>
-                `;
-            }).join('');
+            // Mini Sabt Al-Jarah summary pills beneath Donut
+            const partPct = totalInt ? ((totalPart / totalInt) * 100).toFixed(1) : '0';
+            document.getElementById('sj-office-mini-pills').innerHTML = `
+                <div class="bg-[#0b1120] border border-[#1e293b] rounded-lg px-2 py-1.5">
+                    <span class="block text-gray-400">كلي (ALL)</span>
+                    <span class="font-extrabold text-sky-400">${fmt(totalAll)} (${allPct}%)</span>
+                </div>
+                <div class="bg-[#0b1120] border border-[#1e293b] rounded-lg px-2 py-1.5">
+                    <span class="block text-gray-400">جزئي (PART)</span>
+                    <span class="font-extrabold text-emerald-400">${fmt(totalPart)} (${partPct}%)</span>
+                </div>
+                <div class="bg-[#0b1120] border border-[#1e293b] rounded-lg px-2 py-1.5">
+                    <span class="block text-gray-400">أعلى مغذي</span>
+                    <span class="font-extrabold text-amber-400">${topFeederRow ? shortSjFeederCode(topFeederRow[4]) + ' (' + topFeederRow[6] + ')' : '—'}</span>
+                </div>
+            `;
 
             // 5. Chart 3 of 3-Row: Top 12 Feeders by CML (Emerald #10b981 horizontal bars)
             const top12Cml = [...filtered].sort((a, b) => b[5] - a[5]).slice(0, 12);
@@ -4457,7 +4766,7 @@
                     }
                 });
             }
-            charts.sjCml.data.labels = top12Cml.map(r => `${shortSjFeederCode(r[4])} — ${shortSjSubName(r[2]).slice(0, 14)}`);
+            charts.sjCml.data.labels = top12Cml.map(r => uniqSubs <= 1 ? shortSjFeederCode(r[4]) : `${shortSjFeederCode(r[4])} — ${shortSjSubName(r[2]).slice(0, 14)}`);
             charts.sjCml.data.datasets[0].data = top12Cml.map(r => Math.round(r[5]));
             charts.sjCml.update();
 
@@ -4523,6 +4832,635 @@
             document.getElementById('sj-page-num').textContent = `${sjState.page} / ${totalPages}`;
             document.getElementById('sj-prev-page').disabled = sjState.page <= 1;
             document.getElementById('sj-next-page').disabled = sjState.page >= totalPages;
+            safeLucide();
+        }
+
+        // =========================================================================
+        // 10.78 محرك توحيد ومقارنة جميع المحطات (عسير + الباحة — اختيار متعدد ومقارنة فورية)
+        // =========================================================================
+        function getAllStationsCatalog() {
+            const list = [];
+
+            // 1. محطتا قطاع المجاردة وبارق (من INT_RECORDS مع مراعاة فلتر الشهر إن وُجد)
+            const mbMeta = [
+                { idx: 0, id: 'MB::0', shortName: 'محطة 33 / المجاردة', fullName: 'محطة 33 / المجاردة', sectorLabel: 'المجاردة (عسير)', admin: 'إدارة عسير', source: 'MB', badgeClass: 'bg-sky-500/15 text-sky-400', barColor: '#0ea5e9' },
+                { idx: 1, id: 'MB::1', shortName: 'محطة بارق / BAREQ', fullName: 'محطة بارق / BAREQ', sectorLabel: 'بارق (عسير)', admin: 'إدارة عسير', source: 'MB', badgeClass: 'bg-emerald-500/15 text-emerald-400', barColor: '#10b981' }
+            ];
+            mbMeta.forEach(m => {
+                const rows = INT_RECORDS.filter(rec => {
+                    if (rec[0] !== m.idx) return false;
+                    if (appState.month !== 'ALL' && !rec[1].startsWith(appState.month)) return false;
+                    return true;
+                });
+                const fMap = {};
+                let allC = 0, partC = 0, cmlEst = 0, totDur = 0, totSubs = 0;
+                rows.forEach(rec => {
+                    const fName = String(rec[10] || '').split('/')[0].trim() || 'غير محدد';
+                    if (!fMap[fName]) fMap[fName] = { feeder: fName, cnt: 0, all: 0, part: 0, cml: 0 };
+                    fMap[fName].cnt += 1;
+                    const sTot = (rec[7] || 0) + (rec[8] || 0);
+                    const evCml = (rec[5] || 0) * sTot;
+                    fMap[fName].cml += evCml;
+                    cmlEst += evCml;
+                    totDur += (rec[5] || 0);
+                    totSubs += sTot;
+                    if (rec[9] === 0) { allC++; fMap[fName].all++; }
+                    else { partC++; fMap[fName].part++; }
+                });
+                const feedersArr = Object.values(fMap).sort((a, b) => b.cnt - a.cnt || b.cml - a.cml);
+                const topF = feedersArr[0] || { feeder: '—', cnt: 0 };
+                list.push({
+                    ...m,
+                    totalInt: rows.length,
+                    allCnt: allC,
+                    partCnt: partC,
+                    feedersCount: feedersArr.length,
+                    avgPerFeeder: feedersArr.length ? (rows.length / feedersArr.length) : 0,
+                    cml: Math.round(cmlEst),
+                    cmlIsEst: true,
+                    totDurMins: Math.round(totDur),
+                    totSubs: totSubs,
+                    topFeeder: topF.feeder,
+                    topFeederCnt: topF.cnt,
+                    feedersList: feedersArr
+                });
+            });
+
+            // 2. محطات قطاع سبت الجارة والقنفذة والبرك (من SJ_FEEDERS)
+            const sjGroups = {};
+            SJ_FEEDERS.forEach(r => {
+                const [office, subCode, subName, fCode, fName, cml, cnt, allC, partC, region, admin] = r;
+                if (!sjGroups[subName]) {
+                    const isSJ = office.includes('سبت');
+                    const isBirk = office.includes('البرك');
+                    sjGroups[subName] = {
+                        id: `SJ::${subName}`,
+                        rawSubName: subName,
+                        shortName: shortSjSubName(subName),
+                        fullName: subName,
+                        office: office,
+                        sectorLabel: isSJ ? 'سبت الجارة (الباحة)' : (isBirk ? 'مركز البرك (الباحة)' : 'القنفذة (الباحة)'),
+                        admin: admin || 'إدارة الباحة',
+                        source: 'SJ',
+                        badgeClass: isSJ ? 'bg-emerald-500/15 text-emerald-300' : (isBirk ? 'bg-amber-500/15 text-amber-300' : 'bg-violet-500/15 text-violet-300'),
+                        barColor: isSJ ? '#10b981' : (isBirk ? '#f59e0b' : '#8b5cf6'),
+                        totalInt: 0,
+                        allCnt: 0,
+                        partCnt: 0,
+                        feedersCount: 0,
+                        cml: 0,
+                        cmlIsEst: false,
+                        feedersList: []
+                    };
+                }
+                const g = sjGroups[subName];
+                g.totalInt += cnt;
+                g.allCnt += allC;
+                g.partCnt += partC;
+                g.feedersCount += 1;
+                g.cml += cml;
+                g.feedersList.push({
+                    feeder: String(fName || '').split('/')[0].trim(),
+                    cnt: cnt,
+                    all: allC,
+                    part: partC,
+                    cml: cml
+                });
+            });
+
+            Object.values(sjGroups).forEach(g => {
+                g.feedersList.sort((a, b) => b.cnt - a.cnt || b.cml - a.cml);
+                const topF = g.feedersList[0] || { feeder: '—', cnt: 0 };
+                g.avgPerFeeder = g.feedersCount ? (g.totalInt / g.feedersCount) : 0;
+                g.cml = Math.round(g.cml);
+                g.topFeeder = topF.feeder;
+                g.topFeederCnt = topF.cnt;
+                list.push(g);
+            });
+
+            return list;
+        }
+
+        function getSelectedStationObjects() {
+            const all = getAllStationsCatalog();
+            if (selectedStations.size === 0 || selectedStations.size >= all.length) {
+                return all;
+            }
+            const chosen = all.filter(s => selectedStations.has(s.id));
+            return chosen.length > 0 ? chosen : all;
+        }
+
+        function syncSelectionFromLegacyZone(zVal) {
+            selectedStations.clear();
+            if (zVal === '0') selectedStations.add('MB::0');
+            else if (zVal === '1') selectedStations.add('MB::1');
+            sjState.multiSubs = [];
+            updateStationPickerButtonUI();
+        }
+
+        function updateStationPickerButtonUI() {
+            const all = getAllStationsCatalog();
+            const labelEl = document.getElementById('station-picker-label');
+            const badgeEl = document.getElementById('station-picker-badge');
+            const tabBadge = document.getElementById('tab-cmp-stations-count');
+            if (tabBadge) tabBadge.textContent = all.length;
+
+            if (!labelEl || !badgeEl) return;
+            if (selectedStations.size === 0 || selectedStations.size >= all.length) {
+                labelEl.textContent = `المحطات: الكل (${all.length} ${all.length >= 3 && all.length <= 10 ? "محطات" : "محطة"})`;
+                badgeEl.textContent = String(all.length);
+                badgeEl.className = "px-1.5 py-0.5 rounded-md bg-sky-500/20 text-sky-300 text-[10px] font-extrabold";
+            } else if (selectedStations.size === 1) {
+                const onlyId = Array.from(selectedStations)[0];
+                const obj = all.find(s => s.id === onlyId);
+                labelEl.textContent = obj ? obj.shortName : 'محطة واحدة';
+                badgeEl.textContent = '1';
+                badgeEl.className = "px-1.5 py-0.5 rounded-md bg-emerald-500/25 text-emerald-300 text-[10px] font-extrabold";
+            } else {
+                const chosen = all.filter(s => selectedStations.has(s.id));
+                const preview = chosen.slice(0, 2).map(s => s.shortName.replace('محطة ', '')).join(' + ');
+                labelEl.textContent = chosen.length > 2 ? `مقارنة ${chosen.length} محطات (${preview}...)` : `مقارنة: ${preview}`;
+                badgeEl.textContent = String(chosen.length);
+                badgeEl.className = "px-1.5 py-0.5 rounded-md bg-violet-500/25 text-violet-300 text-[10px] font-extrabold";
+            }
+        }
+
+        function renderStationModalList() {
+            const all = getAllStationsCatalog();
+            const q = (document.getElementById('station-modal-search')?.value || '').trim().toLowerCase();
+            const container = document.getElementById('station-modal-list');
+            if (!container) return;
+
+            const mbList = all.filter(s => s.source === 'MB' && (!q || `${s.shortName} ${s.sectorLabel} ${s.fullName}`.toLowerCase().includes(q)));
+            const sjList = all.filter(s => s.source === 'SJ' && (!q || `${s.shortName} ${s.sectorLabel} ${s.fullName}`.toLowerCase().includes(q)))
+                              .sort((a, b) => b.totalInt - a.totalInt);
+
+            const isAllImplicit = modalDraftStations.size === 0;
+
+            const renderRow = (s) => {
+                const checked = isAllImplicit ? true : modalDraftStations.has(s.id);
+                return `
+                    <label class="flex items-center justify-between gap-2.5 p-2.5 rounded-xl border ${checked ? 'bg-sky-500/10 border-sky-500/40' : 'bg-[#0b1120] border-[#1e293b] hover:border-gray-600'} cursor-pointer transition-all">
+                        <div class="flex items-center gap-2.5 min-w-0">
+                            <input type="checkbox" class="station-modal-cb accent-sky-500 w-4 h-4 shrink-0 cursor-pointer" data-sid="${s.id.replace(/"/g, '&quot;')}" ${checked ? 'checked' : ''}>
+                            <div class="min-w-0">
+                                <div class="text-xs sm:text-sm font-bold text-white truncate">${s.shortName}</div>
+                                <div class="text-[11px] text-gray-400 flex items-center gap-1.5">
+                                    <span>${s.sectorLabel}</span>
+                                    <span>•</span>
+                                    <span>${s.feedersCount} مغذي</span>
+                                </div>
+                            </div>
+                        </div>
+                        <span class="px-2 py-0.5 rounded-lg text-[11px] font-extrabold shrink-0 ${s.badgeClass}">${fmt(s.totalInt)} انقطاع</span>
+                    </label>
+                `;
+            };
+
+            let htmlStr = '';
+            if (mbList.length > 0) {
+                htmlStr += `
+                    <div class="space-y-1.5">
+                        <div class="text-[11px] font-extrabold text-violet-300 px-1 flex items-center justify-between">
+                            <span>⚡ قطاع المجاردة وبارق (إدارة عسير)</span>
+                            <span class="text-gray-500">${mbList.length} محطة</span>
+                        </div>
+                        <div class="space-y-1.5">${mbList.map(renderRow).join('')}</div>
+                    </div>
+                `;
+            }
+            if (sjList.length > 0) {
+                htmlStr += `
+                    <div class="space-y-1.5">
+                        <div class="text-[11px] font-extrabold text-amber-300 px-1 flex items-center justify-between">
+                            <span>⚡ قطاع سبت الجارة (محطة سبت الجارة — إدارة الباحة)</span>
+                            <span class="text-gray-500">${sjList.length} محطة</span>
+                        </div>
+                        <div class="space-y-1.5">${sjList.map(renderRow).join('')}</div>
+                    </div>
+                `;
+            }
+            if (!htmlStr) {
+                htmlStr = `<div class="py-8 text-center text-xs text-gray-500">لا توجد محطة مطابقة للبحث</div>`;
+            }
+            container.innerHTML = htmlStr;
+
+            container.querySelectorAll('.station-modal-cb').forEach(cb => {
+                cb.addEventListener('change', (e) => {
+                    const sid = e.target.dataset.sid;
+                    if (modalDraftStations.size === 0) {
+                        // كانت في وضع الكل الضمني -> نملأ المجموعة بكل المحطات أولاً ثم نزيل التي أزالها المستخدم
+                        all.forEach(x => modalDraftStations.add(x.id));
+                    }
+                    if (e.target.checked) modalDraftStations.add(sid);
+                    else modalDraftStations.delete(sid);
+                    updateModalSelInfo();
+                    renderStationModalList();
+                });
+            });
+
+            updateModalSelInfo();
+        }
+
+        function updateModalSelInfo() {
+            const all = getAllStationsCatalog();
+            const infoEl = document.getElementById('station-modal-sel-info');
+            if (!infoEl) return;
+            const cnt = modalDraftStations.size === 0 ? all.length : modalDraftStations.size;
+            if (cnt >= all.length) infoEl.textContent = `المحدد: الكل (${all.length} ${all.length >= 3 && all.length <= 10 ? "محطات" : "محطة"})`;
+            else if (cnt === 0) infoEl.textContent = `المحدد: 0 محطة (اختر محطة على الأقل)`;
+            else infoEl.textContent = `المحدد: ${cnt} من ${all.length} محطة`;
+        }
+
+        window.openStationPickerModal = function() {
+            const all = getAllStationsCatalog();
+            modalDraftStations = new Set();
+            if (selectedStations.size > 0 && selectedStations.size < all.length) {
+                selectedStations.forEach(id => modalDraftStations.add(id));
+            } else {
+                all.forEach(s => modalDraftStations.add(s.id));
+            }
+            const srch = document.getElementById('station-modal-search');
+            if (srch) srch.value = '';
+            renderStationModalList();
+            const modal = document.getElementById('station-picker-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            safeLucide();
+        };
+
+        function closeStationPickerModal() {
+            const modal = document.getElementById('station-picker-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        window.modalQuickSelect = function(preset) {
+            const all = getAllStationsCatalog();
+            modalDraftStations.clear();
+            if (preset === 'ALL') {
+                all.forEach(s => modalDraftStations.add(s.id));
+            } else if (preset === 'MB_ONLY') {
+                all.filter(s => s.source === 'MB').forEach(s => modalDraftStations.add(s.id));
+            } else if (preset === 'SJ_ONLY') {
+                all.filter(s => s.source === 'SJ').forEach(s => modalDraftStations.add(s.id));
+            } else if (preset === 'M33_SJ') {
+                modalDraftStations.add('MB::0');
+                const sjMain = all.find(s => s.source === 'SJ');
+                if (sjMain) modalDraftStations.add(sjMain.id);
+            } else if (preset === 'BAREQ_SJ') {
+                modalDraftStations.add('MB::1');
+                const sjMain = all.find(s => s.source === 'SJ');
+                if (sjMain) modalDraftStations.add(sjMain.id);
+            } else if (preset === 'MB_SJ') {
+                all.forEach(s => modalDraftStations.add(s.id));
+            } else if (preset === 'NONE') {
+                // empty
+            }
+            renderStationModalList();
+        };
+
+        function commitStationSelection(forceCompareTab = false) {
+            const all = getAllStationsCatalog();
+            if (modalDraftStations.size === 0) {
+                showToast('اختر محطة واحدة على الأقل لتطبيق التصفية أو المقارنة');
+                return;
+            }
+            selectedStations.clear();
+            if (modalDraftStations.size < all.length) {
+                modalDraftStations.forEach(id => selectedStations.add(id));
+            }
+            applyActiveStationSelection(forceCompareTab);
+            closeStationPickerModal();
+        }
+
+        window.applyStationPreset = function(preset, stayCompare = true) {
+            const all = getAllStationsCatalog();
+            selectedStations.clear();
+            if (preset === 'ALL') {
+                // empty means ALL
+            } else if (preset === 'MB_ONLY') {
+                all.filter(s => s.source === 'MB').forEach(s => selectedStations.add(s.id));
+            } else if (preset === 'SJ_ONLY') {
+                all.filter(s => s.source === 'SJ').forEach(s => selectedStations.add(s.id));
+            } else if (preset === 'M33_SJ') {
+                selectedStations.add('MB::0');
+                const sjMain = all.find(s => s.source === 'SJ');
+                if (sjMain) selectedStations.add(sjMain.id);
+            } else if (preset === 'BAREQ_SJ') {
+                selectedStations.add('MB::1');
+                const sjMain = all.find(s => s.source === 'SJ');
+                if (sjMain) selectedStations.add(sjMain.id);
+            } else if (preset === 'MB_SJ') {
+                // الكل (3 محطات)
+            } else if (preset === 'TOP5') {
+                [...all].sort((a, b) => b.totalInt - a.totalInt).slice(0, 5).forEach(s => selectedStations.add(s.id));
+            }
+            applyActiveStationSelection(stayCompare);
+        };
+
+        window.toggleStationChip = function(sid) {
+            const all = getAllStationsCatalog();
+            if (selectedStations.size === 0) {
+                // في وضع الكل -> يبدأ المقارنة بالمحطة المضغوطة أو يزيلها؟ الأوضح: نملأ الكل ونزيلها، أو لو هي الوحيدة نرجع للكل
+                all.forEach(s => selectedStations.add(s.id));
+                selectedStations.delete(sid);
+            } else if (selectedStations.has(sid)) {
+                if (selectedStations.size === 1) {
+                    // إلغاء آخر محطة يرجع للكل
+                    selectedStations.clear();
+                } else {
+                    selectedStations.delete(sid);
+                }
+            } else {
+                selectedStations.add(sid);
+                if (selectedStations.size >= all.length) selectedStations.clear();
+            }
+            applyActiveStationSelection(true);
+        };
+
+        window.jumpToStationDetail = function(sid) {
+            if (sid === 'MB::0' || sid === 'MB::1') {
+                const z = sid === 'MB::0' ? '0' : '1';
+                selectedStations.clear();
+                selectedStations.add(sid);
+                appState.zone = z;
+                appState.intSub = z;
+                document.getElementById('filter-zone').value = z;
+                const intSubEl = document.getElementById('int-filter-sub');
+                if (intSubEl) intSubEl.value = z;
+                updateStationPickerButtonUI();
+                refreshAll(true);
+                switchTab('interruptions');
+                showToast(`عرض سجل انقطاعات ${z === '0' ? 'محطة 33 / المجاردة' : 'محطة بارق / BAREQ'}`);
+            } else if (sid.startsWith('SJ::')) {
+                const rawSub = sid.slice(4);
+                selectedStations.clear();
+                selectedStations.add(sid);
+                sjState.office = 'ALL';
+                sjState.multiSubs = [rawSub];
+                sjState.sub = rawSub;
+                sjState.page = 1;
+                document.getElementById('sj-filter-office').value = 'ALL';
+                populateSjDropdowns();
+                document.getElementById('sj-filter-sub').value = rawSub;
+                updateStationPickerButtonUI();
+                switchTab('interruptions_sj');
+                showToast(`عرض مغذيات محطة: ${shortSjSubName(rawSub)}`);
+            }
+        };
+
+        function applyActiveStationSelection(forceCompareTab = false) {
+            const all = getAllStationsCatalog();
+            const isAll = (selectedStations.size === 0 || selectedStations.size >= all.length);
+            const chosen = getSelectedStationObjects();
+            const mbChosen = chosen.filter(s => s.source === 'MB');
+            const sjChosen = chosen.filter(s => s.source === 'SJ');
+
+            // 1. مزامنة appState.zone (للأنظمة الـ 6 في قطاع المجاردة وبارق)
+            if (isAll) {
+                appState.zone = 'ALL';
+            } else if (mbChosen.length === 1 && sjChosen.length === 0) {
+                appState.zone = String(mbChosen[0].idx);
+            } else if (mbChosen.length === 2 && sjChosen.length === 0) {
+                appState.zone = 'ALL';
+            } else if (mbChosen.length === 1 && sjChosen.length > 0) {
+                appState.zone = String(mbChosen[0].idx);
+            } else {
+                appState.zone = 'ALL';
+            }
+            document.getElementById('filter-zone').value = appState.zone;
+
+            // 2. مزامنة sjState (لقسم سبت الجارة والقنفذة)
+            sjState.office = 'ALL';
+            const sjOffEl = document.getElementById('sj-filter-office');
+            if (sjOffEl) sjOffEl.value = 'ALL';
+            if (isAll || sjChosen.length === 0) {
+                sjState.multiSubs = [];
+                sjState.sub = 'ALL';
+            } else if (sjChosen.length === 1) {
+                sjState.multiSubs = [sjChosen[0].rawSubName];
+                sjState.sub = sjChosen[0].rawSubName;
+            } else {
+                sjState.multiSubs = sjChosen.map(s => s.rawSubName);
+                sjState.sub = 'ALL';
+            }
+            sjState.page = 1;
+            populateSjDropdowns();
+            if (sjChosen.length === 1) {
+                const subSel = document.getElementById('sj-filter-sub');
+                if (subSel) subSel.value = sjChosen[0].rawSubName;
+            }
+
+            updateStationPickerButtonUI();
+            refreshAll(true);
+
+            // 3. التوجيه الذكي للتبويب المناسب
+            if (forceCompareTab) {
+                if (appState.activeTab !== 'compare_stations') switchTab('compare_stations');
+                else renderCompareStationsSection();
+                showToast(`تم تحديث مقارنة (${chosen.length}) محطات`);
+            } else if (!isAll && sjChosen.length === 1 && mbChosen.length === 0) {
+                if (appState.activeTab !== 'compare_stations') switchTab('interruptions_sj');
+                else renderCompareStationsSection();
+                showToast(`تمت التصفية بمحطة: ${sjChosen[0].shortName}`);
+            } else if (!isAll && (chosen.length >= 2) && sjChosen.length > 0) {
+                switchTab('compare_stations');
+                showToast(`مقارنة فورية لـ (${chosen.length}) محطات محددة`);
+            } else {
+                if (appState.activeTab === 'compare_stations') renderCompareStationsSection();
+                if (appState.activeTab === 'interruptions_sj') renderSjInterruptionsSection();
+                showToast(isAll ? `عرض جميع المحطات (${all.length} محطة)` : `تمت التصفية: ${chosen.map(s => s.shortName).join('، ')}`);
+            }
+        }
+
+        function renderCompareStationsSection() {
+            const all = getAllStationsCatalog();
+            const chosen = getSelectedStationObjects();
+            const isAllImplicit = (selectedStations.size === 0 || selectedStations.size >= all.length);
+
+            // 1. Render Interactive Clickable Station Chips
+            const chipsEl = document.getElementById('cmp-station-chips');
+            if (chipsEl) {
+                const sortedForChips = [...all].sort((a, b) => (a.source === b.source ? b.totalInt - a.totalInt : (a.source === 'MB' ? -1 : 1)));
+                chipsEl.innerHTML = sortedForChips.map(s => {
+                    const active = isAllImplicit ? true : selectedStations.has(s.id);
+                    const dotColor = s.source === 'MB' ? (s.idx === 0 ? 'bg-sky-400' : 'bg-emerald-400') : (s.office.includes('سبت') ? 'bg-emerald-400' : (s.office.includes('البرك') ? 'bg-amber-400' : 'bg-violet-400'));
+                    return `
+                        <button type="button" onclick="toggleStationChip('${s.id.replace(/'/g, "\\'")}')" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${active ? 'bg-sky-500/20 text-white border-sky-400/60 shadow-sm shadow-sky-500/10' : 'bg-[#0b1120] text-gray-500 border-[#1e293b] hover:text-gray-300 hover:border-gray-600'}">
+                            <span class="w-2 h-2 rounded-full ${active ? dotColor : 'bg-gray-600'}"></span>
+                            <span>${s.shortName}</span>
+                            <span class="text-[10px] font-mono ${active ? 'text-sky-300' : 'text-gray-600'}">(${s.totalInt})</span>
+                        </button>
+                    `;
+                }).join('');
+            }
+
+            // 2. Sort chosen stations for charts & table
+            const sorted = [...chosen].sort((a, b) => {
+                if (cmpStationsSort === 'cml_desc') return b.cml - a.cml;
+                if (cmpStationsSort === 'avg_desc') return b.avgPerFeeder - a.avgPerFeeder;
+                if (cmpStationsSort === 'feeders_desc') return b.feedersCount - a.feedersCount;
+                return b.totalInt - a.totalInt || b.cml - a.cml;
+            });
+
+            // 3. Update 4 KPI Cards
+            const grandTotalInt = all.reduce((sum, s) => sum + s.totalInt, 0) || 1;
+            const totInt = sorted.reduce((sum, s) => sum + s.totalInt, 0);
+            const totAll = sorted.reduce((sum, s) => sum + s.allCnt, 0);
+            const totPart = sorted.reduce((sum, s) => sum + s.partCnt, 0);
+            const totFeeders = sorted.reduce((sum, s) => sum + s.feedersCount, 0);
+            const totCml = sorted.reduce((sum, s) => sum + s.cml, 0);
+            const avgF = totFeeders ? (totInt / totFeeders).toFixed(1) : '0';
+            const sharePct = ((totInt / grandTotalInt) * 100).toFixed(1);
+
+            const byInt = [...sorted].sort((a, b) => b.totalInt - a.totalInt);
+            const highSt = byInt[0];
+            const lowSt = byInt[byInt.length - 1];
+
+            document.getElementById('cmp-kpi-int').textContent = fmt(totInt);
+            document.getElementById('cmp-kpi-stations-cnt').textContent = `${sorted.length} محطة قيد المقارنة`;
+            document.getElementById('cmp-kpi-share').textContent = `${sharePct}% من الإجمالي`;
+            document.getElementById('cmp-kpi-feeders').textContent = fmt(totFeeders);
+            document.getElementById('cmp-kpi-split').textContent = `كلي: ${fmt(totAll)} | جزئي: ${fmt(totPart)}`;
+            document.getElementById('cmp-kpi-avg').textContent = `${avgF} / مغذي`;
+            document.getElementById('cmp-kpi-cml').textContent = fmt(totCml);
+
+            if (highSt && lowSt) {
+                document.getElementById('cmp-kpi-high').textContent = `${highSt.shortName} (${highSt.totalInt})`;
+                document.getElementById('cmp-kpi-low').textContent = sorted.length > 1 ? `الأقل: ${lowSt.shortName} (${lowSt.totalInt})` : `المتوسط: ${highSt.avgPerFeeder.toFixed(1)}/مغذي`;
+                const ratio = lowSt.totalInt > 0 ? (highSt.totalInt / lowSt.totalInt).toFixed(1) + 'x' : '—';
+                document.getElementById('cmp-kpi-ratio').textContent = sorted.length > 1 ? ratio : 'محطة 1';
+            }
+
+            // 4. Main Combo Chart: ALL (Sky) + PART (Emerald) Bars + CML (Amber) Line
+            if (!charts.cmpMain) {
+                charts.cmpMain = new Chart(document.getElementById('chart-cmp-main'), {
+                    type: 'bar',
+                    data: {
+                        labels: [],
+                        datasets: [
+                            { label: 'كلي (ALL / A)', data: [], backgroundColor: 'rgba(14, 165, 233, 0.85)', borderColor: '#0ea5e9', borderWidth: 1, borderRadius: 5, yAxisID: 'y', order: 2 },
+                            { label: 'جزئي (PART / P)', data: [], backgroundColor: 'rgba(16, 185, 129, 0.85)', borderColor: '#10b981', borderWidth: 1, borderRadius: 5, yAxisID: 'y', order: 2 },
+                            { label: 'مؤشر CML (دقائق المشتركين)', data: [], type: 'line', borderColor: '#f59e0b', backgroundColor: '#f59e0b', borderWidth: 2.5, pointRadius: 4, pointHoverRadius: 6, tension: 0.35, yAxisID: 'y1', order: 1 }
+                        ]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        interaction: { mode: 'index', intersect: false },
+                        onClick: (e, els) => {
+                            if (els.length > 0 && charts.cmpMain.stationIds) {
+                                const sid = charts.cmpMain.stationIds[els[0].index];
+                                if (sid) jumpToStationDetail(sid);
+                            }
+                        },
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                backgroundColor: '#131c31', borderColor: '#334155', borderWidth: 1, rtl: true,
+                                callbacks: {
+                                    label: (ctx) => ` ${ctx.dataset.label}: ${fmt(ctx.parsed.y)}${ctx.dataset.yAxisID === 'y' ? ' انقطاع' : ' دقيقة CML'}`
+                                }
+                            }
+                        },
+                        scales: {
+                            x: { grid: { display: false }, ticks: { color: '#e5e7eb', font: { size: 11 } } },
+                            y: { position: 'right', grid: { color: '#1e293b' }, title: { display: true, text: 'عدد الانقطاعات', color: '#94a3b8', font: { size: 10 } } },
+                            y1: { position: 'left', grid: { drawOnChartArea: false }, title: { display: true, text: 'مؤشر CML', color: '#fbbf24', font: { size: 10 } } }
+                        }
+                    }
+                });
+            }
+            charts.cmpMain.stationIds = sorted.map(s => s.id);
+            charts.cmpMain.data.labels = sorted.map(s => s.shortName.replace('محطة ', ''));
+            charts.cmpMain.data.datasets[0].data = sorted.map(s => s.allCnt);
+            charts.cmpMain.data.datasets[1].data = sorted.map(s => s.partCnt);
+            charts.cmpMain.data.datasets[2].data = sorted.map(s => s.cml);
+            charts.cmpMain.update();
+
+            // 5. Density Chart: Average Interruptions per Feeder
+            const byDensity = [...sorted].sort((a, b) => b.avgPerFeeder - a.avgPerFeeder);
+            if (!charts.cmpDensity) {
+                charts.cmpDensity = new Chart(document.getElementById('chart-cmp-density'), {
+                    type: 'bar',
+                    data: { labels: [], datasets: [{ label: 'متوسط الانقطاعات / مغذي', data: [], backgroundColor: [], borderRadius: 4 }] },
+                    options: {
+                        indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                backgroundColor: '#131c31', rtl: true,
+                                callbacks: { label: (ctx) => ` متوسط: ${ctx.parsed.x} انقطاع لكل مغذي` }
+                            }
+                        },
+                        scales: { x: { grid: { color: '#1e293b' } }, y: { grid: { display: false }, ticks: { color: '#e5e7eb', font: { size: 11 } } } }
+                    }
+                });
+            }
+            charts.cmpDensity.data.labels = byDensity.map(s => s.shortName.replace('محطة ', ''));
+            charts.cmpDensity.data.datasets[0].data = byDensity.map(s => Number(s.avgPerFeeder.toFixed(2)));
+            charts.cmpDensity.data.datasets[0].backgroundColor = byDensity.map(s => s.barColor);
+            charts.cmpDensity.update();
+
+            // 6. Top 12 Feeders across ONLY the currently selected stations
+            const combinedFeeders = [];
+            sorted.forEach(s => {
+                (s.feedersList || []).forEach(f => {
+                    combinedFeeders.push({
+                        label: `${f.feeder} — ${s.shortName.replace('محطة ', '').slice(0, 14)}`,
+                        cnt: f.cnt,
+                        cml: f.cml,
+                        color: s.barColor
+                    });
+                });
+            });
+            const top12Comb = combinedFeeders.sort((a, b) => b.cnt - a.cnt || b.cml - a.cml).slice(0, 12);
+            if (!charts.cmpTopFeeders) {
+                charts.cmpTopFeeders = new Chart(document.getElementById('chart-cmp-topfeeders'), {
+                    type: 'bar',
+                    data: { labels: [], datasets: [{ label: 'عدد الانقطاعات', data: [], backgroundColor: [], borderRadius: 4 }] },
+                    options: {
+                        indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: { backgroundColor: '#131c31', rtl: true }
+                        },
+                        scales: { x: { grid: { color: '#1e293b' } }, y: { grid: { display: false }, ticks: { color: '#e5e7eb', font: { size: 10 } } } }
+                    }
+                });
+            }
+            charts.cmpTopFeeders.data.labels = top12Comb.map(x => x.label);
+            charts.cmpTopFeeders.data.datasets[0].data = top12Comb.map(x => x.cnt);
+            charts.cmpTopFeeders.data.datasets[0].backgroundColor = top12Comb.map(x => x.color);
+            charts.cmpTopFeeders.update();
+
+            // 7. Side-by-Side Comparison Table
+            document.getElementById('cmp-table-count').textContent = fmt(sorted.length);
+            const tbody = document.getElementById('tbody-cmp-stations');
+            tbody.innerHTML = sorted.map((s, i) => {
+                const avgColor = s.avgPerFeeder >= 7 ? 'text-rose-400 font-extrabold' : (s.avgPerFeeder >= 4 ? 'text-amber-400 font-bold' : 'text-emerald-400 font-bold');
+                const cmlTag = s.cmlIsEst ? '<span class="text-[9px] text-gray-500 block">محسوب (مدة×مشتركين)</span>' : '<span class="text-[9px] text-amber-400/80 block">مؤشر رسمي</span>';
+                return `
+                    <tr class="hover:bg-[#1e293b]/50 transition-colors">
+                        <td class="py-2.5 px-2.5 font-mono text-gray-500 font-bold">${i + 1}</td>
+                        <td class="py-2.5 px-2.5 font-extrabold text-white whitespace-nowrap">${s.shortName}</td>
+                        <td class="py-2.5 px-2.5 whitespace-nowrap"><span class="px-2 py-0.5 rounded ${s.badgeClass} font-bold text-[11px]">${s.sectorLabel}</span></td>
+                        <td class="py-2.5 px-2.5 text-center font-mono text-gray-200 font-bold">${s.feedersCount}</td>
+                        <td class="py-2.5 px-2.5 text-center"><span class="px-2.5 py-0.5 rounded-full bg-violet-500/20 text-violet-300 font-black">${fmt(s.totalInt)}</span></td>
+                        <td class="py-2.5 px-2.5 text-center font-mono font-bold text-sky-400">${fmt(s.allCnt)}</td>
+                        <td class="py-2.5 px-2.5 text-center font-mono font-bold text-emerald-400">${fmt(s.partCnt)}</td>
+                        <td class="py-2.5 px-2.5 text-center font-mono ${avgColor}">${s.avgPerFeeder.toFixed(2)}</td>
+                        <td class="py-2.5 px-2.5 text-center font-mono font-bold text-amber-300">${fmt(s.cml)}${cmlTag}</td>
+                        <td class="py-2.5 px-2.5 font-mono text-violet-300 font-bold whitespace-nowrap">${s.topFeeder} <span class="text-gray-400 font-sans">(${s.topFeederCnt})</span></td>
+                        <td class="py-2.5 px-2.5 text-center">
+                            <button type="button" onclick="jumpToStationDetail('${s.id.replace(/'/g, "\\'")}')" class="px-2.5 py-1 rounded-lg bg-sky-500/15 hover:bg-sky-500/30 text-sky-300 border border-sky-500/30 text-[11px] font-bold cursor-pointer whitespace-nowrap">
+                                عرض المغذيات
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
             safeLucide();
         }
 
@@ -5269,6 +6207,8 @@
             renderSubBaseSection(data);
             if (appState.activeTab === 'interruptions_sj') {
                 renderSjInterruptionsSection();
+            } else if (appState.activeTab === 'compare_stations') {
+                renderCompareStationsSection();
             } else if (appState.activeTab && appState.activeTab.startsWith('custom_')) {
                 renderActiveCustomTab(appState.activeTab);
             }
@@ -5287,6 +6227,7 @@
                     appState.zone = btn.dataset.sub;
                     appState.intPage = 1;
                     document.getElementById('filter-zone').value = appState.zone;
+                    syncSelectionFromLegacyZone(appState.zone);
                     refreshAll(true);
                     const names = { ALL: 'جميع المحطات (المجاردة وبارق)', '0': 'محطة 33 (المجاردة)', '1': 'محطة بارق (BAREQ)' };
                     showToast(`تم التبديل إلى: ${names[appState.zone]}`);
@@ -5363,7 +6304,9 @@
 
             // زر إعادة الضبط
             document.getElementById('btn-reset').addEventListener('click', () => {
-                sjState.office = 'ALL'; sjState.sub = 'ALL'; sjState.impact = 'ALL'; sjState.search = ''; sjState.page = 1;
+                sjState.office = 'ALL'; sjState.sub = 'ALL'; sjState.multiSubs = []; sjState.impact = 'ALL'; sjState.search = ''; sjState.page = 1;
+                selectedStations.clear();
+                updateStationPickerButtonUI();
                 const sjOffEl = document.getElementById('sj-filter-office'); if (sjOffEl) sjOffEl.value = 'ALL';
                 const sjImpEl = document.getElementById('sj-filter-impact'); if (sjImpEl) sjImpEl.value = 'ALL';
                 const sjSrchEl = document.getElementById('sj-local-search'); if (sjSrchEl) sjSrchEl.value = '';
@@ -5690,12 +6633,14 @@
             document.getElementById('sj-filter-office').addEventListener('change', (e) => {
                 sjState.office = e.target.value;
                 sjState.sub = 'ALL';
+                sjState.multiSubs = [];
                 sjState.page = 1;
                 populateSjDropdowns();
                 renderSjInterruptionsSection();
             });
             document.getElementById('sj-filter-sub').addEventListener('change', (e) => {
                 sjState.sub = e.target.value;
+                sjState.multiSubs = [];
                 sjState.page = 1;
                 renderSjInterruptionsSection();
             });
@@ -5723,13 +6668,26 @@
             });
             document.querySelectorAll('.sj-switch-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
-                    sjState.office = btn.dataset.sjOff;
-                    sjState.sub = 'ALL';
+                    sjState.impact = btn.dataset.sjImp || 'ALL';
                     sjState.page = 1;
-                    document.getElementById('sj-filter-office').value = sjState.office;
-                    populateSjDropdowns();
+                    const impSel = document.getElementById('sj-filter-impact');
+                    if (impSel) impSel.value = sjState.impact;
                     renderSjInterruptionsSection();
                 });
+            });
+
+            // أحداث نافذة اختيار ومقارنة المحطات المتعددة
+            document.getElementById('btn-station-picker').addEventListener('click', () => openStationPickerModal());
+            document.getElementById('btn-close-station-modal').addEventListener('click', closeStationPickerModal);
+            document.getElementById('station-picker-modal').addEventListener('click', (e) => {
+                if (e.target.id === 'station-picker-modal') closeStationPickerModal();
+            });
+            document.getElementById('station-modal-search').addEventListener('input', () => renderStationModalList());
+            document.getElementById('btn-station-apply').addEventListener('click', () => commitStationSelection(false));
+            document.getElementById('btn-station-compare').addEventListener('click', () => commitStationSelection(true));
+            document.getElementById('sort-cmp-stations').addEventListener('change', (e) => {
+                cmpStationsSort = e.target.value;
+                renderCompareStationsSection();
             });
         }
 
