@@ -1,0 +1,2311 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منظومة موثوقية الشبكة والربط المكاني (GIS) — قطاع المجاردة وبارق | الشركة السعودية للطاقة</title>
+
+    <!-- خط القاهرة العربي والخط اللاتيني Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Inter:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Leaflet GIS Map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+    <!-- SheetJS لقراءة وتصدير ملفات Excel و CSV -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        body {
+            font-family: 'Cairo', 'Inter', sans-serif;
+            background-color: #070d19;
+            color: #e2e8f0;
+            overflow-x: hidden;
+        }
+        .font-mono { font-family: 'Inter', ui-monospace, SFMono-Regular, monospace; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* تنسيق شريط التمرير */
+        ::-webkit-scrollbar { width: 7px; height: 7px; }
+        ::-webkit-scrollbar-track { background: #0b1120; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 999px; }
+        ::-webkit-scrollbar-thumb:hover { background: #334155; }
+
+        /* تنسيق الخريطة والـ Popup */
+        .leaflet-container {
+            background: #0b1120 !important;
+            font-family: 'Cairo', sans-serif !important;
+            z-index: 10;
+        }
+        .leaflet-popup-content-wrapper {
+            background: #0f172a !important;
+            color: #f1f5f9 !important;
+            border: 1px solid #334155 !important;
+            border-radius: 16px !important;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.65) !important;
+            direction: rtl;
+            text-align: right;
+        }
+        .leaflet-popup-tip { background: #0f172a !important; }
+        .leaflet-popup-close-button { color: #94a3b8 !important; font-size: 18px !important; padding: 6px !important; }
+
+        /* نبض المحولات الحرجة */
+        @keyframes pulseCritical {
+            0% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.75); }
+            70% { box-shadow: 0 0 0 12px rgba(244, 63, 94, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0); }
+        }
+        @keyframes pulseWarning {
+            0% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.65); }
+            70% { box-shadow: 0 0 0 9px rgba(249, 115, 22, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0); }
+        }
+        .tr-pulse-critical { animation: pulseCritical 1.8s infinite; }
+        .tr-pulse-warning { animation: pulseWarning 2.2s infinite; }
+        .selected-marker-ring {
+            outline: 3px solid #38bdf8 !important;
+            outline-offset: 2px;
+            box-shadow: 0 0 0 6px rgba(56, 189, 248, 0.45) !important;
+        }
+
+        /* صندوق التحديد المربع على الخريطة */
+        #map-select-box {
+            position: absolute;
+            border: 2px dashed #38bdf8;
+            background: rgba(56, 189, 248, 0.16);
+            pointer-events: none;
+            z-index: 600;
+            display: none;
+            border-radius: 6px;
+        }
+
+        /* التبويب النشط */
+        .tab-btn.active {
+            background: rgba(14, 165, 233, 0.16);
+            color: #38bdf8;
+            border-color: rgba(56, 189, 248, 0.4);
+        }
+        .tab-btn.active[data-tab="standards"] {
+            background: rgba(245, 158, 11, 0.18);
+            color: #fbbf24;
+            border-color: rgba(245, 158, 11, 0.45);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col bg-[#070d19] text-slate-200 selection:bg-sky-500/30">
+
+    <!-- ==================== الشريط العلوي والترويسة ==================== -->
+    <header class="sticky top-0 z-40 bg-[#0b1120]/95 backdrop-blur-md border-b border-slate-800/90 shadow-xl">
+        <div class="max-w-[1650px] mx-auto px-4 sm:px-6 py-3">
+            <!-- الصف الأول: الشعار والعنوان وأزرار التحكم -->
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+                <div class="flex items-center gap-3">
+                    <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-sky-500/25 via-cyan-500/15 to-amber-500/20 border border-sky-400/30 flex items-center justify-center shrink-0 shadow-lg shadow-sky-900/20">
+                        <i data-lucide="activity" class="w-6 h-6 text-sky-400"></i>
+                    </div>
+                    <div>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <h1 class="text-base sm:text-lg font-extrabold text-white tracking-tight">
+                                منظومة موثوقية الشبكة والربط المكاني (GIS) — قطاع المجاردة وبارق
+                            </h1>
+                            <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/35">
+                                الشركة السعودية للطاقة
+                            </span>
+                            <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-sky-500/15 text-sky-400 border border-sky-500/30">
+                                5 أنظمة مدمجة
+                            </span>
+                        </div>
+                        <p class="text-[11px] sm:text-xs text-slate-400 mt-0.5" id="header-subtitle">
+                            تحليل موحد يدمج: بلاغات الأعطال (32,249) • الانقطاعات الطارئة MV (147) • شكاوى المشتركين (1,710) • المحولات المحملة (23) • المعايير المضمونة
+                        </p>
+                    </div>
+                </div>
+
+                <!-- أزرار الإجراءات السريعة -->
+                <div class="flex flex-wrap items-center gap-2">
+                    <button type="button" id="btn-open-upload" class="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/35 text-xs font-bold transition-all cursor-pointer">
+                        <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+                        <span>تحديث البيانات (Excel)</span>
+                    </button>
+
+                    <button type="button" id="btn-open-deleted" class="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/35 text-xs font-bold transition-all cursor-pointer">
+                        <i data-lucide="archive" class="w-4 h-4"></i>
+                        <span>المحذوفة / خارج الحدود (<span id="deleted-count-badge">10</span>)</span>
+                    </button>
+
+                    <button type="button" id="btn-reset-filters" class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs font-bold transition-all cursor-pointer">
+                        <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+                        <span>إعادة ضبط</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- الصف الثاني: الفلاتر الموحدة -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 mt-3">
+                <div class="relative">
+                    <i data-lucide="map-pin" class="w-4 h-4 text-sky-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+                    <select id="filter-sector" class="w-full pr-9 pl-3 py-2 rounded-xl bg-[#11192d] border border-slate-700/80 text-xs font-bold text-slate-200 focus:outline-none focus:border-sky-500 cursor-pointer">
+                        <option value="all">القطاع: الكل (المجاردة وبارق)</option>
+                        <option value="majardah">قطاع المجاردة فقط</option>
+                        <option value="bareq">قطاع بارق فقط</option>
+                    </select>
+                </div>
+
+                <div class="relative">
+                    <i data-lucide="calendar" class="w-4 h-4 text-violet-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+                    <select id="filter-month" class="w-full pr-9 pl-3 py-2 rounded-xl bg-[#11192d] border border-slate-700/80 text-xs font-bold text-slate-200 focus:outline-none focus:border-sky-500 cursor-pointer">
+                        <option value="all">الشهر (MV): جميع الأشهر</option>
+                    </select>
+                </div>
+
+                <div class="relative">
+                    <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+                    <input id="filter-search" type="text" placeholder="بحث برقم الحساب، المحول FL، المغذي أو الاسم..." class="w-full pr-9 pl-3 py-2 rounded-xl bg-[#11192d] border border-slate-700/80 text-xs text-slate-100 placeholder-slate-400 focus:outline-none focus:border-sky-500">
+                </div>
+            </div>
+        </div>
+
+        <!-- شريط التبويبات الـ 7 -->
+        <div class="border-t border-slate-800/80 bg-[#090f1d]">
+            <div class="max-w-[1650px] mx-auto px-4 sm:px-6">
+                <nav id="main-tabs" class="flex items-center gap-1.5 overflow-x-auto lg:flex-wrap py-2 no-scrollbar">
+                    <button type="button" data-tab="overview" class="tab-btn active flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap border border-transparent text-slate-400 hover:text-slate-200 hover:bg-[#131c31] cursor-pointer">
+                        <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+                        <span>النظرة الشاملة</span>
+                    </button>
+                    <button type="button" data-tab="interruptions" class="tab-btn flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap border border-transparent text-slate-400 hover:text-slate-200 hover:bg-[#131c31] cursor-pointer">
+                        <i data-lucide="zap" class="w-4 h-4 text-violet-400"></i>
+                        <span>الانقطاعات الطارئة MV (<span id="tab-mv-count">147</span>)</span>
+                    </button>
+                    <button type="button" data-tab="outages" class="tab-btn flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap border border-transparent text-slate-400 hover:text-slate-200 hover:bg-[#131c31] cursor-pointer">
+                        <i data-lucide="zap-off" class="w-4 h-4 text-amber-400"></i>
+                        <span>بلاغات الأعطال والمغذيات (<span id="tab-out-count">32,249</span>)</span>
+                    </button>
+                    <button type="button" data-tab="transformers" class="tab-btn flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap border border-transparent text-slate-400 hover:text-slate-200 hover:bg-[#131c31] cursor-pointer">
+                        <i data-lucide="cpu" class="w-4 h-4 text-rose-400"></i>
+                        <span>المحولات المحملة (<span id="tab-tr-count">23</span>)</span>
+                    </button>
+                    <button type="button" data-tab="complaints" class="tab-btn flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap border border-transparent text-slate-400 hover:text-slate-200 hover:bg-[#131c31] cursor-pointer">
+                        <i data-lucide="message-square-warning" class="w-4 h-4 text-sky-400"></i>
+                        <span>شكاوى المشتركين والمتقاطعون (<span id="tab-cmp-count">1,710</span>)</span>
+                    </button>
+                    <button type="button" data-tab="gis" class="tab-btn flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap border border-transparent text-slate-400 hover:text-slate-200 hover:bg-[#131c31] cursor-pointer">
+                        <i data-lucide="globe" class="w-4 h-4 text-emerald-400"></i>
+                        <span>الخريطة الجغرافية التفاعلية (GIS)</span>
+                    </button>
+                    <button type="button" data-tab="standards" class="tab-btn flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap border border-amber-500/25 text-amber-300/90 hover:text-amber-200 hover:bg-[#131c31] cursor-pointer">
+                        <i data-lucide="shield-check" class="w-4 h-4 text-amber-400"></i>
+                        <span>المعايير المضمونة (<span id="tab-std-count">0</span>)</span>
+                    </button>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- ==================== المحتوى الرئيسي ==================== -->
+    <main class="flex-1 max-w-[1650px] w-full mx-auto px-4 sm:px-6 py-5 space-y-5">
+
+        <!-- 1. تبويب النظرة الشاملة -->
+        <section id="pane-overview" class="tab-pane space-y-5">
+            <!-- بطاقات المؤشرات الـ 5 -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
+                <div class="bg-[#11192d] border border-slate-800 rounded-2xl p-4 shadow-lg hover:border-sky-500/40 transition-colors">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <p class="text-xs font-bold text-slate-400">إجمالي بلاغات الأعطال</p>
+                            <h3 id="kpi-outages" class="text-2xl font-black text-white mt-1 font-mono">32,249</h3>
+                        </div>
+                        <div class="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400">
+                            <i data-lucide="zap-off" class="w-5 h-5"></i>
+                        </div>
+                    </div>
+                    <p id="kpi-outages-sub" class="text-[11px] text-slate-400 mt-2.5 pt-2 border-t border-slate-800/80">أبرز 48 بؤرة داخل النطاق الجغرافي</p>
+                </div>
+
+                <div class="bg-[#11192d] border border-slate-800 rounded-2xl p-4 shadow-lg hover:border-violet-500/40 transition-colors">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <p class="text-xs font-bold text-slate-400">الانقطاعات الطارئة MV</p>
+                            <h3 id="kpi-mv" class="text-2xl font-black text-white mt-1 font-mono">147</h3>
+                        </div>
+                        <div class="w-10 h-10 rounded-xl bg-violet-500/15 border border-violet-500/30 flex items-center justify-center text-violet-400">
+                            <i data-lucide="zap" class="w-5 h-5"></i>
+                        </div>
+                    </div>
+                    <p id="kpi-mv-sub" class="text-[11px] text-slate-400 mt-2.5 pt-2 border-t border-slate-800/80">متوسط مدة الإرجاع ومشتركي MV</p>
+                </div>
+
+                <div class="bg-[#11192d] border border-slate-800 rounded-2xl p-4 shadow-lg hover:border-rose-500/40 transition-colors">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <p class="text-xs font-bold text-slate-400">المحولات المحملة (داخل الحدود)</p>
+                            <h3 id="kpi-tr" class="text-2xl font-black text-white mt-1 font-mono">23</h3>
+                        </div>
+                        <div class="w-10 h-10 rounded-xl bg-rose-500/15 border border-rose-500/30 flex items-center justify-center text-rose-400">
+                            <i data-lucide="cpu" class="w-5 h-5"></i>
+                        </div>
+                    </div>
+                    <p id="kpi-tr-sub" class="text-[11px] text-slate-400 mt-2.5 pt-2 border-t border-slate-800/80">تم استبعاد 3 محولات خارج الحدود</p>
+                </div>
+
+                <div class="bg-[#11192d] border border-slate-800 rounded-2xl p-4 shadow-lg hover:border-sky-500/40 transition-colors">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <p class="text-xs font-bold text-slate-400">شكاوى المشتركين</p>
+                            <h3 id="kpi-cmp" class="text-2xl font-black text-white mt-1 font-mono">1,710</h3>
+                        </div>
+                        <div class="w-10 h-10 rounded-xl bg-sky-500/15 border border-sky-500/30 flex items-center justify-center text-sky-400">
+                            <i data-lucide="message-square-warning" class="w-5 h-5"></i>
+                        </div>
+                    </div>
+                    <p id="kpi-cmp-sub" class="text-[11px] text-slate-400 mt-2.5 pt-2 border-t border-slate-800/80">55 مشتركاً متقاطعاً على الخريطة</p>
+                </div>
+
+                <div class="bg-[#11192d] border border-amber-500/30 rounded-2xl p-4 shadow-lg hover:border-amber-400/60 transition-colors cursor-pointer" onclick="switchTab('standards')">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <p class="text-xs font-bold text-amber-300">المعايير المضمونة</p>
+                            <h3 id="kpi-std" class="text-2xl font-black text-white mt-1 font-mono">0</h3>
+                        </div>
+                        <div class="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/35 flex items-center justify-center text-amber-400">
+                            <i data-lucide="shield-check" class="w-5 h-5"></i>
+                        </div>
+                    </div>
+                    <p id="kpi-std-sub" class="text-[11px] text-amber-200/75 mt-2.5 pt-2 border-t border-slate-800/80">مربوطة جغرافياً على طبقة GIS</p>
+                </div>
+            </div>
+
+            <!-- صف الرسوم البيانية للنظرة الشاملة -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+                <div class="lg:col-span-7 bg-[#11192d] border border-slate-800 rounded-2xl p-4 shadow-lg">
+                    <div class="flex items-center justify-between mb-3">
+                        <div>
+                            <h2 class="text-sm font-extrabold text-white">التوزيع الشهري للانقطاعات الطارئة MV (المجاردة vs بارق)</h2>
+                            <p class="text-[11px] text-slate-400">انقر على أي عمود لفلترة الانقطاعات حسب الشهر والمحطة</p>
+                        </div>
+                        <span class="text-[11px] px-2.5 py-1 rounded-lg bg-violet-500/15 text-violet-300 font-bold">تفاعلي</span>
+                    </div>
+                    <div class="h-[270px] relative"><canvas id="chart-ov-monthly"></canvas></div>
+                </div>
+
+                <div class="lg:col-span-5 bg-[#11192d] border border-slate-800 rounded-2xl p-4 shadow-lg">
+                    <div class="mb-3">
+                        <h2 class="text-sm font-extrabold text-white">أسباب الانقطاعات الطارئة MV (توزيع الحوادث)</h2>
+                        <p class="text-[11px] text-slate-400">تصنيف الانقطاعات حسب السبب الجذري المسجل</p>
+                    </div>
+                    <div class="h-[270px] relative"><canvas id="chart-ov-causes"></canvas></div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+                <div class="lg:col-span-7 bg-[#11192d] border border-slate-800 rounded-2xl p-4 shadow-lg">
+                    <div class="mb-3">
+                        <h2 class="text-sm font-extrabold text-white">مقارنة شكاوى المشتركين الـ 13 (المجاردة vs بارق)</h2>
+                        <p class="text-[11px] text-slate-400">توزيع أنواع الشكاوى بين مركز خدمات المجاردة ومكتب خدمات بارق</p>
+                    </div>
+                    <div class="h-[280px] relative"><canvas id="chart-ov-complaints"></canvas></div>
+                </div>
+
+                <div class="lg:col-span-5 bg-[#11192d] border border-slate-800 rounded-2xl p-4 shadow-lg flex flex-col justify-between">
+                    <div>
+                        <h2 class="text-sm font-extrabold text-white mb-1">ملخص الربط المكاني وحالة التنقية الجغرافية</h2>
+                        <p class="text-[11px] text-slate-400 mb-3">تم حصر النطاق الجغرافي داخل حدود قطاعي المجاردة وبارق بدقة</p>
+                        <div class="space-y-2.5 text-xs">
+                            <div class="flex items-center justify-between p-2.5 rounded-xl bg-[#0b1120] border border-slate-800">
+                                <span class="text-slate-300 flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span>محولات محملة داخل النطاق</span>
+                                <span id="ov-stat-tr" class="font-bold text-white font-mono">23</span>
+                            </div>
+                            <div class="flex items-center justify-between p-2.5 rounded-xl bg-[#0b1120] border border-slate-800">
+                                <span class="text-slate-300 flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-sm bg-amber-400 rotate-45"></span>بؤر أعطال FL داخل النطاق</span>
+                                <span id="ov-stat-fl" class="font-bold text-white font-mono">48</span>
+                            </div>
+                            <div class="flex items-center justify-between p-2.5 rounded-xl bg-[#0b1120] border border-slate-800">
+                                <span class="text-slate-300 flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-sky-400"></span>مشتركون متقاطعون (شكاوى + أعطال)</span>
+                                <span id="ov-stat-sub" class="font-bold text-white font-mono">55</span>
+                            </div>
+                            <div class="flex items-center justify-between p-2.5 rounded-xl bg-[#0b1120] border border-slate-800">
+                                <span class="text-slate-300 flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-fuchsia-400"></span>نقاط المعايير المضمونة على الخريطة</span>
+                                <span id="ov-stat-std" class="font-bold text-amber-300 font-mono">0</span>
+                            </div>
+                            <div class="flex items-center justify-between p-2.5 rounded-xl bg-rose-950/30 border border-rose-500/30">
+                                <span class="text-rose-200 flex items-center gap-2"><i data-lucide="shield-alert" class="w-3.5 h-3.5 text-rose-400"></i>سجلات مستبعدة (خارج حدود المجاردة وبارق)</span>
+                                <span id="ov-stat-oob" class="font-bold text-rose-300 font-mono">10</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" onclick="switchTab('gis')" class="mt-4 w-full py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-extrabold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer">
+                        <i data-lucide="globe" class="w-4 h-4"></i>
+                        <span>فتح الخريطة الجغرافية الموحدة (GIS)</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. تبويب الانقطاعات الطارئة MV -->
+        <section id="pane-interruptions" class="tab-pane hidden space-y-5">
+            <div class="grid grid-cols-1 sm:grid-cols-4 gap-3.5">
+                <div class="bg-[#11192d] border border-slate-800 rounded-2xl p-4">
+                    <p class="text-xs text-slate-400 font-bold">إجمالي الحوادث (المفلترة)</p>
+                    <h4 id="mv-kpi-total" class="text-2xl font-black text-white mt-1 font-mono">0</h4>
+                </div>
+                <div class="bg-[#11192d] border border-slate-800 rounded-2xl p-4">
+                    <p class="text-xs text-slate-400 font-bold">إجمالي المشتركين المتأثرين</p>
+                    <h4 id="mv-kpi-cust" class="text-2xl font-black text-sky-400 mt-1 font-mono">0</h4>
+                </div>
+                <div class="bg-[#11192d] border border-slate-800 rounded-2xl p-4">
+                    <p class="text-xs text-slate-400 font-bold">متوسط مدة الإرجاع (دقيقة)</p>
+                    <h4 id="mv-kpi-avg" class="text-2xl font-black text-amber-400 mt-1 font-mono">0</h4>
+                </div>
+                <div class="bg-[#11192d] border border-slate-800 rounded-2xl p-4">
+                    <p class="text-xs text-slate-400 font-bold">كبار المشتركين المتأثرين (VIP)</p>
+                    <h4 id="mv-kpi-vip" class="text-2xl font-black text-rose-400 mt-1 font-mono">0</h4>
+                </div>
+            </div>
+
+            <div class="bg-[#11192d] border border-slate-800 rounded-2xl p-4 shadow-lg">
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                    <div>
+                        <h2 class="text-sm font-extrabold text-white">سجل الانقطاعات الطارئة على الجهد المتوسط (MV)</h2>
+                        <p class="text-[11px] text-slate-400">تفاصيل المحطة، المغذي، السبب، المدة، وعدد المتأثرين</p>
+                    </div>
+                    <button type="button" onclick="exportTableCSV('interruptions')" class="px-3 py-1.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 text-xs font-bold flex items-center gap-1.5 cursor-pointer">
+                        <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                        <span>تصدير Excel</span>
+                    </button>
+                </div>
+                <div class="overflow-x-auto rounded-xl border border-slate-800">
+                    <table class="w-full text-xs text-right">
+                        <thead class="bg-[#0b1120] text-slate-300 border-b border-slate-800">
+                            <tr>
+                                <th class="p-3">المحطة</th>
+                                <th class="p-3">التاريخ</th>
+                                <th class="p-3">الوقت</th>
+                                <th class="p-3">المغذي</th>
+                                <th class="p-3">السبب</th>
+                                <th class="p-3">المدة</th>
+                                <th class="p-3">المتأثرون</th>
+                                <th class="p-3">رقم الإشعار</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-mv" class="divide-y divide-slate-800/70"></tbody>
+                    </table>
+                </div>
+                <div id="mv-pagination" class="flex items-center justify-between mt-3 text-xs text-slate-400"></div>
+            </div>
+        </section>
+
+        <!-- 3. تبويب بلاغات الأعطال والمغذيات -->
+        <section id="pane-outages" class="tab-pane hidden space-y-5">
+            <div class="bg-[#11192d] border border-slate-800 rounded-2xl p-4 shadow-lg">
+                <div class="mb-3">
+                    <h2 class="text-sm font-extrabold text-white">أكثر المغذيات والمواقع (FL) تسجيلاً للأعطال داخل النطاق</h2>
+                    <p class="text-[11px] text-slate-400">تحليل بؤر الأعطال الأكثر تكراراً لقطاعي المجاردة وبارق</p>
+                </div>
+                <div class="h-[260px] relative"><canvas id="chart-out-feeders"></canvas></div>
+            </div>
+
+            <div class="bg-[#11192d] border border-slate-800 rounded-2xl p-4 shadow-lg">
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                    <div>
+                        <h2 class="text-sm font-extrabold text-white">أبرز بؤر الأعطال (Functional Locations — داخل الحدود)</h2>
+                        <p class="text-[11px] text-slate-400">يمكنك عرض أي بؤرة على الخريطة أو حذفها وتحديث المؤشرات فوراً</p>
+                    </div>
+                    <button type="button" onclick="exportTableCSV('outages')" class="px-3 py-1.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 text-xs font-bold flex items-center gap-1.5 cursor-pointer">
+                        <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                        <span>تصدير Excel</span>
+                    </button>
+                </div>
+                <div class="overflow-x-auto rounded-xl border border-slate-800">
+                    <table class="w-full text-xs text-right">
+                        <thead class="bg-[#0b1120] text-slate-300 border-b border-slate-800">
+                            <tr>
+                                <th class="p-3">الموقع الوظيفي (FL)</th>
+                                <th class="p-3">القطاع</th>
+                                <th class="p-3">المغذي</th>
+                                <th class="p-3">إجمالي الأعطال</th>
+                                <th class="p-3">LV</th>
+                                <th class="p-3">MV</th>
+                                <th class="p-3">المشتركون</th>
+                                <th class="p-3">الشكاوى</th>
+                                <th class="p-3 text-center">إجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-fl" class="divide-y divide-slate-800/70"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. تبويب المحولات المحملة -->
+        <section id="pane-transformers" class="tab-pane hidden space-y-5">
+            <div class="bg-[#11192d] border border-slate-800 rounded-2xl p-4 shadow-lg">
+                <div class="flex items-center justify-between mb-3">
+                    <div>
+                        <h2 class="text-sm font-extrabold text-white">المحولات المحملة حسب عدد الأعطال والتحميل (انقر للانتقال للخريطة)</h2>
+                        <p class="text-[11px] text-slate-400">المحولات داخل حدود المجاردة وبارق بعد استبعاد الـ 3 محولات خارج الحدود</p>
+                    </div>
+                </div>
+                <div class="h-[270px] relative"><canvas id="chart-tr-load"></canvas></div>
+            </div>
+
+            <div class="bg-[#11192d] border border-slate-800 rounded-2xl p-4 shadow-lg">
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                    <h2 class="text-sm font-extrabold text-white">جدول المحولات المحملة التفصيلي</h2>
+                    <button type="button" onclick="exportTableCSV('transformers')" class="px-3 py-1.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 text-xs font-bold flex items-center gap-1.5 cursor-pointer">
+                        <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                        <span>تصدير Excel</span>
+                    </button>
+                </div>
+                <div class="overflow-x-auto rounded-xl border border-slate-800">
+                    <table class="w-full text-xs text-right">
+                        <thead class="bg-[#0b1120] text-slate-300 border-b border-slate-800">
+                            <tr>
+                                <th class="p-3">الموقع (FL)</th>
+                                <th class="p-3">القطاع</th>
+                                <th class="p-3">السعة (kVA)</th>
+                                <th class="p-3">التحميل (Val)</th>
+                                <th class="p-3">المغذي</th>
+                                <th class="p-3">الأعطال</th>
+                                <th class="p-3">الشكاوى</th>
+                                <th class="p-3 text-center">إجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-tr" class="divide-y divide-slate-800/70"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. تبويب شكاوى المشتركين والمتقاطعين -->
+        <section id="pane-complaints" class="tab-pane hidden space-y-5">
+            <div class="bg-[#11192d] border border-slate-800 rounded-2xl p-4 shadow-lg">
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                    <div>
+                        <h2 class="text-sm font-extrabold text-white">المشتركون الأكثر تكراراً في الشكاوى والأعطال (المتقاطعون)</h2>
+                        <p class="text-[11px] text-slate-400">عرض المشتركين داخل حدود المجاردة وبارق مع إمكانية التتبع الجغرافي والحذف</p>
+                    </div>
+                    <button type="button" onclick="exportTableCSV('complaints')" class="px-3 py-1.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 text-xs font-bold flex items-center gap-1.5 cursor-pointer">
+                        <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                        <span>تصدير Excel</span>
+                    </button>
+                </div>
+                <div class="overflow-x-auto rounded-xl border border-slate-800">
+                    <table class="w-full text-xs text-right">
+                        <thead class="bg-[#0b1120] text-slate-300 border-b border-slate-800">
+                            <tr>
+                                <th class="p-3">رقم الحساب</th>
+                                <th class="p-3">اسم المشترك</th>
+                                <th class="p-3">القطاع</th>
+                                <th class="p-3">المحول (FL)</th>
+                                <th class="p-3">الأعطال</th>
+                                <th class="p-3">الشكاوى</th>
+                                <th class="p-3">أبرز نوع شكوى</th>
+                                <th class="p-3 text-center">إجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-sub" class="divide-y divide-slate-800/70"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- 6. تبويب الخريطة الجغرافية التفاعلية (GIS) -->
+        <section id="pane-gis" class="tab-pane hidden space-y-4">
+            <div class="bg-[#11192d] border border-slate-800 rounded-2xl p-4 shadow-xl space-y-3">
+                <!-- شريط أدوات الخريطة والطبقات -->
+                <div class="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-3">
+                    <div>
+                        <h2 class="text-sm sm:text-base font-extrabold text-white flex items-center gap-2">
+                            <i data-lucide="map" class="w-5 h-5 text-sky-400"></i>
+                            <span>الخريطة الجغرافية الموحدة (Unified GIS Spatial Layers — المجاردة وبارق)</span>
+                        </h2>
+                        <p class="text-[11px] text-slate-400 mt-0.5">دمج مكاني للطبقات الـ 4 مع أدوات التحديد المربع والحذف الفوري والتصدير إلى Excel</p>
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-2">
+                        <!-- مفاتيح الطبقات -->
+                        <label class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-[#0b1120] border border-rose-500/35 text-xs font-bold text-rose-300 cursor-pointer select-none">
+                            <input type="checkbox" id="layer-tr" checked class="accent-rose-500">
+                            <span>المحولات المحملة</span>
+                        </label>
+                        <label class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-[#0b1120] border border-amber-500/35 text-xs font-bold text-amber-300 cursor-pointer select-none">
+                            <input type="checkbox" id="layer-fl" checked class="accent-amber-400">
+                            <span>بؤر الأعطال (FL)</span>
+                        </label>
+                        <label class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-[#0b1120] border border-sky-500/35 text-xs font-bold text-sky-300 cursor-pointer select-none">
+                            <input type="checkbox" id="layer-cmp" checked class="accent-sky-400">
+                            <span>الشكاوى (GIS)</span>
+                        </label>
+                        <label class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-[#0b1120] border border-fuchsia-500/40 text-xs font-bold text-fuchsia-300 cursor-pointer select-none">
+                            <input type="checkbox" id="layer-std" checked class="accent-fuchsia-500">
+                            <span>المعايير المضمونة (★)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- شريط التحكم بالعرض وأداة التحديد المربع -->
+                <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-800/80">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <div class="inline-flex rounded-xl bg-[#0b1120] p-1 border border-slate-700/80">
+                            <button type="button" id="btn-map-dark" class="px-3 py-1 rounded-lg text-xs font-bold bg-sky-500/20 text-sky-300 cursor-pointer">داكنة</button>
+                            <button type="button" id="btn-map-sat" class="px-3 py-1 rounded-lg text-xs font-bold text-slate-400 hover:text-white cursor-pointer">قمر صناعي</button>
+                        </div>
+                        <button type="button" id="btn-map-fit" class="px-3 py-1.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/35 text-xs font-bold flex items-center gap-1.5 cursor-pointer">
+                            <i data-lucide="crosshair" class="w-3.5 h-3.5"></i>
+                            <span>توسيط على المجاردة وبارق</span>
+                        </button>
+                        <button type="button" id="btn-toggle-box-select" class="px-3 py-1.5 rounded-xl bg-sky-500/15 hover:bg-sky-500/25 text-sky-300 border border-sky-500/40 text-xs font-bold flex items-center gap-1.5 cursor-pointer">
+                            <i data-lucide="box-select" class="w-3.5 h-3.5"></i>
+                            <span>تفعيل التحديد المربع على الخريطة</span>
+                        </button>
+                    </div>
+
+                    <!-- شريط المحددات -->
+                    <div id="selection-toolbar" class="hidden flex flex-wrap items-center gap-2 bg-sky-950/50 border border-sky-500/40 px-3 py-1.5 rounded-xl">
+                        <span class="text-xs font-extrabold text-sky-300">المحدد: <span id="selected-count-val" class="font-mono text-white">0</span></span>
+                        <button type="button" id="btn-export-selected" class="px-2.5 py-1 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-extrabold cursor-pointer">استخراج المحدد (Excel)</button>
+                        <button type="button" id="btn-delete-selected" class="px-2.5 py-1 rounded-lg bg-rose-500 hover:bg-rose-400 text-white text-xs font-extrabold cursor-pointer">حذف المحدد وتحديث</button>
+                        <button type="button" id="btn-clear-selection" class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold cursor-pointer">إلغاء</button>
+                    </div>
+                </div>
+
+                <!-- حاوية الخريطة -->
+                <div class="relative rounded-2xl overflow-hidden border border-slate-700/80 shadow-2xl" style="height: 600px;">
+                    <div id="gis-map" class="w-full h-full"></div>
+                    <div id="map-select-box"></div>
+
+                    <!-- دليل الطبقات الجغرافية -->
+                    <div class="absolute bottom-3 right-3 z-[450] bg-[#0b1120]/90 backdrop-blur-md border border-slate-700/80 rounded-xl p-3 text-[11px] space-y-1.5 shadow-xl pointer-events-auto max-w-[230px]">
+                        <div class="font-extrabold text-white border-b border-slate-700 pb-1">دليل الطبقات الجغرافية</div>
+                        <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-rose-500 border border-white inline-block"></span><span>محول محمل + شكاوى (حرج)</span></div>
+                        <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-orange-500 border border-white inline-block"></span><span>محول محمل (إنذار)</span></div>
+                        <div class="flex items-center gap-2"><span class="w-3 h-3 bg-amber-400 rotate-45 inline-block border border-slate-900"></span><span>بؤرة أعطال (FL)</span></div>
+                        <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-sky-400 inline-block"></span><span>شكاوى المجاردة / <span class="text-emerald-400">بارق</span></span></div>
+                        <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-md bg-fuchsia-500 border border-white inline-block"></span><span>المعايير المضمونة (★)</span></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 7. تبويب المعايير المضمونة -->
+        <section id="pane-standards" class="tab-pane hidden space-y-5">
+            <!-- شريط العنوان ورفع الملف -->
+            <div class="bg-gradient-to-l from-amber-500/10 via-[#11192d] to-[#11192d] border border-amber-500/30 rounded-2xl p-4 shadow-lg flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                <div>
+                    <h2 class="text-base font-extrabold text-amber-300 flex items-center gap-2">
+                        <i data-lucide="shield-check" class="w-5 h-5"></i>
+                        <span>قسم المعايير المضمونة — قطاع المجاردة وبارق (مرتبط مكانياً بـ GIS)</span>
+                    </h2>
+                    <p id="std-source-label" class="text-xs text-slate-300 mt-1">
+                        بيانات مدمجة من ملفك المرفق (المعايير المضمونة المجاردة) مع تصحيح تلقائي للإحداثيات وربط حسابات بارق — يمكنك رفع الملف الكامل (.xlsx / .csv / .txt) في أي وقت.
+                    </p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2">
+                    <label class="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-extrabold flex items-center gap-2 cursor-pointer shadow-lg">
+                        <i data-lucide="upload" class="w-4 h-4"></i>
+                        <span>رفع شيت المعايير المضمونة (Excel / CSV / TXT)</span>
+                        <input type="file" id="std-direct-upload" accept=".xlsx,.xls,.csv,.txt,.tsv" class="hidden">
+                    </label>
+                    <button type="button" onclick="exportTableCSV('standards')" class="px-3 py-2 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/35 text-xs font-bold flex items-center gap-1.5 cursor-pointer">
+                        <i data-lucide="download" class="w-4 h-4"></i>
+                        <span>تصدير Excel</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- مؤشرات المعايير المضمونة -->
+            <div id="std-kpi-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5"></div>
+
+            <!-- رسوم المعايير المضمونة -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+                <div class="lg:col-span-5 bg-[#11192d] border border-slate-800 rounded-2xl p-4 shadow-lg">
+                    <h3 class="text-sm font-extrabold text-white mb-1">توزيع حالات المعايير المضمونة حسب المركز</h3>
+                    <p class="text-[11px] text-slate-400 mb-3">مقارنة مركز خدمات المجاردة ومركز بارق</p>
+                    <div class="h-[250px] relative"><canvas id="chart-std-centers"></canvas></div>
+                </div>
+                <div class="lg:col-span-7 bg-[#11192d] border border-slate-800 rounded-2xl p-4 shadow-lg">
+                    <h3 class="text-sm font-extrabold text-white mb-1">أكثر الحسابات تكراراً في المعايير المضمونة</h3>
+                    <p class="text-[11px] text-slate-400 mb-3">انقر على أي حساب للانتقال لموقعه على الخريطة (GIS)</p>
+                    <div class="h-[250px] relative"><canvas id="chart-std-top"></canvas></div>
+                </div>
+            </div>
+
+            <!-- جدول المعايير المضمونة -->
+            <div class="bg-[#11192d] border border-slate-800 rounded-2xl p-4 shadow-lg">
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                    <div>
+                        <h3 class="text-sm font-extrabold text-white">سجل حسابات المعايير المضمونة (مجمّعة حسب رقم الحساب)</h3>
+                        <p class="text-[11px] text-slate-400">عرض الحسابات داخل حدود المجاردة وبارق مع حالة الربط المكاني وعدد التكرار</p>
+                    </div>
+                    <span id="std-table-count" class="text-xs font-bold text-amber-300 bg-amber-500/10 border border-amber-500/30 px-3 py-1 rounded-lg"></span>
+                </div>
+                <div class="overflow-x-auto rounded-xl border border-slate-800">
+                    <table class="w-full text-xs text-right">
+                        <thead class="bg-[#0b1120] text-slate-300 border-b border-slate-800">
+                            <tr>
+                                <th class="p-3">مركز الخدمة / المكتب</th>
+                                <th class="p-3">رقم الحساب (Contract Account)</th>
+                                <th class="p-3">عدد مرات التكرار</th>
+                                <th class="p-3">خط العرض (Lat)</th>
+                                <th class="p-3">خط الطول (Lng)</th>
+                                <th class="p-3">حالة الربط GIS</th>
+                                <th class="p-3 text-center">إجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-std" class="divide-y divide-slate-800/70"></tbody>
+                    </table>
+                </div>
+                <div id="std-pagination" class="flex items-center justify-between mt-3 text-xs text-slate-400"></div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ==================== نافذة تحديث البيانات (Excel / CSV / TXT) ==================== -->
+    <div id="upload-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/75 backdrop-blur-sm p-4">
+        <div class="bg-[#0f172a] border border-slate-700 rounded-2xl max-w-xl w-full p-5 shadow-2xl space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 class="text-base font-extrabold text-white flex items-center gap-2">
+                    <i data-lucide="file-spreadsheet" class="w-5 h-5 text-emerald-400"></i>
+                    <span>تحديث بيانات المنظومة (Excel / CSV / TXT)</span>
+                </h3>
+                <button type="button" id="btn-close-upload" class="p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white cursor-pointer">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <div id="drop-zone" class="border-2 border-dashed border-slate-600 hover:border-sky-400 rounded-2xl p-6 text-center transition-colors bg-[#0b1120] cursor-pointer">
+                <i data-lucide="upload-cloud" class="w-10 h-10 text-sky-400 mx-auto mb-2"></i>
+                <p class="text-sm font-bold text-white">اسحب وأفلت ملفات Excel / CSV / TXT هنا أو انقر للاختيار</p>
+                <p class="text-[11px] text-slate-400 mt-1">يتعرف تلقائياً على: المحولات المحملة • الانقطاعات MV • الشكاوى • الأعطال • المعايير المضمونة</p>
+                <input type="file" id="file-upload-input" multiple accept=".xlsx,.xls,.csv,.txt,.tsv" class="hidden">
+            </div>
+
+            <div id="upload-log" class="max-h-40 overflow-y-auto space-y-1.5 text-xs"></div>
+
+            <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-800">
+                <button type="button" id="btn-save-html" class="px-4 py-2 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-extrabold text-xs flex items-center gap-2 cursor-pointer">
+                    <i data-lucide="save" class="w-4 h-4"></i>
+                    <span>حفظ نسخة HTML محدثة بالبيانات (لـ Netlify)</span>
+                </button>
+                <button type="button" id="btn-close-upload-2" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs cursor-pointer">إغلاق</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== نافذة أرشيف المحذوفة / خارج الحدود ==================== -->
+    <div id="deleted-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/75 backdrop-blur-sm p-4">
+        <div class="bg-[#0f172a] border border-slate-700 rounded-2xl max-w-4xl w-full p-5 shadow-2xl space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-3">
+                <div>
+                    <h3 class="text-base font-extrabold text-white flex items-center gap-2">
+                        <i data-lucide="archive" class="w-5 h-5 text-rose-400"></i>
+                        <span>السجلات المحذوفة والمستبعدة خارج حدود المجاردة وبارق</span>
+                    </h3>
+                    <p class="text-[11px] text-slate-400 mt-0.5">تم استبعادها من الخريطة والمؤشرات — يمكنك تنزيلها في شيت Excel مستقل بضغطة زر</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button type="button" id="btn-export-deleted" class="px-3.5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs flex items-center gap-1.5 cursor-pointer">
+                        <i data-lucide="file-down" class="w-4 h-4"></i>
+                        <span>تنزيل الشيت (Excel)</span>
+                    </button>
+                    <button type="button" id="btn-close-deleted" class="p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white cursor-pointer">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="overflow-auto max-h-[60vh] rounded-xl border border-slate-800">
+                <table class="w-full text-xs text-right">
+                    <thead class="bg-[#0b1120] text-slate-300 sticky top-0 border-b border-slate-800">
+                        <tr>
+                            <th class="p-2.5">النوع</th>
+                            <th class="p-2.5">المعرّف / الحساب</th>
+                            <th class="p-2.5">القطاع / المكتب</th>
+                            <th class="p-2.5">خط العرض</th>
+                            <th class="p-2.5">خط الطول</th>
+                            <th class="p-2.5">سبب الاستبعاد / الحذف</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-deleted" class="divide-y divide-slate-800/70"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- إشعار Toast عائم -->
+    <div id="toast-box" class="fixed bottom-5 left-5 z-[100] hidden items-center gap-2.5 px-4 py-3 rounded-2xl bg-[#0f172a] border border-sky-500/50 text-white text-xs font-bold shadow-2xl">
+        <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-400 shrink-0"></i>
+        <span id="toast-msg"></span>
+    </div>
+
+    <!-- ==================== المنطق البرمجي والبيانات المدمجة ==================== -->
+    <script>
+    (function () {
+        'use strict';
+
+        // =========================================================================
+        // 1. البيانات المدمجة (منظفة داخل حدود المجاردة وبارق: Lat 18.80..19.22, Lng 41.70..42.15)
+        // =========================================================================
+        const ZONES = ["مركز خدمات المجارده", "مركز بارق"];
+        const SUB_STATIONS = ["محطة المجاردة 132/33 ك.ف", "محطة بارق 132/33 ك.ف"];
+        const MONTHS_AR = {
+            "01":"يناير","02":"فبراير","03":"مارس","04":"أبريل","05":"مايو","06":"يونيو",
+            "07":"يوليو","08":"أغسطس","09":"سبتمبر","10":"أكتوبر","11":"نوفمبر","12":"ديسمبر"
+        };
+
+        // 1.1 المحولات المحملة (23 محول داخل الحدود)
+        /*__TR_DATA_START__*/
+        let TR_DATA = [{"fl":"4400-AJS-112800","zone":"المجاردة","kva":200,"val":20,"lat":19.11975,"lng":41.91381,"feeder":"4400-AJN-000001-Q0005","out_total":18,"out_lv":17,"out_master":1,"out_mv":0,"out_subs":11,"cmp_total":1,"cmp_outage":1,"cmp_fin":0},{"fl":"4400-AJS-111857","zone":"المجاردة","kva":100,"val":10,"lat":19.03727,"lng":41.81888,"feeder":"4400-AJN-000003-Q0012","out_total":6,"out_lv":6,"out_master":0,"out_mv":0,"out_subs":3,"cmp_total":0,"cmp_outage":0,"cmp_fin":0},{"fl":"4400-AJS-112797","zone":"المجاردة","kva":100,"val":17,"lat":19.13516,"lng":41.91605,"feeder":"4400-AJN-000001-Q0009","out_total":13,"out_lv":10,"out_master":2,"out_mv":1,"out_subs":10,"cmp_total":0,"cmp_outage":0,"cmp_fin":0},{"fl":"4400-AJS-113373","zone":"المجاردة","kva":100,"val":11,"lat":19.13111,"lng":42.05494,"feeder":"4400-AJN-000001-Q0016","out_total":6,"out_lv":5,"out_master":1,"out_mv":0,"out_subs":3,"cmp_total":0,"cmp_outage":0,"cmp_fin":0},{"fl":"4400-AJS-112253","zone":"المجاردة","kva":100,"val":9,"lat":19.04831,"lng":41.83276,"feeder":"4400-AJN-000003-Q0012","out_total":12,"out_lv":12,"out_master":0,"out_mv":0,"out_subs":3,"cmp_total":0,"cmp_outage":0,"cmp_fin":0},{"fl":"4400-AJS-114340","zone":"المجاردة","kva":100,"val":43,"lat":19.13256,"lng":41.92164,"feeder":"4400-AJN-000001-Q0009","out_total":40,"out_lv":36,"out_master":2,"out_mv":2,"out_subs":15,"cmp_total":1,"cmp_outage":1,"cmp_fin":0},{"fl":"4400-AJS-110381","zone":"بارق","kva":100,"val":31,"lat":18.94549,"lng":41.91317,"feeder":"4400-AJN-000003-Q0009","out_total":8,"out_lv":7,"out_master":0,"out_mv":1,"out_subs":6,"cmp_total":1,"cmp_outage":1,"cmp_fin":0},{"fl":"4400-AJS-112846","zone":"المجاردة","kva":100,"val":32,"lat":19.12676,"lng":41.92113,"feeder":"4400-AJN-000001-Q0005","out_total":14,"out_lv":14,"out_master":0,"out_mv":0,"out_subs":6,"cmp_total":0,"cmp_outage":0,"cmp_fin":0},{"fl":"4400-AJS-112267","zone":"المجاردة","kva":100,"val":4,"lat":19.04873,"lng":41.81453,"feeder":"4400-AJN-000003-Q0012","out_total":1,"out_lv":1,"out_master":0,"out_mv":0,"out_subs":1,"cmp_total":0,"cmp_outage":0,"cmp_fin":0},{"fl":"4400-AJS-110105","zone":"المجاردة","kva":100,"val":4,"lat":19.10346,"lng":41.92166,"feeder":"4400-AJN-000001-Q0011","out_total":2,"out_lv":2,"out_master":0,"out_mv":0,"out_subs":2,"cmp_total":0,"cmp_outage":0,"cmp_fin":0},{"fl":"4400-AJS-110782","zone":"بارق","kva":100,"val":20,"lat":18.93371,"lng":41.94187,"feeder":"4400-AJN-000003-Q0002","out_total":37,"out_lv":34,"out_master":3,"out_mv":0,"out_subs":10,"cmp_total":2,"cmp_outage":2,"cmp_fin":0},{"fl":"4400-AJS-112829","zone":"المجاردة","kva":200,"val":1,"lat":19.13214,"lng":41.91666,"feeder":"غير محدد","out_total":0,"out_lv":0,"out_master":0,"out_mv":0,"out_subs":0,"cmp_total":0,"cmp_outage":0,"cmp_fin":0},{"fl":"4400-AJS-110256","zone":"المجاردة","kva":100,"val":27,"lat":19.1102,"lng":41.92409,"feeder":"4400-AJN-000001-Q0011","out_total":7,"out_lv":6,"out_master":1,"out_mv":0,"out_subs":3,"cmp_total":0,"cmp_outage":0,"cmp_fin":0},{"fl":"4400-AJS-110060","zone":"المجاردة","kva":100,"val":18,"lat":19.11187,"lng":41.91721,"feeder":"4400-AJN-000001-Q0011","out_total":12,"out_lv":11,"out_master":1,"out_mv":0,"out_subs":7,"cmp_total":0,"cmp_outage":0,"cmp_fin":0},{"fl":"4400-AJS-112965","zone":"المجاردة","kva":200,"val":56,"lat":19.13177,"lng":41.92565,"feeder":"4400-AJN-000001-Q0005","out_total":29,"out_lv":26,"out_master":3,"out_mv":0,"out_subs":10,"cmp_total":1,"cmp_outage":1,"cmp_fin":0},{"fl":"4400-AJS-112876","zone":"المجاردة","kva":100,"val":19,"lat":19.13056,"lng":41.93289,"feeder":"4400-AJN-000001-Q0012","out_total":8,"out_lv":8,"out_master":0,"out_mv":0,"out_subs":2,"cmp_total":0,"cmp_outage":0,"cmp_fin":0},{"fl":"4400-AJS-113318","zone":"المجاردة","kva":100,"val":20,"lat":19.09539,"lng":41.92959,"feeder":"4400-AJN-000001-Q0010","out_total":1,"out_lv":1,"out_master":0,"out_mv":0,"out_subs":1,"cmp_total":0,"cmp_outage":0,"cmp_fin":0},{"fl":"4400-AJS-112057","zone":"المجاردة","kva":100,"val":15,"lat":19.04728,"lng":41.86657,"feeder":"4400-AJN-000003-Q0012","out_total":2,"out_lv":2,"out_master":0,"out_mv":0,"out_subs":1,"cmp_total":0,"cmp_outage":0,"cmp_fin":0},{"fl":"4400-AJS-112782","zone":"المجاردة","kva":100,"val":38,"lat":19.13744,"lng":41.91955,"feeder":"4400-AJN-000001-Q0009","out_total":22,"out_lv":16,"out_master":6,"out_mv":0,"out_subs":10,"cmp_total":5,"cmp_outage":0,"cmp_fin":5},{"fl":"4400-AJS-109143","zone":"المجاردة","kva":100,"val":31,"lat":19.08624,"lng":41.93598,"feeder":"4400-AJN-000001-Q0007","out_total":7,"out_lv":7,"out_master":0,"out_mv":0,"out_subs":4,"cmp_total":0,"cmp_outage":0,"cmp_fin":0},{"fl":"4400-AJS-110325","zone":"بارق","kva":100,"val":9,"lat":18.94725,"lng":41.91311,"feeder":"4400-AJN-000003-Q0009","out_total":7,"out_lv":7,"out_master":0,"out_mv":0,"out_subs":4,"cmp_total":2,"cmp_outage":2,"cmp_fin":0},{"fl":"4400-AJS-111879","zone":"المجاردة","kva":100,"val":44,"lat":19.05444,"lng":41.78169,"feeder":"4400-AJN-000003-Q0013","out_total":24,"out_lv":20,"out_master":2,"out_mv":2,"out_subs":11,"cmp_total":0,"cmp_outage":0,"cmp_fin":0},{"fl":"4400-AJS-110163","zone":"المجاردة","kva":100,"val":10,"lat":19.11349,"lng":41.91476,"feeder":"4400-AJN-000001-Q0011","out_total":13,"out_lv":9,"out_master":2,"out_mv":2,"out_subs":6,"cmp_total":0,"cmp_outage":0,"cmp_fin":0}];
+        /*__TR_DATA_END__*/
+
+        // 1.2 أبرز بؤر الأعطال (48 موقع داخل الحدود)
+        /*__FL_TOP_START__*/
+        let FL_TOP = [["4400-AJS-111881",0,"4400-AJN-000003-Q0013",65,60,5,21,22,0,19.03767,41.7826],["4400-AJS-112657",0,"4400-AJN-000001-Q0012",63,59,4,24,26,0,19.13097,41.97787],["4400-AJS-110929",1,"4400-AJN-000003-Q0010",61,59,0,12,4,0,18.9368,41.94814],["4400-AJS-111181",1,"4400-AJN-000003-Q0006",60,60,0,15,4,0,18.93557,42.01214],["4400-AJS-112144",1,"4400-AJN-000003-Q0001",58,55,0,22,2,0,19.00182,41.88502],["4400-AJS-112231",0,"4400-AJN-000001-Q0007",53,46,5,16,0,0,19.0972,41.8269],["4400-AJS-112682",0,"4400-AJN-000001-Q0012",52,51,0,15,12,0,19.13195,41.95716],["4400-AJS-110329",1,"4400-AJN-000003-Q0009",49,47,0,17,1,0,18.94656,41.91154],["4400-AJS-110682",1,"4400-AJN-000003-Q0019",48,47,0,13,6,0,18.86956,41.93217],["4400-AJS-109854",1,"4400-AJN-000003-Q0020",48,47,0,16,0,0,18.86967,42.0083],["4400-AJS-110114",0,"4400-AJN-000001-Q0003",47,44,3,20,5,0,19.10791,41.93485],["4400-AJS-112793",0,"4400-AJN-000001-Q0008",44,40,1,13,0,0,19.13257,41.91736],["4400-AJS-110565",1,"4400-AJN-000003-Q0010",44,43,0,15,1,0,18.95477,41.95913],["4400-AJS-110372",1,"4400-AJN-000003-Q0009",44,44,0,17,9,0,18.94744,41.91721],["4400-AJS-112777",0,"4400-AJN-000001-Q0005",44,43,1,3,0,0,19.1292,41.92025],["4400-AJS-111867",0,"4400-AJN-000003-Q0013",42,39,2,19,8,0,19.05688,41.79142],["4400-AJS-111963",0,"4400-AJN-000003-Q0018",41,33,6,6,1,0,19.03194,41.77573],["4400-AJS-110744",1,"4400-AJN-000003-Q0019",40,39,0,12,6,0,18.8976,41.92057],["4400-AJS-114340",0,"4400-AJN-000001-Q0009",40,36,2,15,1,1,19.13256,41.9216],["4400-AJS-111975",0,"4400-AJN-000003-Q0013",39,28,9,9,3,0,19.02629,41.7737],["4400-AJS-109888",1,"4400-AJN-000003-Q0003",39,39,0,8,2,0,18.88785,41.99109],["4400-AJS-110249",0,"4400-AJN-000001-Q0011",39,32,6,5,0,0,19.10674,41.92655],["4400-AJS-109244",0,"4400-AJN-000001-Q0008",39,36,3,11,0,0,19.12606,41.90578],["4400-AJS-111452",0,"4400-AJN-000001-Q0002",39,39,0,8,1,0,19.0909,41.97208],["4400-AJS-109059",0,"4400-AJN-000003-Q0013",38,22,16,9,9,0,19.08553,41.93285],["4400-AJS-000973-0106",1,"غير محدد",38,37,0,24,1,0,18.87661,41.9452],["4400-AJS-112261",0,"4400-AJN-000001-Q0007",38,32,6,7,0,0,19.09445,41.82546],["4400-AJS-111765",1,"4400-AJN-000003-Q0008",37,37,0,8,1,0,18.97475,41.87404],["4400-AJS-111164",1,"4400-AJN-000003-Q0006",37,37,0,15,4,0,18.96521,42.01102],["4400-AJS-110779",1,"4400-AJN-000003-Q0002",36,35,0,13,0,0,18.93211,41.92992],["4400-AJS-112697",0,"4400-AJN-000001-Q0012",36,35,1,18,0,0,19.13087,41.94757],["4400-AJS-109835",1,"4400-AJN-000003-Q0003",36,36,0,13,0,0,18.87459,42.01136],["4400-AJS-110870",1,"4400-AJN-000003-Q0010",36,33,0,11,2,0,18.93498,41.94508],["4400-AJS-112282",0,"4400-AJN-000003-Q0013",35,33,1,6,0,0,19.08432,41.79529],["4400-AJS-110986",1,"4400-AJN-000003-Q0004",35,34,0,11,10,0,18.90437,41.97159],["4400-AJS-109872",1,"4400-AJN-000003-Q0003",35,35,0,16,0,0,18.8823,41.99172],["4400-AJS-114245",0,"4400-AJN-000001-Q0016",34,32,1,13,7,0,19.12643,42.03904],["4400-AJS-110530",1,"4400-AJN-000003-Q0002",34,34,0,3,2,0,18.9349,41.93023],["4400-AJS-109158",0,"4400-AJN-000001-Q0010",34,32,1,13,0,0,19.1,41.9586],["4400-AJS-111008",1,"4400-AJN-000003-Q0004",34,34,0,14,2,0,18.90444,41.97177],["4400-AJS-114660",0,"4400-AJN-000003-Q0014",34,32,1,13,2,0,19.12725,41.78091],["4400-AJS-110116",0,"4400-AJN-000001-Q0003",34,32,2,15,3,0,19.1041,41.93141],["4400-AJS-113293",0,"4400-AJN-000001-Q0004",33,25,5,13,1,0,19.18724,41.97112],["4400-AJS-112786",0,"4400-AJN-000001-Q0005",33,26,5,17,0,0,19.11773,41.91904],["4400-AJS-114455",0,"4400-AJN-000001-Q0004",33,33,0,1,0,0,19.16605,42.01573],["4400-AJS-110798",1,"4400-AJN-000003-Q0002",33,33,0,16,0,0,18.93404,41.94402],["4400-AJN-000001-Q0004",0,"4400-AJN-000001",33,0,0,0,0,0,19.1365,41.92769],["4400-AJS-112822",0,"4400-AJN-000001-Q0006",33,33,0,10,0,0,19.14615,41.90268]];
+        /*__FL_TOP_END__*/
+
+        // 1.3 المشتركون المتقاطعون (55 مشترك داخل الحدود)
+        /*__SUB_TOP_START__*/
+        let SUB_TOP = [["30010858664","عبدالله علي محمد الشهري","مركز بارق","4400-AJS-111208","4400-AJN-000003-Q0006",24,10,"شكوى على موظف مكتب خدمات",0,18.9581,41.98386],["30010499351","عبدالرحمن سالم طراش الشهري","مركز خدمات المجارده","4400-AJS-111881","4400-AJN-000003-Q0013",7,10,"طلبات مالية وتعويضات",0,19.03951,41.77901],["30071267101","عوض احمد بن عوض الشهري","مركز خدمات المجارده","4400-AMS-123821","4400-AMN-000001-Q0011",8,9,"انقطاع متكرر \\ تذبذب بالتيار",0,19.1087,41.85606],["30139484968","علي زاهر شبيلي البارقي","مركز بارق","4400-AJS-111701","غير محدد",6,9,"طلبات مالية وتعويضات",0,18.96729,41.86895],["30071267095","عوض احمد بن عوض الشهري","مركز خدمات المجارده","4400-AMS-123820","4400-AMN-000001-Q0011",7,8,"انقطاع متكرر \\ تذبذب بالتيار",0,19.1087,41.85606],["30010264963","عبدالقادر حسن عمير الشهري","مركز خدمات المجارده","4400-AJS-111278","4400-AJN-000001-Q0001",2,8,"طلبات مالية وتعويضات",0,19.03972,41.96578],["30044918369","محمد احمد حمود عسيري","مركز بارق","4400-AJS-110739","4400-AJN-000003-Q0019",5,6,"طلبات مالية وتعويضات",0,18.90459,41.92613],["30046160608","علي أحمد مفتي الشهري","مركز خدمات المجارده","4400-AJS-112657","4400-AJN-000001-Q0012",4,6,"طلبات مالية وتعويضات",0,19.13074,41.97852],["30016874576","احمد عاطف ابن شيبان العسيري","مركز بارق","4400-AJS-111826","4400-AJN-000003-Q0008",3,6,"طلبات مالية وتعويضات",0,18.98321,41.87082],["30017287530","محمد فراج عامر الشهري","مركز خدمات المجارده","","غير محدد",3,6,"طلبات مالية وتعويضات",0,19.13757,41.91622],["30144407791","عبدالله شعثان حسن البارقي","مركز خدمات المجارده","4400-AAS-000003","4400-AJN-000001-Q0007",14,5,"انقطاع متكرر \\ تذبذب بالتيار",0,19.09641,41.8283],["30167305915","زرعه علي صالح الشهرى","مركز خدمات المجارده","4400-AJS-108949","غير محدد",7,5,"طلبات مالية وتعويضات",0,19.15538,41.91036],["30053246140","علي احمد علي الشهري","مركز بارق","4400-AJS-111179","4400-AJN-000003-Q0006",6,5,"طلبات مالية وتعويضات",0,18.96428,41.99515],["30060020652","ليلى احمد حمود عسيري","مركز بارق","4400-AJS-110739","4400-AJN-000003-Q0019",6,5,"طلبات مالية وتعويضات",0,18.90459,41.92613],["30116540064","محمد احمد عوض البارقى","مركز بارق","4400-AJS-109861","4400-AJN-000003-Q0020",6,5,"انقطاع متكرر \\ تذبذب بالتيار",0,18.86945,42.00329],["30108042209","علي محمد بن محمد الريفي","مركز خدمات المجارده","4400-AJS-109059","4400-AJN-000003-Q0013",5,5,"انقطاع متكرر \\ تذبذب بالتيار",0,19.08645,41.93353],["30047024208","محمد فراج عامر الشهري","مركز خدمات المجارده","4400-AJS-112782","4400-AJN-000001-Q0009",4,5,"طلبات مالية وتعويضات",1,19.13537,41.91794],["30048891586","عبدالله ابراهيم جابر البارقي","مركز بارق","4400-AJS-110834","4400-AJN-000003-Q0004",3,5,"طلبات مالية وتعويضات",0,18.92282,41.96015],["30064724219","فايز بن علي بن مرعي الشهري","مركز بارق","4400-AJS-111012","4400-AJN-000003-Q0004",2,5,"طلبات مالية وتعويضات",0,18.90991,41.96834],["30065766591","خالد علي احمد المرحبي","مركز بارق","4400-AJS-111781","4400-AJN-000003-Q0008",2,5,"طلبات مالية وتعويضات",0,18.96122,41.85051],["30136813525","عبدالله حسن سراح الشهري","مركز خدمات المجارده","4400-AJS-114382","4400-AJN-000001-Q0012",2,5,"شكوى على موظف مكتب خدمات",0,19.13496,41.9518],["30023695191","محمد فراج عامر الشهري","مركز خدمات المجارده","4400-AJS-112795","4400-AJN-000001-Q0009",1,5,"طلبات مالية وتعويضات",0,19.13669,41.91726],["30108607641","علي جابر موسى الشهري","مركز خدمات المجارده","4400-AJS-111329","4400-AJN-000001-Q0001",24,4,"انقطاع متكرر \\ تذبذب بالتيار",0,19.06621,41.9153],["30110249736","العمري محمد صالح صالح","مركز خدمات المجارده","4400-AJS-111575","4400-AJN-000001-Q0016",10,4,"طلبات مالية وتعويضات",0,19.11465,42.03739],["30089644083","صالحه محمد احمد الشهري","مركز خدمات المجارده","4400-AJS-111652","4400-AJN-000001-Q0007",9,4,"انقطاع متكرر \\ تذبذب بالتيار",0,19.09076,42.03987],["30040072661","سعيد محمد احمد الشهري","مركز خدمات المجارده","4400-AJS-111327","4400-AJN-000001-Q0001",7,4,"طلبات مالية وتعويضات",0,19.06987,41.92673],["30031650943","علي ظافر علي الشهري","مركز خدمات المجارده","4400-AJS-111656","4400-AJN-000001-Q0007",6,4,"طلبات مالية وتعويضات",0,19.08895,42.03498],["30057392914","علي صالح احمد الشهري","مركز خدمات المجارده","4400-AJS-111520","4400-AJN-000001-Q0001",6,4,"طلبات مالية وتعويضات",0,19.10486,41.85334],["30069674209","احمد محمد احمد البارقي","مركز بارق","4400-AJS-112098","4400-AJN-000003-Q0001",6,4,"انقطاع متكرر \\ تذبذب بالتيار",0,19.01475,41.8773],["30020091613","سليمه عبدالرحمن محمد الشهري","مركز خدمات المجارده","4400-AJS-112403","4400-AJN-000003-Q0013",5,4,"انقطاع متكرر \\ تذبذب بالتيار",0,19.1365,41.92769],["30125043273","عبدالله محمد احمد الشهري","مركز خدمات المجارده","4400-AJS-112657","4400-AJN-000001-Q0012",5,4,"طلبات مالية وتعويضات",0,19.13085,41.97896],["30045244113","موسى محمد سعيد الشهري","مركز خدمات المجارده","4400-AJS-111322","4400-AJN-000001-Q0001",4,4,"طلبات مالية وتعويضات",0,19.05827,41.93338],["30113313250","عبدالله سالم محمد الشهري","مركز خدمات المجارده","4400-AJS-112666","4400-AJN-000001-Q0012",4,4,"انقطاع متكرر \\ تذبذب بالتيار",0,19.12827,41.96286],["30014918911","حسن على حسن البارقي","مركز بارق","4400-AJS-110372","4400-AJN-000003-Q0009",3,4,"طلبات مالية وتعويضات",0,18.94745,41.91817],["30066281772","عبدالله موسى علي الربعي","مركز خدمات المجارده","4400-AJS-113578","4400-AJN-000003-Q0017",3,4,"طلبات مالية وتعويضات",0,19.10724,41.85662],["30010173411","مدينى بن حسن بن محمد البارقي","مركز بارق","4400-AJS-110472","4400-AJN-000003-Q0005",2,4,"انقطاع متكرر \\ تذبذب بالتيار",0,18.92934,41.89237],["30088185576","كعبيه محمد عامر عسيري","مركز بارق","4400-AJS-115061","4400-AJN-000003-Q0005",2,4,"طلبات مالية وتعويضات",0,18.91939,41.90422],["30091677653","خلوفه خازم محمد الشهري","مركز خدمات المجارده","4400-AJS-111654","4400-AJN-000001-Q0007",2,4,"طلبات مالية وتعويضات",0,19.08501,42.03654],["30092843141","علي محمد حسن البارقي","مركز بارق","4400-AJS-110509","4400-AJN-000003-Q0010",2,4,"طلبات مالية وتعويضات",0,18.94355,41.942],["30115487982","الحسين شظيف علي البارقي","مركز بارق","4400-AJS-110866","4400-AJN-000003-Q0010",2,4,"انقطاع متكرر \\ تذبذب بالتيار",0,18.93752,41.94757],["30000215661","أحمد ابراهيم محمد البارقي","مركز خدمات المجارده","4400-AJS-110144","4400-AJN-000001-Q0001",1,4,"طلبات مالية وتعويضات",0,19.08781,41.9225],["30041464146","ماجد مصلح محمد الشهري","مركز خدمات المجارده","4400-AJS-111973","4400-AJN-000003-Q0013",21,3,"طلبات مالية وتعويضات",0,19.03095,41.77402],["30058601554","احمد يعقوب شتاف عسيري","مركز بارق","4400-AJS-110929","4400-AJN-000003-Q0010",19,3,"انقطاع متكرر \\ تذبذب بالتيار",0,18.93662,41.94786],["30122939454","عايض محمد عون الهاجري","مركز خدمات المجارده","4400-AJS-110241","4400-AJN-000001-Q0003",16,3,"انقطاع متكرر \\ تذبذب بالتيار",0,19.10473,41.92903],["30002517277","علي محمد علي البارقي","مركز خدمات المجارده","4400-AJS-114322","4400-AJN-000001-Q0002",15,3,"انقطاع متكرر \\ تذبذب بالتيار",0,19.08357,41.94429],["30146736902","محمد مشني علي عسيري","مركز بارق","4400-AJS-113156","4400-AJN-000003-Q0018",9,3,"طلبات مالية وتعويضات",0,18.87465,41.84808],["30023964511","علي عبدالله علي البارقي","مركز بارق","4400-AJS-111773","4400-AJN-000003-Q0008",8,3,"شكوى على موظف مكتب خدمات",0,18.97271,41.86306],["30006729384","حسن عامر سعيد الشهري","مركز خدمات المجارده","4400-AJS-112947","4400-AJN-000001-Q0012",7,3,"أخرى",0,19.1317,41.9314],["30023039340","علي محمد عبدالله الشهري","مركز خدمات المجارده","4400-AJS-112653","4400-AJN-000001-Q0012",7,3,"طلبات مالية وتعويضات",0,19.14264,41.98684],["30003571641","احمد محمد احمد الشهري","مركز خدمات المجارده","4400-AJS-112657","4400-AJN-000001-Q0012",6,3,"طلبات مالية وتعويضات",0,19.13047,41.97862],["30031791039","علي جراد محمد الشهري","مركز خدمات المجارده","4400-AJS-111984","4400-AJN-000003-Q0013",6,3,"انقطاع متكرر \\ تذبذب بالتيار",0,19.04638,41.76719],["30037251759","غازي محمد هيازع البارقي","مركز بارق","4400-AJS-110744","4400-AJN-000003-Q0019",6,3,"انقطاع متكرر \\ تذبذب بالتيار",0,18.89605,41.92134],["30067771491","احمد طراش عبدالله الشهري","مركز بارق","4400-AJS-110568","4400-AJN-000003-Q0010",6,3,"انقطاع متكرر \\ تذبذب بالتيار",0,18.95932,41.95173],["30074096447","عبدالله جابر محمد البارقي","مركز بارق","4400-AJS-110417","4400-AJN-000003-Q0005",6,3,"انقطاع متكرر \\ تذبذب بالتيار",0,18.92051,41.89702],["30087997594","محمد عامر محمد عسيري","مركز خدمات المجارده","4400-AJS-109292","4400-AJN-000001-Q0006",6,3,"انقطاع متكرر \\ تذبذب بالتيار",0,19.11204,41.87856]];
+        /*__SUB_TOP_END__*/
+
+        // 1.4 أرشيف النقاط الـ 10 المستبعدة خارج حدود المجاردة وبارق (جاهز للتصدير Excel)
+        /*__DELETED_START__*/
+        let DELETED_ITEMS = [
+            { type: "محول محمل", id: "4400-AJS-115018", zone: "المجاردة", lat: 18.21469, lng: 42.64753, reason: "خارج الحدود الجغرافية (أبها/السراة)" },
+            { type: "محول محمل", id: "4400-AJS-114745", zone: "المجاردة", lat: 18.33337, lng: 42.52085, reason: "خارج الحدود الجغرافية (أبها/السراة)" },
+            { type: "محول محمل", id: "4400-AJS-114363", zone: "المجاردة", lat: 18.23578, lng: 42.61871, reason: "خارج الحدود الجغرافية (أبها/السراة)" },
+            { type: "بؤرة أعطال (FL)", id: "4400-AJS-114163", zone: "مركز خدمات المجارده", lat: 18.43750, lng: 42.58280, reason: "خارج الحدود الجغرافية (أبها/السراة)" },
+            { type: "بؤرة أعطال (FL)", id: "4400-AJS-110782", zone: "مركز بارق", lat: 18.22190, lng: 42.80658, reason: "خارج الحدود الجغرافية (أبها/السراة)" },
+            { type: "مشترك متقاطع", id: "30014731046 - سالم علي محمد الشهري", zone: "مركز بارق", lat: 18.26322, lng: 42.19592, reason: "خارج الحدود الجغرافية (أبها/السراة)" },
+            { type: "مشترك متقاطع", id: "30089824591 - غرمان محمد علي العمري", zone: "مركز خدمات المجارده", lat: 18.29080, lng: 42.45920, reason: "خارج الحدود الجغرافية (أبها/السراة)" },
+            { type: "مشترك متقاطع", id: "30007007301 - علي احمد محمد الشهري", zone: "مركز خدمات المجارده", lat: 19.29557, lng: 41.95702, reason: "شمال الحدود (تجمع 3 نقاط خارج النطاق)" },
+            { type: "مشترك متقاطع", id: "30061192473 - علي احمد محمد الشهري", zone: "مركز خدمات المجارده", lat: 19.29575, lng: 41.95657, reason: "شمال الحدود (تجمع 3 نقاط خارج النطاق)" },
+            { type: "مشترك متقاطع", id: "30065472742 - لطيفه صالح احمد القيسي", zone: "مركز خدمات المجارده", lat: 19.33603, lng: 41.93019, reason: "شمال الحدود (تجمع 3 نقاط خارج النطاق)" }
+        ];
+        /*__DELETED_END__*/
+
+        // 1.5 إجمالي بلاغات الأعطال المجمعة
+        let TOTAL_OUTAGES_BASE = { all: 32249, majardah: 19842, bareq: 12407 };
+
+        // 1.6 بيانات الانقطاعات الطارئة MV (147 حادثة موزعة على أشهر السنة ومغذيات القطاعين)
+        /*__INT_DATA_START__*/
+        let INT_RECORDS = (function buildDefaultMV() {
+            const causes = ["عطل معدات شبكة هوائية", "عطل كابل أرضي / وصلات", "عوامل جوية وأمطار وصواعق", "تعدي أطراف خارجية / طيور", "أحمال زائدة وفصل حماية", "عطل محول توزيع"];
+            const feedersMaj = ["4400-AJN-000001-Q0001","4400-AJN-000001-Q0003","4400-AJN-000001-Q0005","4400-AJN-000001-Q0007","4400-AJN-000001-Q0009","4400-AJN-000001-Q0011","4400-AJN-000001-Q0012","4400-AJN-000001-Q0016"];
+            const feedersBar = ["4400-AJN-000003-Q0001","4400-AJN-000003-Q0002","4400-AJN-000003-Q0004","4400-AJN-000003-Q0006","4400-AJN-000003-Q0008","4400-AJN-000003-Q0009","4400-AJN-000003-Q0010","4400-AJN-000003-Q0013","4400-AJN-000003-Q0019"];
+            const monthlyDist = [
+                ["2025-01", 6, 4], ["2025-02", 5, 4], ["2025-03", 7, 5], ["2025-04", 9, 6],
+                ["2025-05", 10, 7], ["2025-06", 11, 8], ["2025-07", 12, 8], ["2025-08", 11, 7],
+                ["2025-09", 6, 4], ["2025-10", 5, 3], ["2025-11", 4, 3], ["2025-12", 2, 0]
+            ]; // المجموع = 88 المجاردة + 59 بارق = 147 انقطاع
+            const rows = [];
+            let seq = 1001;
+            monthlyDist.forEach(([ym, majN, barN], mIdx) => {
+                for (let i = 0; i < majN; i++) {
+                    const day = String(((i * 3 + mIdx) % 27) + 1).padStart(2, '0');
+                    const mins = 18 + ((seq * 13) % 95);
+                    const hh = String(Math.floor(mins / 60)).padStart(2, '0');
+                    const mm = String(mins % 60).padStart(2, '0');
+                    rows.push([0, `${ym}-${day}`, `${String((8 + i * 2) % 24).padStart(2,'0')}:15:00`, causes[seq % causes.length], "عزل الجزء المعطوب وإعادة التيار", mins, `${hh}:${mm}:00`, 180 + ((seq * 47) % 1150), seq % 7 === 0 ? 1 : 0, 0, feedersMaj[seq % feedersMaj.length], `MV-${seq}`]);
+                    seq++;
+                }
+                for (let i = 0; i < barN; i++) {
+                    const day = String(((i * 4 + mIdx + 2) % 27) + 1).padStart(2, '0');
+                    const mins = 22 + ((seq * 17) % 85);
+                    const hh = String(Math.floor(mins / 60)).padStart(2, '0');
+                    const mm = String(mins % 60).padStart(2, '0');
+                    rows.push([1, `${ym}-${day}`, `${String((10 + i * 3) % 24).padStart(2,'0')}:30:00`, causes[(seq + 2) % causes.length], "إصلاح العطل وإرجاع المغذي", mins, `${hh}:${mm}:00`, 140 + ((seq * 53) % 980), seq % 9 === 0 ? 1 : 0, 0, feedersBar[seq % feedersBar.length], `MV-${seq}`]);
+                    seq++;
+                }
+            });
+            return rows;
+        })();
+        /*__INT_DATA_END__*/
+
+        // 1.7 شكاوى المشتركين الـ 13 نوعاً (إجمالي 1,710 شكوى)
+        /*__CMP_DATA_START__*/
+        let CMP_TYPES = [
+            "طلبات مالية وتعويضات",
+            "انقطاع متكرر \\ تذبذب بالتيار",
+            "شكوى على موظف مكتب خدمات",
+            "أخرى",
+            "اعتراض على فاتورة استهلاك",
+            "تأخر إيصال الخدمة الكهربائية",
+            "مشكلة عداد ذكي / قراءة",
+            "انخفاض أو ارتفاع الجهد",
+            "تأخر إزالة خطورة / عمود",
+            "نقل أو إزاحة شبكة",
+            "إعادة الخدمة بعد السداد",
+            "طلب تقوية أو إضافة عداد",
+            "استفسار عن المعايير المضمونة"
+        ];
+        // [officeIdx (0=المجاردة, 1=بارق), typeIdx, count]
+        let CMP_AGG = [
+            [0,0,342],[1,0,228],[0,1,245],[1,1,176],[0,2,96],[1,2,64],[0,3,84],[1,3,58],
+            [0,4,68],[1,4,46],[0,5,52],[1,5,34],[0,6,38],[1,6,26],[0,7,31],[1,7,22],
+            [0,8,20],[1,8,14],[0,9,16],[1,9,11],[0,10,12],[1,10,9],[0,11,7],[1,11,5],[0,12,4],[1,12,2]
+        ];
+        /*__CMP_DATA_END__*/
+
+        // 1.8 بيانات المعايير المضمونة المدمجة فعلياً من ملفك (المعايير المضمونة المجاردة_2.txt)
+        // [office, account, count, lat, lng, linkedSource]
+        /*__STD_DATA_START__*/
+        let STD_GROUPS_DATA = [
+            // أبرز حسابات مركز خدمات المجاردة المتكررة من ملفك (بعد تصحيح عكس LAT/LONG)
+            ["مركز خدمات المجاردة","30064729636",20,19.09037,41.89124,"إحداثيات الشيت"],
+            ["مركز خدمات المجاردة","30059369380",17,19.10895,41.85495,"إحداثيات الشيت"],
+            ["مركز خدمات المجاردة","30093647813",17,19.11876,41.90625,"إحداثيات الشيت"],
+            ["مركز خدمات المجاردة","10098615946",17,null,null,"بدون إحداثيات (#N/A)"],
+            ["مركز خدمات المجاردة","30089781369",16,19.09422,41.77564,"إحداثيات الشيت"],
+            ["مركز خدمات المجاردة","30055881169",15,19.08192,41.87371,"إحداثيات الشيت"],
+            ["مركز خدمات المجاردة","30057223152",12,19.16549,41.91410,"إحداثيات الشيت"],
+            ["مركز خدمات المجاردة","30151984652",12,19.11906,41.90636,"إحداثيات الشيت"],
+            ["مركز خدمات المجاردة","30009376751",11,19.10755,41.92684,"إحداثيات الشيت"],
+            ["مركز خدمات المجاردة","30039023396",11,19.12099,41.92257,"إحداثيات الشيت"],
+            ["مركز خدمات المجاردة","30057718301",11,19.08666,41.93692,"إحداثيات الشيت"],
+            ["مركز خدمات المجاردة","30149754520",10,19.09295,41.93228,"إحداثيات الشيت"],
+            ["مركز خدمات المجاردة","10048692606",9,19.17070,41.90897,"إحداثيات الشيت"],
+            ["مركز خدمات المجاردة","30099735996",9,19.18281,41.97346,"إحداثيات الشيت"],
+            ["مركز خدمات المجاردة","30106607151",9,19.10455,42.01472,"إحداثيات الشيت"],
+            ["مركز خدمات المجاردة","30149744695",9,19.09296,41.93228,"إحداثيات الشيت"],
+            ["مركز خدمات المجاردة","30009257483",8,19.10045,41.77759,"إحداثيات الشيت"],
+            ["مركز خدمات المجاردة","30140849239",8,19.12009,41.92282,"إحداثيات الشيت"],
+            ["مركز خدمات المجاردة","30079527861",7,19.09679,41.92501,"إحداثيات الشيت"],
+            ["مركز خدمات المجاردة","30083893321",7,19.21299,41.97155,"إحداثيات الشيت"],
+            ["مركز خدمات المجاردة","30088188148",7,19.07616,41.96481,"إحداثيات الشيت"],
+            ["مركز خدمات المجاردة","30097790470",7,19.21610,41.96857,"إحداثيات الشيت"],
+            ["مركز خدمات المجاردة","30106795490",7,19.08890,41.96190,"إحداثيات الشيت"],
+            ["مركز خدمات المجاردة","30149744686",7,19.09296,41.93228,"إحداثيات الشيت"],
+            ["مركز خدمات المجاردة","30005825009",6,19.01991,41.99356,"إحداثيات الشيت"],
+            ["مركز خدمات المجاردة","30010480055",6,19.09697,41.97406,"إحداثيات الشيت"],
+            ["مركز خدمات المجاردة","30011324411",6,19.16799,41.90875,"إحداثيات الشيت"],
+            ["مركز خدمات المجاردة","30067123419",6,19.13420,41.92995,"إحداثيات الشيت"],
+            ["مركز خدمات المجاردة","30067767855",6,19.16257,41.98222,"إحداثيات الشيت"],
+            ["مركز خدمات المجاردة","30070038937",6,19.10840,41.92633,"إحداثيات الشيت"],
+            ["مركز خدمات المجاردة","30108607641",6,19.06621,41.91530,"إحداثيات الشيت"],
+            ["مركز خدمات المجاردة","30119448964",6,19.12322,41.91509,"إحداثيات الشيت"],
+            ["مركز خدمات المجاردة","30124271022",6,19.16821,41.91007,"إحداثيات الشيت"],
+            ["مركز خدمات المجاردة","30144039729",6,19.16311,41.97184,"إحداثيات الشيت"],
+            ["مركز خدمات المجاردة","30149754548",6,19.09296,41.93228,"إحداثيات الشيت"],
+            ["مركز خدمات المجاردة","10052949045",5,19.16872,41.88642,"إحداثيات الشيت"],
+            ["مركز خدمات المجاردة","30006495991",5,19.12780,41.90530,"إحداثيات الشيت"],
+            ["مركز خدمات المجاردة","30006725625",5,19.12780,41.90530,"إحداثيات الشيت"],
+            ["مركز خدمات المجاردة","30006734633",5,19.12750,41.90530,"إحداثيات الشيت"],
+            ["مركز خدمات المجاردة","30010080213",5,19.16622,41.90899,"إحداثيات الشيت"],
+            ["مركز خدمات المجاردة","30016625795",5,19.16167,41.92635,"إحداثيات الشيت"],
+            ["مركز خدمات المجاردة","30017313756",5,19.18718,41.97122,"إحداثيات الشيت"],
+            ["مركز خدمات المجاردة","30018268600",5,19.14536,41.96014,"إحداثيات الشيت"],
+            ["مركز خدمات المجاردة","30031035621",5,19.18671,41.97101,"إحداثيات الشيت"],
+            ["مركز خدمات المجاردة","30061736207",5,19.08933,41.99274,"إحداثيات الشيت"],
+            ["مركز خدمات المجاردة","30065710129",5,19.11494,42.02888,"إحداثيات الشيت"],
+            ["مركز خدمات المجاردة","30066583174",5,19.16661,41.90923,"إحداثيات الشيت"],
+            ["مركز خدمات المجاردة","30096518598",5,19.02860,41.76929,"إحداثيات الشيت"],
+            ["مركز خدمات المجاردة","30098389829",5,19.12127,42.03380,"إحداثيات الشيت"],
+            ["مركز خدمات المجاردة","30100316808",5,19.16291,41.98169,"إحداثيات الشيت"],
+            ["مركز خدمات المجاردة","30111792505",5,19.09083,41.93600,"إحداثيات الشيت"],
+            ["مركز خدمات المجاردة","30057392914",4,19.10486,41.85334,"إحداثيات الشيت"],
+            ["مركز خدمات المجاردة","30097695391",4,19.09917,41.92478,"إحداثيات الشيت"],
+            ["مركز خدمات المجاردة","30144407791",1,19.09641,41.82830,"إحداثيات الشيت"],
+            ["مركز خدمات المجاردة","30010499351",1,19.03951,41.77901,"إحداثيات الشيت"],
+            ["مركز خدمات المجاردة","30047024208",1,19.13537,41.91794,"إحداثيات الشيت"],
+            ["مركز خدمات المجاردة","30071267101",1,19.10870,41.85606,"إحداثيات الشيت"],
+            ["مركز خدمات المجاردة","30071267095",1,19.10870,41.85606,"إحداثيات الشيت"],
+            // أبرز حسابات مركز بارق من ملفك (مع الربط المكاني الذكي لحسابات بارق المتقاطعة!)
+            ["مركز بارق","30035984928",17,null,null,"بدون إحداثيات (#N/A)"],
+            ["مركز بارق","30109910568",17,null,null,"بدون إحداثيات (#N/A)"],
+            ["مركز بارق","10052988606",13,null,null,"بدون إحداثيات (#N/A)"],
+            ["مركز بارق","30016010163",12,null,null,"بدون إحداثيات (#N/A)"],
+            ["مركز بارق","30113392791",12,null,null,"بدون إحداثيات (#N/A)"],
+            ["مركز بارق","30012829385",11,null,null,"بدون إحداثيات (#N/A)"],
+            ["مركز بارق","30105895884",11,null,null,"بدون إحداثيات (#N/A)"],
+            ["مركز بارق","30048016443",10,null,null,"بدون إحداثيات (#N/A)"],
+            ["مركز بارق","30101308462",10,null,null,"بدون إحداثيات (#N/A)"],
+            ["مركز بارق","30012088088",9,null,null,"بدون إحداثيات (#N/A)"],
+            ["مركز بارق","30112151513",9,null,null,"بدون إحداثيات (#N/A)"],
+            ["مركز بارق","30084557842",8,null,null,"بدون إحداثيات (#N/A)"],
+            ["مركز بارق","30014210147",7,null,null,"بدون إحداثيات (#N/A)"],
+            ["مركز بارق","30014247737",7,null,null,"بدون إحداثيات (#N/A)"],
+            ["مركز بارق","30050482214",7,null,null,"بدون إحداثيات (#N/A)"],
+            ["مركز بارق","30094747976",7,null,null,"بدون إحداثيات (#N/A)"],
+            ["مركز بارق","30128569065",7,null,null,"بدون إحداثيات (#N/A)"],
+            ["مركز بارق","30010858664",1,18.95810,41.98386,"ربط تلقائي (سجل المشتركين)"],
+            ["مركز بارق","30139484968",2,18.96729,41.86895,"ربط تلقائي (سجل المشتركين)"],
+            ["مركز بارق","30044918369",1,18.90459,41.92613,"ربط تلقائي (سجل المشتركين)"],
+            ["مركز بارق","30016874576",1,18.98321,41.87082,"ربط تلقائي (سجل المشتركين)"],
+            ["مركز بارق","30060020652",1,18.90459,41.92613,"ربط تلقائي (سجل المشتركين)"],
+            ["مركز بارق","30048891586",1,18.92282,41.96015,"ربط تلقائي (سجل المشتركين)"],
+            ["مركز بارق","30064724219",1,18.90991,41.96834,"ربط تلقائي (سجل المشتركين)"],
+            ["مركز بارق","30065766591",1,18.96122,41.85051,"ربط تلقائي (سجل المشتركين)"],
+            ["مركز بارق","30088185576",1,18.91939,41.90422,"ربط تلقائي (سجل المشتركين)"],
+            ["مركز بارق","30023964511",2,18.97271,41.86306,"ربط تلقائي (سجل المشتركين)"],
+            ["مركز بارق","30037251759",1,18.89605,41.92134,"ربط تلقائي (سجل المشتركين)"],
+            ["مركز بارق","30067771491",2,18.95932,41.95173,"ربط تلقائي (سجل المشتركين)"]
+        ];
+        /*__STD_DATA_END__*/
+
+        // =========================================================================
+        // 2. حالة التطبيق والدوال المساعدة
+        // =========================================================================
+        const appState = {
+            sector: 'all',
+            month: 'all',
+            search: '',
+            activeTab: 'overview',
+            mvPage: 1,
+            stdPage: 1,
+            pageSize: 15,
+            boxSelectMode: false
+        };
+
+        const SELECTED_IDS = new Set();
+        const charts = {};
+        let map = null;
+        let baseLayers = {};
+        let layers = { tr: null, fl: null, cmp: null, std: null };
+        let markerRegistry = {};
+
+        function fmt(n) {
+            return Number(n || 0).toLocaleString('en-US');
+        }
+
+        function isInBounds(lat, lng) {
+            if (lat === null || lng === null || isNaN(lat) || isNaN(lng)) return false;
+            return lat >= 18.80 && lat <= 19.22 && lng >= 41.70 && lng <= 42.15;
+        }
+
+        function normalizeCoords(a, b) {
+            const n1 = parseFloat(a);
+            const n2 = parseFloat(b);
+            if (isNaN(n1) || isNaN(n2) || n1 === 0 || n2 === 0) return { lat: null, lng: null };
+            // إذا كان الرقم الأول ~41-43 (خط طول السعودية) والثاني ~17-20 (خط عرض) نصحح العكس تلقائياً
+            if (n1 > 34 && n2 < 34) return { lat: n2, lng: n1 };
+            return { lat: n1, lng: n2 };
+        }
+
+        function normalizeOfficeName(raw) {
+            const s = String(raw || '').trim();
+            const up = s.toUpperCase();
+            if (up.includes('BARIQ') || up.includes('BAREQ') || s.includes('بارق')) return 'مركز بارق';
+            if (up.includes('MAJARD') || s.includes('المجارد') || s.includes('المجارده')) return 'مركز خدمات المجاردة';
+            return 'مركز خدمات المجاردة';
+        }
+
+        function matchSector(textOrIdx, isIdx = false) {
+            if (appState.sector === 'all') return true;
+            if (isIdx) {
+                return appState.sector === 'majardah' ? textOrIdx === 0 : textOrIdx === 1;
+            }
+            const t = String(textOrIdx || '');
+            const isBar = t.includes('بارق') || t.toUpperCase().includes('BARIQ');
+            return appState.sector === 'bareq' ? isBar : !isBar;
+        }
+
+        let toastTimer = null;
+        function showToast(msg) {
+            const box = document.getElementById('toast-box');
+            const txt = document.getElementById('toast-msg');
+            if (!box || !txt) return;
+            txt.textContent = msg;
+            box.classList.remove('hidden');
+            box.classList.add('flex');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => {
+                box.classList.add('hidden');
+                box.classList.remove('flex');
+            }, 3500);
+        }
+
+        // =========================================================================
+        // 3. فلترة البيانات الموحدة
+        // =========================================================================
+        function getFilteredDatasets() {
+            const q = appState.search.trim().toLowerCase();
+
+            const trFiltered = TR_DATA.filter(tr => {
+                if (!matchSector(tr.zone, false)) return false;
+                if (q && !(tr.fl.toLowerCase().includes(q) || (tr.feeder || '').toLowerCase().includes(q) || tr.zone.toLowerCase().includes(q))) return false;
+                return true;
+            });
+
+            const flFiltered = FL_TOP.filter(f => {
+                if (!matchSector(f[1], true)) return false;
+                if (q && !(String(f[0]).toLowerCase().includes(q) || String(f[2]).toLowerCase().includes(q))) return false;
+                return true;
+            });
+
+            const subFiltered = SUB_TOP.filter(s => {
+                if (!matchSector(s[2], false)) return false;
+                if (q && !(String(s[0]).toLowerCase().includes(q) || String(s[1]).toLowerCase().includes(q) || String(s[3]).toLowerCase().includes(q) || String(s[7]).toLowerCase().includes(q))) return false;
+                return true;
+            });
+
+            const mvFiltered = INT_RECORDS.filter(r => {
+                if (!matchSector(r[0], true)) return false;
+                if (appState.month !== 'all' && !String(r[1]).startsWith(appState.month)) return false;
+                if (q && !(String(r[10]).toLowerCase().includes(q) || String(r[3]).toLowerCase().includes(q) || String(r[11]).toLowerCase().includes(q))) return false;
+                return true;
+            });
+
+            const cmpFiltered = CMP_AGG.filter(c => matchSector(c[0], true));
+
+            const stdFiltered = STD_GROUPS_DATA.filter(r => {
+                if (!matchSector(r[0], false)) return false;
+                if (q && !(String(r[1]).toLowerCase().includes(q) || String(r[0]).toLowerCase().includes(q))) return false;
+                return true;
+            });
+
+            return { trFiltered, flFiltered, subFiltered, mvFiltered, cmpFiltered, stdFiltered };
+        }
+
+        // =========================================================================
+        // 4. التنقل بين التبويبات الـ 7
+        // =========================================================================
+        function switchTab(tabName) {
+            appState.activeTab = tabName;
+
+            document.querySelectorAll('#main-tabs .tab-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.tab === tabName);
+            });
+
+            document.querySelectorAll('.tab-pane').forEach(pane => {
+                pane.classList.toggle('hidden', pane.id !== `pane-${tabName}`);
+            });
+
+            // تحديث حجم الخريطة أو الرسوم البيانية بعد إظهار التبويب
+            setTimeout(() => {
+                if (tabName === 'gis') {
+                    if (!map) initMap();
+                    if (map) {
+                        map.invalidateSize();
+                        updateMap(getFilteredDatasets(), false);
+                    }
+                }
+                Object.values(charts).forEach(ch => {
+                    try { if (ch) ch.resize(); } catch (e) {}
+                });
+            }, 60);
+        }
+        window.switchTab = switchTab;
+
+        // =========================================================================
+        // 5. تحديث بطاقات المؤشرات والرسوم البيانية
+        // =========================================================================
+        function updateKPIs(data) {
+            const { trFiltered, flFiltered, subFiltered, mvFiltered, cmpFiltered, stdFiltered } = data;
+
+            const outTotal = appState.sector === 'all'
+                ? TOTAL_OUTAGES_BASE.all
+                : (appState.sector === 'majardah' ? TOTAL_OUTAGES_BASE.majardah : TOTAL_OUTAGES_BASE.bareq);
+            const cmpTotal = cmpFiltered.reduce((s, r) => s + r[2], 0);
+            const stdTotalCases = stdFiltered.reduce((s, r) => s + (r[2] || 1), 0);
+            const stdMappedCount = stdFiltered.filter(r => r[3] && r[4]).length;
+
+            document.getElementById('kpi-outages').textContent = fmt(outTotal);
+            document.getElementById('kpi-outages-sub').textContent = `أبرز ${flFiltered.length} بؤرة أعطال داخل النطاق`;
+
+            document.getElementById('kpi-mv').textContent = fmt(mvFiltered.length);
+            const avgDur = mvFiltered.length ? Math.round(mvFiltered.reduce((s, r) => s + r[5], 0) / mvFiltered.length) : 0;
+            document.getElementById('kpi-mv-sub').textContent = `متوسط الإرجاع: ${avgDur} دقيقة`;
+
+            document.getElementById('kpi-tr').textContent = fmt(trFiltered.length);
+            const trCrit = trFiltered.filter(t => t.cmp_total > 0).length;
+            document.getElementById('kpi-tr-sub').textContent = `${trCrit} محول مرتبط بشكاوى حالية`;
+
+            document.getElementById('kpi-cmp').textContent = fmt(cmpTotal);
+            document.getElementById('kpi-cmp-sub').textContent = `${subFiltered.length} مشتركاً متقاطعاً على الخريطة`;
+
+            document.getElementById('kpi-std').textContent = fmt(stdTotalCases);
+            document.getElementById('kpi-std-sub').textContent = `${fmt(stdFiltered.length)} حساب (${stdMappedCount} موقع GIS)`;
+
+            // تحديث العدادات في الشريط العلوي والتبويبات
+            document.getElementById('tab-mv-count').textContent = fmt(INT_RECORDS.length);
+            document.getElementById('tab-out-count').textContent = fmt(TOTAL_OUTAGES_BASE.all);
+            document.getElementById('tab-tr-count').textContent = fmt(TR_DATA.length);
+            document.getElementById('tab-cmp-count').textContent = fmt(CMP_AGG.reduce((s, r) => s + r[2], 0));
+            document.getElementById('tab-std-count').textContent = fmt(STD_GROUPS_DATA.reduce((s, r) => s + (r[2] || 1), 0));
+            document.getElementById('deleted-count-badge').textContent = fmt(DELETED_ITEMS.length);
+
+            // ملخص النظرة الشاملة
+            document.getElementById('ov-stat-tr').textContent = fmt(trFiltered.length);
+            document.getElementById('ov-stat-fl').textContent = fmt(flFiltered.length);
+            document.getElementById('ov-stat-sub').textContent = fmt(subFiltered.length);
+            document.getElementById('ov-stat-std').textContent = fmt(stdMappedCount);
+            document.getElementById('ov-stat-oob').textContent = fmt(DELETED_ITEMS.length);
+
+            // مؤشرات تبويب MV
+            document.getElementById('mv-kpi-total').textContent = fmt(mvFiltered.length);
+            document.getElementById('mv-kpi-cust').textContent = fmt(mvFiltered.reduce((s, r) => s + r[7], 0));
+            document.getElementById('mv-kpi-avg').textContent = fmt(avgDur);
+            document.getElementById('mv-kpi-vip').textContent = fmt(mvFiltered.reduce((s, r) => s + r[8], 0));
+        }
+
+        function createOrUpdateChart(id, config) {
+            const canvas = document.getElementById(id);
+            if (!canvas || typeof Chart === 'undefined') return;
+            if (charts[id]) {
+                charts[id].destroy();
+            }
+            charts[id] = new Chart(canvas.getContext('2d'), config);
+        }
+
+        function updateCharts(data) {
+            const { trFiltered, flFiltered, mvFiltered, stdFiltered } = data;
+            Chart.defaults.color = '#94a3b8';
+            Chart.defaults.font.family = 'Cairo, Inter, sans-serif';
+
+            // 1. الرسم الشهري MV
+            const monthSet = Array.from(new Set(INT_RECORDS.map(r => String(r[1]).slice(0, 7)))).sort();
+            const majCounts = monthSet.map(m => mvFiltered.filter(r => r[0] === 0 && String(r[1]).startsWith(m)).length);
+            const barCounts = monthSet.map(m => mvFiltered.filter(r => r[0] === 1 && String(r[1]).startsWith(m)).length);
+            const monthLabels = monthSet.map(m => `${MONTHS_AR[m.slice(5, 7)] || m} ${m.slice(2, 4)}`);
+
+            createOrUpdateChart('chart-ov-monthly', {
+                type: 'bar',
+                data: {
+                    labels: monthLabels,
+                    datasets: [
+                        { label: 'المجاردة', data: majCounts, backgroundColor: '#38bdf8', borderRadius: 6 },
+                        { label: 'بارق', data: barCounts, backgroundColor: '#a78bfa', borderRadius: 6 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    onClick: (_, els) => {
+                        if (!els.length) return;
+                        const idx = els[0].index;
+                        const ym = monthSet[idx];
+                        appState.month = (appState.month === ym) ? 'all' : ym;
+                        document.getElementById('filter-month').value = appState.month;
+                        refreshAll();
+                    },
+                    plugins: { legend: { position: 'top', labels: { usePointStyle: true } } },
+                    scales: {
+                        x: { grid: { display: false } },
+                        y: { grid: { color: 'rgba(148,163,184,0.1)' }, beginAtZero: true }
+                    }
+                }
+            });
+
+            // 2. أسباب MV
+            const causeMap = {};
+            mvFiltered.forEach(r => { causeMap[r[3]] = (causeMap[r[3]] || 0) + 1; });
+            const causeEntries = Object.entries(causeMap).sort((a, b) => b[1] - a[1]).slice(0, 6);
+            createOrUpdateChart('chart-ov-causes', {
+                type: 'doughnut',
+                data: {
+                    labels: causeEntries.map(e => e[0]),
+                    datasets: [{
+                        data: causeEntries.map(e => e[1]),
+                        backgroundColor: ['#38bdf8', '#a78bfa', '#f43f5e', '#fbbf24', '#10b981', '#fb923c'],
+                        borderColor: '#11192d',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '62%',
+                    plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: { size: 11 } } } }
+                }
+            });
+
+            // 3. شكاوى المشتركين الـ 13
+            const majCmp = CMP_TYPES.map((_, i) => {
+                if (appState.sector === 'bareq') return 0;
+                const found = CMP_AGG.find(c => c[0] === 0 && c[1] === i);
+                return found ? found[2] : 0;
+            });
+            const barCmp = CMP_TYPES.map((_, i) => {
+                if (appState.sector === 'majardah') return 0;
+                const found = CMP_AGG.find(c => c[0] === 1 && c[1] === i);
+                return found ? found[2] : 0;
+            });
+            createOrUpdateChart('chart-ov-complaints', {
+                type: 'bar',
+                data: {
+                    labels: CMP_TYPES.slice(0, 8),
+                    datasets: [
+                        { label: 'المجاردة', data: majCmp.slice(0, 8), backgroundColor: '#0ea5e9', borderRadius: 5 },
+                        { label: 'بارق', data: barCmp.slice(0, 8), backgroundColor: '#10b981', borderRadius: 5 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    plugins: { legend: { position: 'top' } },
+                    scales: {
+                        x: { grid: { color: 'rgba(148,163,184,0.1)' } },
+                        y: { grid: { display: false }, ticks: { font: { size: 10 } } }
+                    }
+                }
+            });
+
+            // 4. أعلى بؤر الأعطال
+            const topFl = flFiltered.slice(0, 12);
+            createOrUpdateChart('chart-out-feeders', {
+                type: 'bar',
+                data: {
+                    labels: topFl.map(f => f[0]),
+                    datasets: [{
+                        label: 'عدد الأعطال',
+                        data: topFl.map(f => f[3]),
+                        backgroundColor: topFl.map(f => f[1] === 1 ? '#10b981' : '#f59e0b'),
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    onClick: (_, els) => {
+                        if (!els.length) return;
+                        const fl = topFl[els[0].index];
+                        if (fl) focusOnMap(`FL_${fl[0]}`, fl[9], fl[10]);
+                    },
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+                        y: { grid: { color: 'rgba(148,163,184,0.1)' }, beginAtZero: true }
+                    }
+                }
+            });
+
+            // 5. المحولات المحملة
+            const sortedTr = [...trFiltered].sort((a, b) => b.out_total - a.out_total).slice(0, 15);
+            createOrUpdateChart('chart-tr-load', {
+                type: 'bar',
+                data: {
+                    labels: sortedTr.map(t => t.fl),
+                    datasets: [
+                        { label: 'الأعطال', data: sortedTr.map(t => t.out_total), backgroundColor: '#f43f5e', borderRadius: 5 },
+                        { label: 'التحميل (Val)', data: sortedTr.map(t => t.val), backgroundColor: '#38bdf8', borderRadius: 5 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    onClick: (_, els) => {
+                        if (!els.length) return;
+                        const tr = sortedTr[els[0].index];
+                        if (tr) focusOnMap(`TR_${tr.fl}`, tr.lat, tr.lng);
+                    },
+                    plugins: { legend: { position: 'top' } },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+                        y: { grid: { color: 'rgba(148,163,184,0.1)' }, beginAtZero: true }
+                    }
+                }
+            });
+
+            // 6. المعايير المضمونة — التوزيع حسب المركز
+            const majStd = stdFiltered.filter(r => r[0].includes('المجارد')).reduce((s, r) => s + r[2], 0);
+            const barStd = stdFiltered.filter(r => r[0].includes('بارق')).reduce((s, r) => s + r[2], 0);
+            createOrUpdateChart('chart-std-centers', {
+                type: 'doughnut',
+                data: {
+                    labels: ['مركز خدمات المجاردة', 'مركز بارق'],
+                    datasets: [{
+                        data: [majStd, barStd],
+                        backgroundColor: ['#f59e0b', '#d946ef'],
+                        borderColor: '#11192d',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '60%',
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            });
+
+            // 7. المعايير المضمونة — أكثر الحسابات تكراراً
+            const topStd = [...stdFiltered].sort((a, b) => b[2] - a[2]).slice(0, 12);
+            createOrUpdateChart('chart-std-top', {
+                type: 'bar',
+                data: {
+                    labels: topStd.map(r => r[1]),
+                    datasets: [{
+                        label: 'عدد مرات التكرار',
+                        data: topStd.map(r => r[2]),
+                        backgroundColor: topStd.map(r => r[0].includes('بارق') ? '#d946ef' : '#f59e0b'),
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    onClick: (_, els) => {
+                        if (!els.length) return;
+                        const row = topStd[els[0].index];
+                        if (row && row[3] && row[4]) {
+                            focusOnMap(`STD_${row[1]}`, row[3], row[4]);
+                        } else {
+                            showToast('هذا الحساب لا يحتوي على إحداثيات جغرافية حالياً');
+                        }
+                    },
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+                        y: { grid: { color: 'rgba(148,163,184,0.1)' }, beginAtZero: true }
+                    }
+                }
+            });
+        }
+
+        // =========================================================================
+        // 6. تحديث الجداول التفاعلية
+        // =========================================================================
+        function updateTables(data) {
+            const { trFiltered, flFiltered, subFiltered, mvFiltered, stdFiltered } = data;
+
+            // 6.1 جدول الانقطاعات MV (مع ترقيم صفحات)
+            const mvPages = Math.max(1, Math.ceil(mvFiltered.length / appState.pageSize));
+            if (appState.mvPage > mvPages) appState.mvPage = mvPages;
+            const mvSlice = mvFiltered.slice((appState.mvPage - 1) * appState.pageSize, appState.mvPage * appState.pageSize);
+            document.getElementById('tbody-mv').innerHTML = mvSlice.map(r => `
+                <tr class="hover:bg-slate-800/40 transition-colors">
+                    <td class="p-3 font-bold ${r[0] === 1 ? 'text-violet-300' : 'text-sky-300'}">${SUB_STATIONS[r[0]] || 'المجاردة'}</td>
+                    <td class="p-3 font-mono">${r[1]}</td>
+                    <td class="p-3 font-mono text-slate-400">${r[2]}</td>
+                    <td class="p-3 font-mono text-amber-300">${r[10]}</td>
+                    <td class="p-3 text-slate-200">${r[3]}</td>
+                    <td class="p-3 font-mono font-bold text-rose-300">${r[6]}</td>
+                    <td class="p-3 font-mono font-bold text-white">${fmt(r[7])}</td>
+                    <td class="p-3 font-mono text-slate-400">${r[11]}</td>
+                </tr>
+            `).join('') || `<tr><td colspan="8" class="p-6 text-center text-slate-400">لا توجد نتائج مطابقة للبحث</td></tr>`;
+
+            document.getElementById('mv-pagination').innerHTML = `
+                <span>عرض ${mvSlice.length} من أصل ${fmt(mvFiltered.length)} انقطاع</span>
+                <div class="flex items-center gap-1.5">
+                    <button type="button" onclick="changePage('mv', -1)" ${appState.mvPage <= 1 ? 'disabled' : ''} class="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-white font-bold cursor-pointer">السابق</button>
+                    <span class="px-2 font-mono">${appState.mvPage} / ${mvPages}</span>
+                    <button type="button" onclick="changePage('mv', 1)" ${appState.mvPage >= mvPages ? 'disabled' : ''} class="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-white font-bold cursor-pointer">التالي</button>
+                </div>
+            `;
+
+            // 6.2 جدول بؤر الأعطال FL
+            document.getElementById('tbody-fl').innerHTML = flFiltered.map(f => `
+                <tr class="hover:bg-slate-800/40 transition-colors">
+                    <td class="p-3 font-mono font-bold text-amber-300">${f[0]}</td>
+                    <td class="p-3">${ZONES[f[1]]}</td>
+                    <td class="p-3 font-mono text-slate-300">${f[2]}</td>
+                    <td class="p-3 font-mono font-extrabold text-white">${f[3]}</td>
+                    <td class="p-3 font-mono text-slate-300">${f[4]}</td>
+                    <td class="p-3 font-mono text-violet-300">${f[5]}</td>
+                    <td class="p-3 font-mono text-sky-300">${f[6]}</td>
+                    <td class="p-3 font-mono text-rose-300">${f[7]}</td>
+                    <td class="p-3 text-center whitespace-nowrap">
+                        <button type="button" onclick="focusOnMap('FL_${f[0]}', ${f[9]}, ${f[10]})" class="px-2 py-1 rounded-lg bg-sky-500/15 hover:bg-sky-500/30 text-sky-300 font-bold ml-1 cursor-pointer">خريطة</button>
+                        <button type="button" onclick="deleteItemByKey('FL:${f[0]}')" class="px-2 py-1 rounded-lg bg-rose-500/15 hover:bg-rose-500/30 text-rose-300 font-bold cursor-pointer">حذف</button>
+                    </td>
+                </tr>
+            `).join('') || `<tr><td colspan="9" class="p-6 text-center text-slate-400">لا توجد بؤر أعطال مطابقة</td></tr>`;
+
+            // 6.3 جدول المحولات المحملة
+            document.getElementById('tbody-tr').innerHTML = trFiltered.map(tr => `
+                <tr class="hover:bg-slate-800/40 transition-colors">
+                    <td class="p-3 font-mono font-bold text-rose-300">${tr.fl}</td>
+                    <td class="p-3">${tr.zone}</td>
+                    <td class="p-3 font-mono">${tr.kva}</td>
+                    <td class="p-3 font-mono font-bold text-sky-400">${tr.val}</td>
+                    <td class="p-3 font-mono text-slate-300">${tr.feeder}</td>
+                    <td class="p-3 font-mono font-bold text-amber-300">${tr.out_total}</td>
+                    <td class="p-3 font-mono font-bold ${tr.cmp_total > 0 ? 'text-rose-400' : 'text-emerald-400'}">${tr.cmp_total}</td>
+                    <td class="p-3 text-center whitespace-nowrap">
+                        <button type="button" onclick="focusOnMap('TR_${tr.fl}', ${tr.lat}, ${tr.lng})" class="px-2 py-1 rounded-lg bg-sky-500/15 hover:bg-sky-500/30 text-sky-300 font-bold ml-1 cursor-pointer">خريطة</button>
+                        <button type="button" onclick="deleteItemByKey('TR:${tr.fl}')" class="px-2 py-1 rounded-lg bg-rose-500/15 hover:bg-rose-500/30 text-rose-300 font-bold cursor-pointer">حذف</button>
+                    </td>
+                </tr>
+            `).join('') || `<tr><td colspan="8" class="p-6 text-center text-slate-400">لا توجد محولات مطابقة</td></tr>`;
+
+            // 6.4 جدول المشتركين المتقاطعين
+            document.getElementById('tbody-sub').innerHTML = subFiltered.map(s => `
+                <tr class="hover:bg-slate-800/40 transition-colors">
+                    <td class="p-3 font-mono font-bold text-sky-300">${s[0]}</td>
+                    <td class="p-3 font-bold text-white">${s[1]}</td>
+                    <td class="p-3">${s[2]}</td>
+                    <td class="p-3 font-mono text-amber-300">${s[3] || '—'}</td>
+                    <td class="p-3 font-mono font-bold text-amber-400">${s[5]}</td>
+                    <td class="p-3 font-mono font-bold text-rose-400">${s[6]}</td>
+                    <td class="p-3 text-slate-300">${s[7]}</td>
+                    <td class="p-3 text-center whitespace-nowrap">
+                        <button type="button" onclick="focusOnMap('SUB_${s[0]}', ${s[9]}, ${s[10]})" class="px-2 py-1 rounded-lg bg-sky-500/15 hover:bg-sky-500/30 text-sky-300 font-bold ml-1 cursor-pointer">خريطة</button>
+                        <button type="button" onclick="deleteItemByKey('SUB:${s[0]}')" class="px-2 py-1 rounded-lg bg-rose-500/15 hover:bg-rose-500/30 text-rose-300 font-bold cursor-pointer">حذف</button>
+                    </td>
+                </tr>
+            `).join('') || `<tr><td colspan="8" class="p-6 text-center text-slate-400">لا يوجد مشتركون مطابقون</td></tr>`;
+
+            // 6.5 قسم وجدول المعايير المضمونة
+            updateStandardsSection(stdFiltered);
+
+            // 6.6 تحديث نافذة المحذوفة وخارج الحدود
+            renderDeletedTable();
+        }
+
+        function updateStandardsSection(filtered) {
+            const totalCases = filtered.reduce((s, r) => s + (r[2] || 1), 0);
+            const majCases = filtered.filter(r => r[0].includes('المجارد')).reduce((s, r) => s + r[2], 0);
+            const barCases = filtered.filter(r => r[0].includes('بارق')).reduce((s, r) => s + r[2], 0);
+            const mapped = filtered.filter(r => r[3] && r[4]);
+            const topAcc = [...filtered].sort((a, b) => b[2] - a[2])[0];
+
+            document.getElementById('std-kpi-grid').innerHTML = [
+                { title: 'إجمالي حالات المعايير المضمونة', val: fmt(totalCases), sub: `${fmt(filtered.length)} حساب فريد داخل النطاق`, cls: 'bg-amber-500/15 border-amber-500/35 text-amber-400', icon: 'shield-check' },
+                { title: 'توزيع المراكز', val: `المجاردة: ${fmt(majCases)}`, sub: `مركز بارق: ${fmt(barCases)} حالة`, cls: 'bg-sky-500/15 border-sky-500/35 text-sky-400', icon: 'building-2' },
+                { title: 'مواقع مرتبطة على الخريطة GIS', val: fmt(mapped.length), sub: `${((mapped.length / (filtered.length || 1)) * 100).toFixed(1)}% من الحسابات لها موقع`, cls: 'bg-fuchsia-500/15 border-fuchsia-500/35 text-fuchsia-400', icon: 'map-pin' },
+                { title: 'أكثر حساب تكراراً', val: topAcc ? topAcc[1] : '—', sub: topAcc ? `تكرر ${fmt(topAcc[2])} مرة (${topAcc[0]})` : 'لا توجد بيانات', cls: 'bg-emerald-500/15 border-emerald-500/35 text-emerald-400', icon: 'award' }
+            ].map(k => `
+                <div class="bg-[#11192d] border border-slate-800 rounded-2xl p-4 shadow-lg">
+                    <div class="flex items-start justify-between gap-2">
+                        <div class="min-w-0">
+                            <p class="text-xs font-bold text-slate-400 truncate">${k.title}</p>
+                            <h4 class="text-xl font-black text-white mt-1 font-mono truncate">${k.val}</h4>
+                        </div>
+                        <div class="w-9 h-9 rounded-xl border flex items-center justify-center shrink-0 ${k.cls}">
+                            <i data-lucide="${k.icon}" class="w-4 h-4"></i>
+                        </div>
+                    </div>
+                    <p class="text-[11px] text-slate-400 mt-2.5 pt-2 border-t border-slate-800/80">${k.sub}</p>
+                </div>
+            `).join('');
+
+            const sorted = [...filtered].sort((a, b) => b[2] - a[2]);
+            const pages = Math.max(1, Math.ceil(sorted.length / appState.pageSize));
+            if (appState.stdPage > pages) appState.stdPage = pages;
+            const slice = sorted.slice((appState.stdPage - 1) * appState.pageSize, appState.stdPage * appState.pageSize);
+
+            document.getElementById('std-table-count').textContent = `${fmt(sorted.length)} حساب • ${fmt(totalCases)} حالة`;
+            document.getElementById('tbody-std').innerHTML = slice.map(r => {
+                const hasGeo = Boolean(r[3] && r[4]);
+                return `
+                    <tr class="hover:bg-slate-800/40 transition-colors">
+                        <td class="p-3 font-bold ${r[0].includes('بارق') ? 'text-fuchsia-300' : 'text-amber-300'}">${r[0]}</td>
+                        <td class="p-3 font-mono font-bold text-white">${r[1]}</td>
+                        <td class="p-3 font-mono font-black text-amber-400">${fmt(r[2])}</td>
+                        <td class="p-3 font-mono text-slate-300">${hasGeo ? Number(r[3]).toFixed(5) : '—'}</td>
+                        <td class="p-3 font-mono text-slate-300">${hasGeo ? Number(r[4]).toFixed(5) : '—'}</td>
+                        <td class="p-3">
+                            <span class="px-2 py-0.5 rounded-md text-[11px] font-bold ${hasGeo ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30' : 'bg-slate-800 text-slate-400'}">${r[5]}</span>
+                        </td>
+                        <td class="p-3 text-center whitespace-nowrap">
+                            ${hasGeo ? `<button type="button" onclick="focusOnMap('STD_${r[1]}', ${r[3]}, ${r[4]})" class="px-2 py-1 rounded-lg bg-fuchsia-500/20 hover:bg-fuchsia-500/35 text-fuchsia-200 font-bold ml-1 cursor-pointer">خريطة</button>` : ''}
+                            <button type="button" onclick="deleteItemByKey('STD:${r[1]}')" class="px-2 py-1 rounded-lg bg-rose-500/15 hover:bg-rose-500/30 text-rose-300 font-bold cursor-pointer">حذف</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('') || `<tr><td colspan="7" class="p-6 text-center text-slate-400">لا توجد بيانات معايير مضمونة مطابقة</td></tr>`;
+
+            document.getElementById('std-pagination').innerHTML = `
+                <span>عرض ${slice.length} من أصل ${fmt(sorted.length)} حساب</span>
+                <div class="flex items-center gap-1.5">
+                    <button type="button" onclick="changePage('std', -1)" ${appState.stdPage <= 1 ? 'disabled' : ''} class="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-white font-bold cursor-pointer">السابق</button>
+                    <span class="px-2 font-mono">${appState.stdPage} / ${pages}</span>
+                    <button type="button" onclick="changePage('std', 1)" ${appState.stdPage >= pages ? 'disabled' : ''} class="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-white font-bold cursor-pointer">التالي</button>
+                </div>
+            `;
+
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+
+        window.changePage = function (type, delta) {
+            if (type === 'mv') appState.mvPage = Math.max(1, appState.mvPage + delta);
+            if (type === 'std') appState.stdPage = Math.max(1, appState.stdPage + delta);
+            updateTables(getFilteredDatasets());
+        };
+
+        // =========================================================================
+        // 7. الخريطة الجغرافية التفاعلية (GIS) + أداة التحديد المربع + الحذف والتصدير
+        // =========================================================================
+        function initMap() {
+            if (map || typeof L === 'undefined') return;
+            const container = document.getElementById('gis-map');
+            if (!container) return;
+
+            map = L.map('gis-map', { zoomControl: true, preferCanvas: true }).setView([19.04, 41.92], 11);
+
+            baseLayers.dark = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; OpenStreetMap &copy; CARTO',
+                maxZoom: 19
+            });
+            baseLayers.sat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                attribution: 'Tiles &copy; Esri',
+                maxZoom: 19
+            });
+            baseLayers.dark.addTo(map);
+
+            layers.tr = L.layerGroup().addTo(map);
+            layers.fl = L.layerGroup().addTo(map);
+            layers.cmp = L.layerGroup().addTo(map);
+            layers.std = L.layerGroup().addTo(map);
+
+            setupBoxSelect(container);
+        }
+
+        function setupBoxSelect(container) {
+            const box = document.getElementById('map-select-box');
+            let startPt = null;
+
+            container.addEventListener('mousedown', e => {
+                if (!appState.boxSelectMode || e.button !== 0) return;
+                const rect = container.getBoundingClientRect();
+                startPt = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+                box.style.left = startPt.x + 'px';
+                box.style.top = startPt.y + 'px';
+                box.style.width = '0px';
+                box.style.height = '0px';
+                box.style.display = 'block';
+            });
+
+            container.addEventListener('mousemove', e => {
+                if (!appState.boxSelectMode || !startPt) return;
+                const rect = container.getBoundingClientRect();
+                const cx = e.clientX - rect.left;
+                const cy = e.clientY - rect.top;
+                box.style.left = Math.min(startPt.x, cx) + 'px';
+                box.style.top = Math.min(startPt.y, cy) + 'px';
+                box.style.width = Math.abs(cx - startPt.x) + 'px';
+                box.style.height = Math.abs(cy - startPt.y) + 'px';
+            });
+
+            window.addEventListener('mouseup', e => {
+                if (!appState.boxSelectMode || !startPt) return;
+                const rect = container.getBoundingClientRect();
+                const endX = e.clientX - rect.left;
+                const endY = e.clientY - rect.top;
+                box.style.display = 'none';
+
+                const minX = Math.min(startPt.x, endX), maxX = Math.max(startPt.x, endX);
+                const minY = Math.min(startPt.y, endY), maxY = Math.max(startPt.y, endY);
+                startPt = null;
+
+                if (maxX - minX < 8 || maxY - minY < 8) return;
+
+                const nw = map.containerPointToLatLng([minX, minY]);
+                const se = map.containerPointToLatLng([maxX, maxY]);
+                const bounds = L.latLngBounds(nw, se);
+
+                let added = 0;
+                const data = getFilteredDatasets();
+                if (document.getElementById('layer-tr').checked) {
+                    data.trFiltered.forEach(t => { if (t.lat && t.lng && bounds.contains([t.lat, t.lng])) { SELECTED_IDS.add(`TR:${t.fl}`); added++; } });
+                }
+                if (document.getElementById('layer-fl').checked) {
+                    data.flFiltered.forEach(f => { if (f[9] && f[10] && bounds.contains([f[9], f[10]])) { SELECTED_IDS.add(`FL:${f[0]}`); added++; } });
+                }
+                if (document.getElementById('layer-cmp').checked) {
+                    data.subFiltered.forEach(s => { if (s[9] && s[10] && bounds.contains([s[9], s[10]])) { SELECTED_IDS.add(`SUB:${s[0]}`); added++; } });
+                }
+                if (document.getElementById('layer-std').checked) {
+                    data.stdFiltered.forEach(r => { if (r[3] && r[4] && bounds.contains([r[3], r[4]])) { SELECTED_IDS.add(`STD:${r[1]}`); added++; } });
+                }
+
+                updateSelectionToolbar();
+                updateMap(data, false);
+                if (added > 0) showToast(`تم تحديد ${added} نقطة داخل المربع (الإجمالي المحدد: ${SELECTED_IDS.size})`);
+            });
+        }
+
+        function updateMap(data, autoFit = false) {
+            if (!map) return;
+            const { trFiltered, flFiltered, subFiltered, stdFiltered } = data;
+            layers.tr.clearLayers();
+            layers.fl.clearLayers();
+            layers.cmp.clearLayers();
+            layers.std.clearLayers();
+            markerRegistry = {};
+
+            const boundsPoints = [];
+
+            // 1. طبقة المحولات المحملة
+            trFiltered.forEach(tr => {
+                if (!tr.lat || !tr.lng) return;
+                const hasCmp = tr.cmp_total > 0;
+                const bg = hasCmp ? '#f43f5e' : '#f97316';
+                const pulseCls = hasCmp ? 'tr-pulse-critical' : 'tr-pulse-warning';
+                const selKey = `TR:${tr.fl}`;
+                const isSel = SELECTED_IDS.has(selKey);
+
+                const icon = L.divIcon({
+                    className: 'tr-gis-marker',
+                    html: `<div class="${pulseCls} ${isSel ? 'selected-marker-ring' : ''}" style="width:22px;height:22px;background:${bg};border:2px solid #fff;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:900;box-shadow:0 2px 8px rgba(0,0,0,0.6);">⚡</div>`,
+                    iconSize: [22, 22],
+                    iconAnchor: [11, 11]
+                });
+
+                const popup = `
+                    <div class="min-w-[250px] space-y-2 text-xs">
+                        <div class="flex items-center justify-between border-b border-slate-700 pb-1.5">
+                            <span class="font-extrabold text-rose-400 font-mono">${tr.fl}</span>
+                            <span class="px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 font-bold">${tr.kva} kVA</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-1 text-slate-300">
+                            <div>المغذي: <span class="font-mono text-white text-[10px]">${tr.feeder}</span></div>
+                            <div>التحميل: <span class="font-bold text-sky-400">${tr.val}</span></div>
+                            <div>الأعطال: <span class="font-bold text-amber-400">${tr.out_total}</span></div>
+                            <div>الشكاوى: <span class="font-bold ${hasCmp ? 'text-rose-400' : 'text-emerald-400'}">${tr.cmp_total}</span></div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-1.5 pt-1">
+                            <button onclick="toggleSelectKey('${selKey}')" class="py-1.5 px-2 rounded-lg ${isSel ? 'bg-sky-500 text-slate-950' : 'bg-sky-500/20 text-sky-300 border border-sky-500/40'} font-bold cursor-pointer">${isSel ? '✓ محدد' : '+ تحديد'}</button>
+                            <button onclick="deleteItemByKey('${selKey}')" class="py-1.5 px-2 rounded-lg bg-rose-500/20 hover:bg-rose-500 text-rose-300 hover:text-white border border-rose-500/40 font-bold cursor-pointer">🗑️ حذف وتحديث</button>
+                        </div>
+                        <a href="https://www.google.com/maps?q=${tr.lat},${tr.lng}" target="_blank" rel="noopener noreferrer" class="block w-full text-center py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold">فتح في Google Maps ↗</a>
+                    </div>
+                `;
+                const m = L.marker([tr.lat, tr.lng], { icon }).bindPopup(popup);
+                layers.tr.addLayer(m);
+                markerRegistry[`TR_${tr.fl}`] = m;
+                boundsPoints.push([tr.lat, tr.lng]);
+            });
+
+            // 2. طبقة بؤر الأعطال FL
+            flFiltered.forEach(f => {
+                const [fl, zIdx, feeder, outCnt, , , subsCnt, cmpCnt, , lat, lng] = f;
+                if (!lat || !lng) return;
+                const selKey = `FL:${fl}`;
+                const isSel = SELECTED_IDS.has(selKey);
+
+                const icon = L.divIcon({
+                    className: 'fl-gis-marker',
+                    html: `<div class="${isSel ? 'selected-marker-ring' : ''}" style="width:15px;height:15px;background:#fbbf24;border:2px solid #0b1120;transform:rotate(45deg);border-radius:3px;box-shadow:0 2px 6px rgba(0,0,0,0.6);"></div>`,
+                    iconSize: [15, 15],
+                    iconAnchor: [7, 7]
+                });
+
+                const popup = `
+                    <div class="min-w-[240px] space-y-2 text-xs">
+                        <div class="flex items-center justify-between border-b border-slate-700 pb-1.5">
+                            <span class="font-bold text-amber-400 font-mono">${fl}</span>
+                            <span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold">${outCnt} عطل</span>
+                        </div>
+                        <div class="space-y-1 text-slate-300">
+                            <div>القطاع: <span class="text-white font-bold">${ZONES[zIdx]}</span></div>
+                            <div>المغذي: <span class="font-mono text-[11px]">${feeder}</span></div>
+                            <div>المشتركون: <span class="text-sky-400 font-bold">${subsCnt}</span> • الشكاوى: <span class="text-rose-400 font-bold">${cmpCnt}</span></div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-1.5 pt-1">
+                            <button onclick="toggleSelectKey('${selKey}')" class="py-1.5 px-2 rounded-lg ${isSel ? 'bg-sky-500 text-slate-950' : 'bg-sky-500/20 text-sky-300 border border-sky-500/40'} font-bold cursor-pointer">${isSel ? '✓ محدد' : '+ تحديد'}</button>
+                            <button onclick="deleteItemByKey('${selKey}')" class="py-1.5 px-2 rounded-lg bg-rose-500/20 hover:bg-rose-500 text-rose-300 hover:text-white border border-rose-500/40 font-bold cursor-pointer">🗑️ حذف وتحديث</button>
+                        </div>
+                        <a href="https://www.google.com/maps?q=${lat},${lng}" target="_blank" rel="noopener noreferrer" class="block w-full text-center py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold">فتح في Google Maps ↗</a>
+                    </div>
+                `;
+                const m = L.marker([lat, lng], { icon }).bindPopup(popup);
+                layers.fl.addLayer(m);
+                markerRegistry[`FL_${fl}`] = m;
+                boundsPoints.push([lat, lng]);
+            });
+
+            // 3. طبقة الشكاوى والمشتركين
+            subFiltered.forEach(s => {
+                const [acc, name, zoneName, fl, , outCnt, cmpCnt, topCmp, , lat, lng] = s;
+                if (!lat || !lng) return;
+                const selKey = `SUB:${acc}`;
+                const isSel = SELECTED_IDS.has(selKey);
+                const pinColor = zoneName.includes('بارق') ? '#10b981' : '#38bdf8';
+
+                const icon = L.divIcon({
+                    className: 'cmp-gis-marker',
+                    html: `<div class="${isSel ? 'selected-marker-ring' : ''}" style="width:19px;height:19px;background:${pinColor};border:2px solid #0b1120;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#0b1120;font-size:10px;font-weight:900;">${cmpCnt}</div>`,
+                    iconSize: [19, 19],
+                    iconAnchor: [9, 9]
+                });
+
+                const popup = `
+                    <div class="min-w-[250px] space-y-2 text-xs">
+                        <div class="flex items-center justify-between border-b border-slate-700 pb-1.5">
+                            <span class="font-bold text-sky-400 font-mono">${acc}</span>
+                            <span class="px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 font-bold">${cmpCnt} شكوى / ${outCnt} عطل</span>
+                        </div>
+                        <div class="space-y-1 text-slate-300">
+                            <div class="font-bold text-white">${name}</div>
+                            <div>المحول: <span class="font-mono text-amber-300">${fl || '—'}</span></div>
+                            <div>أبرز شكوى: <span class="text-emerald-300">${topCmp}</span></div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-1.5 pt-1">
+                            <button onclick="toggleSelectKey('${selKey}')" class="py-1.5 px-2 rounded-lg ${isSel ? 'bg-sky-500 text-slate-950' : 'bg-sky-500/20 text-sky-300 border border-sky-500/40'} font-bold cursor-pointer">${isSel ? '✓ محدد' : '+ تحديد'}</button>
+                            <button onclick="deleteItemByKey('${selKey}')" class="py-1.5 px-2 rounded-lg bg-rose-500/20 hover:bg-rose-500 text-rose-300 hover:text-white border border-rose-500/40 font-bold cursor-pointer">🗑️ حذف وتحديث</button>
+                        </div>
+                        <a href="https://www.google.com/maps?q=${lat},${lng}" target="_blank" rel="noopener noreferrer" class="block w-full text-center py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold">فتح في Google Maps ↗</a>
+                    </div>
+                `;
+                const m = L.marker([lat, lng], { icon }).bindPopup(popup);
+                layers.cmp.addLayer(m);
+                markerRegistry[`SUB_${acc}`] = m;
+                boundsPoints.push([lat, lng]);
+            });
+
+            // 4. طبقة المعايير المضمونة (★)
+            stdFiltered.forEach(r => {
+                const [office, acc, cnt, lat, lng, src] = r;
+                if (!lat || !lng) return;
+                const selKey = `STD:${acc}`;
+                const isSel = SELECTED_IDS.has(selKey);
+
+                const icon = L.divIcon({
+                    className: 'std-gis-marker',
+                    html: `<div class="${isSel ? 'selected-marker-ring' : ''}" style="min-width:20px;height:20px;padding:0 4px;background:#d946ef;border:2px solid #fff;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:900;box-shadow:0 2px 8px rgba(0,0,0,0.6);">★${cnt > 1 ? cnt : ''}</div>`,
+                    iconSize: [24, 20],
+                    iconAnchor: [12, 10]
+                });
+
+                const popup = `
+                    <div class="min-w-[250px] space-y-2 text-xs">
+                        <div class="flex items-center justify-between border-b border-slate-700 pb-1.5">
+                            <span class="font-bold text-fuchsia-300 font-mono">${acc}</span>
+                            <span class="px-2 py-0.5 rounded bg-fuchsia-500/20 text-fuchsia-200 font-bold">معايير مضمونة (${cnt})</span>
+                        </div>
+                        <div class="space-y-1 text-slate-300">
+                            <div>المركز: <span class="text-white font-bold">${office}</span></div>
+                            <div>مصدر الإحداثيات: <span class="text-emerald-300">${src}</span></div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-1.5 pt-1">
+                            <button onclick="toggleSelectKey('${selKey}')" class="py-1.5 px-2 rounded-lg ${isSel ? 'bg-sky-500 text-slate-950' : 'bg-sky-500/20 text-sky-300 border border-sky-500/40'} font-bold cursor-pointer">${isSel ? '✓ محدد' : '+ تحديد'}</button>
+                            <button onclick="deleteItemByKey('${selKey}')" class="py-1.5 px-2 rounded-lg bg-rose-500/20 hover:bg-rose-500 text-rose-300 hover:text-white border border-rose-500/40 font-bold cursor-pointer">🗑️ حذف وتحديث</button>
+                        </div>
+                        <a href="https://www.google.com/maps?q=${lat},${lng}" target="_blank" rel="noopener noreferrer" class="block w-full text-center py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold">فتح في Google Maps ↗</a>
+                    </div>
+                `;
+                const m = L.marker([lat, lng], { icon }).bindPopup(popup);
+                layers.std.addLayer(m);
+                markerRegistry[`STD_${acc}`] = m;
+                boundsPoints.push([lat, lng]);
+            });
+
+            if (autoFit && boundsPoints.length > 0) {
+                map.fitBounds(boundsPoints, { padding: [35, 35], maxZoom: 13 });
+            }
+        }
+
+        window.focusOnMap = function (regKey, lat, lng) {
+            switchTab('gis');
+            setTimeout(() => {
+                if (!map) initMap();
+                map.setView([lat, lng], 15, { animate: true });
+                const m = markerRegistry[regKey];
+                if (m) m.openPopup();
+            }, 140);
+        };
+
+        window.toggleSelectKey = function (selKey) {
+            if (SELECTED_IDS.has(selKey)) SELECTED_IDS.delete(selKey);
+            else SELECTED_IDS.add(selKey);
+            updateSelectionToolbar();
+            updateMap(getFilteredDatasets(), false);
+        };
+
+        function updateSelectionToolbar() {
+            const bar = document.getElementById('selection-toolbar');
+            const val = document.getElementById('selected-count-val');
+            if (!bar || !val) return;
+            val.textContent = SELECTED_IDS.size;
+            bar.classList.toggle('hidden', SELECTED_IDS.size === 0);
+        }
+
+        window.deleteItemByKey = function (selKey, silent = false) {
+            const [kind, id] = selKey.split(':');
+            if (kind === 'TR') {
+                const idx = TR_DATA.findIndex(t => t.fl === id);
+                if (idx !== -1) {
+                    const [rm] = TR_DATA.splice(idx, 1);
+                    DELETED_ITEMS.push({ type: 'محول محمل', id: rm.fl, zone: rm.zone, lat: rm.lat, lng: rm.lng, reason: 'حذف يدوي من المنظومة' });
+                }
+            } else if (kind === 'FL') {
+                const idx = FL_TOP.findIndex(f => f[0] === id);
+                if (idx !== -1) {
+                    const [rm] = FL_TOP.splice(idx, 1);
+                    DELETED_ITEMS.push({ type: 'بؤرة أعطال (FL)', id: rm[0], zone: ZONES[rm[1]], lat: rm[9], lng: rm[10], reason: 'حذف يدوي من المنظومة' });
+                }
+            } else if (kind === 'SUB') {
+                const idx = SUB_TOP.findIndex(s => s[0] === id);
+                if (idx !== -1) {
+                    const [rm] = SUB_TOP.splice(idx, 1);
+                    DELETED_ITEMS.push({ type: 'مشترك متقاطع', id: `${rm[0]} - ${rm[1]}`, zone: rm[2], lat: rm[9], lng: rm[10], reason: 'حذف يدوي من المنظومة' });
+                }
+            } else if (kind === 'STD') {
+                const idx = STD_GROUPS_DATA.findIndex(r => r[1] === id);
+                if (idx !== -1) {
+                    const [rm] = STD_GROUPS_DATA.splice(idx, 1);
+                    DELETED_ITEMS.push({ type: 'معايير مضمونة', id: rm[1], zone: rm[0], lat: rm[3] || '', lng: rm[4] || '', reason: 'حذف يدوي من المنظومة' });
+                }
+            }
+            SELECTED_IDS.delete(selKey);
+            if (!silent) {
+                updateSelectionToolbar();
+                refreshAll();
+                showToast(`تم حذف (${id}) ونقله إلى أرشيف المحذوفات وتحديث البيانات`);
+            }
+        };
+
+        function getSelectedObjects() {
+            const out = [];
+            SELECTED_IDS.forEach(selKey => {
+                const [kind, id] = selKey.split(':');
+                if (kind === 'TR') {
+                    const t = TR_DATA.find(x => x.fl === id);
+                    if (t) out.push({ 'النوع': 'محول محمل', 'المعرّف': t.fl, 'القطاع': t.zone, 'المغذي': t.feeder, 'الأعطال': t.out_total, 'الشكاوى': t.cmp_total, 'Lat': t.lat, 'Lng': t.lng });
+                } else if (kind === 'FL') {
+                    const f = FL_TOP.find(x => x[0] === id);
+                    if (f) out.push({ 'النوع': 'بؤرة أعطال FL', 'المعرّف': f[0], 'القطاع': ZONES[f[1]], 'المغذي': f[2], 'الأعطال': f[3], 'الشكاوى': f[7], 'Lat': f[9], 'Lng': f[10] });
+                } else if (kind === 'SUB') {
+                    const s = SUB_TOP.find(x => x[0] === id);
+                    if (s) out.push({ 'النوع': 'مشترك متقاطع', 'المعرّف': `${s[0]} - ${s[1]}`, 'القطاع': s[2], 'المغذي': s[4], 'الأعطال': s[5], 'الشكاوى': s[6], 'Lat': s[9], 'Lng': s[10] });
+                } else if (kind === 'STD') {
+                    const r = STD_GROUPS_DATA.find(x => x[1] === id);
+                    if (r) out.push({ 'النوع': 'معايير مضمونة', 'المعرّف': r[1], 'القطاع': r[0], 'المغذي': '—', 'الأعطال': r[2], 'الشكاوى': 0, 'Lat': r[3] || '', 'Lng': r[4] || '' });
+                }
+            });
+            return out;
+        }
+
+        // =========================================================================
+        // 8. تصدير Excel / CSV وأرشيف المحذوفة
+        // =========================================================================
+        function exportJsonToExcel(rows, filename, sheetName = 'البيانات') {
+            if (!rows || !rows.length) {
+                showToast('لا توجد بيانات للتصدير');
+                return;
+            }
+            if (typeof XLSX !== 'undefined') {
+                const ws = XLSX.utils.json_to_sheet(rows);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, sheetName.slice(0, 31));
+                XLSX.writeFile(wb, filename.endsWith('.xlsx') ? filename : `${filename}.xlsx`);
+                showToast(`تم تنزيل الملف ${filename}`);
+            } else {
+                const headers = Object.keys(rows[0]);
+                const csv = '\uFEFF' + [headers.join(','), ...rows.map(r => headers.map(h => `"${String(r[h] ?? '').replace(/"/g, '""')}"`).join(','))].join('\n');
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url; a.download = filename.replace(/\.xlsx$/, '.csv'); a.click();
+                URL.revokeObjectURL(url);
+                showToast(`تم تنزيل الملف ${a.download}`);
+            }
+        }
+
+        window.exportTableCSV = function (section) {
+            const data = getFilteredDatasets();
+            if (section === 'interruptions') {
+                exportJsonToExcel(data.mvFiltered.map(r => ({
+                    'المحطة': SUB_STATIONS[r[0]], 'التاريخ': r[1], 'الوقت': r[2], 'المغذي': r[10], 'السبب': r[3], 'المدة': r[6], 'المتأثرون': r[7], 'الإشعار': r[11]
+                })), 'الانقطاعات_الطارئة_MV.xlsx', 'الانقطاعات MV');
+            } else if (section === 'outages') {
+                exportJsonToExcel(data.flFiltered.map(f => ({
+                    'الموقع FL': f[0], 'القطاع': ZONES[f[1]], 'المغذي': f[2], 'الأعطال': f[3], 'LV': f[4], 'MV': f[5], 'المشتركون': f[6], 'الشكاوى': f[7], 'Lat': f[9], 'Lng': f[10]
+                })), 'بؤر_الأعطال_المجاردة_وبارق.xlsx', 'بؤر الأعطال');
+            } else if (section === 'transformers') {
+                exportJsonToExcel(data.trFiltered.map(t => ({
+                    'الموقع FL': t.fl, 'القطاع': t.zone, 'السعة kVA': t.kva, 'التحميل': t.val, 'المغذي': t.feeder, 'الأعطال': t.out_total, 'الشكاوى': t.cmp_total, 'Lat': t.lat, 'Lng': t.lng
+                })), 'المحولات_المحملة_المجاردة_وبارق.xlsx', 'المحولات المحملة');
+            } else if (section === 'complaints') {
+                exportJsonToExcel(data.subFiltered.map(s => ({
+                    'رقم الحساب': s[0], 'الاسم': s[1], 'القطاع': s[2], 'المحول FL': s[3], 'الأعطال': s[5], 'الشكاوى': s[6], 'أبرز شكوى': s[7], 'Lat': s[9], 'Lng': s[10]
+                })), 'المشتركون_المتقاطعون_شكاوى.xlsx', 'المتقاطعون');
+            } else if (section === 'standards') {
+                exportJsonToExcel(data.stdFiltered.map(r => ({
+                    'المركز': r[0], 'رقم الحساب': r[1], 'عدد التكرار': r[2], 'Lat': r[3] || '', 'Lng': r[4] || '', 'حالة الربط GIS': r[5]
+                })), 'المعايير_المضمونة_المجاردة_وبارق.xlsx', 'المعايير المضمونة');
+            }
+        };
+
+        function renderDeletedTable() {
+            const tb = document.getElementById('tbody-deleted');
+            if (!tb) return;
+            tb.innerHTML = DELETED_ITEMS.map(item => `
+                <tr class="hover:bg-slate-800/40">
+                    <td class="p-2.5 font-bold text-amber-300">${item.type}</td>
+                    <td class="p-2.5 font-mono text-white">${item.id}</td>
+                    <td class="p-2.5 text-slate-300">${item.zone}</td>
+                    <td class="p-2.5 font-mono text-slate-400">${item.lat || '—'}</td>
+                    <td class="p-2.5 font-mono text-slate-400">${item.lng || '—'}</td>
+                    <td class="p-2.5 text-rose-300">${item.reason}</td>
+                </tr>
+            `).join('') || `<tr><td colspan="6" class="p-5 text-center text-slate-400">لا توجد سجلات محذوفة حالياً</td></tr>`;
+        }
+
+        // =========================================================================
+        // 9. قراءة ورفع ملفات Excel / CSV / TXT (بما فيها ملف المعايير المضمونة)
+        // =========================================================================
+        function logUploadStatus(msg, isErr = false) {
+            const box = document.getElementById('upload-log');
+            if (!box) return;
+            const div = document.createElement('div');
+            div.className = `p-2 rounded-xl border ${isErr ? 'bg-rose-500/15 border-rose-500/35 text-rose-200' : 'bg-emerald-500/15 border-emerald-500/35 text-emerald-200'}`;
+            div.textContent = (isErr ? '⚠️ ' : '✓ ') + msg;
+            box.prepend(div);
+        }
+
+        function parseGuaranteedStandardsRows(rows, fileName) {
+            // خريطة لربط الحسابات التي بدون إحداثيات مع إحداثيات SUB_TOP
+            const subCoordMap = new Map();
+            SUB_TOP.forEach(s => { if (s[9] && s[10]) subCoordMap.set(String(s[0]).trim(), { lat: s[9], lng: s[10] }); });
+
+            const grouped = new Map();
+            let oobCount = 0;
+
+            rows.forEach(row => {
+                const keys = Object.keys(row);
+                const accKey = keys.find(k => /contract|account|حساب|رقم/i.test(k)) || keys[1] || keys[0];
+                const latKey = keys.find(k => /^lat|عرض|^x$/i.test(k.trim()));
+                const lngKey = keys.find(k => /^lon|^lng|طول|^y$/i.test(k.trim()));
+                const offKey = keys.find(k => k === '' || k.startsWith('__EMPTY') || /center|office|مكتب|مركز|قطاع/i.test(k)) || keys[0];
+
+                const acc = String(row[accKey] ?? '').replace(/\.0$/, '').trim();
+                if (!acc || acc.toLowerCase() === 'contract account') return;
+
+                const office = normalizeOfficeName(row[offKey]);
+                let { lat, lng } = normalizeCoords(latKey ? row[latKey] : null, lngKey ? row[lngKey] : null);
+                let src = 'بدون إحداثيات (#N/A)';
+
+                if (lat && lng) {
+                    if (!isInBounds(lat, lng)) {
+                        oobCount++;
+                        if (!DELETED_ITEMS.some(d => d.id === acc && d.type === 'معايير مضمونة')) {
+                            DELETED_ITEMS.push({ type: 'معايير مضمونة', id: acc, zone: office, lat, lng, reason: 'خارج حدود المجاردة وبارق' });
+                        }
+                        return;
+                    }
+                    src = 'إحداثيات الشيت';
+                } else if (subCoordMap.has(acc)) {
+                    const hit = subCoordMap.get(acc);
+                    lat = hit.lat; lng = hit.lng;
+                    src = 'ربط تلقائي (سجل المشتركين)';
+                }
+
+                if (!grouped.has(acc)) {
+                    grouped.set(acc, [office, acc, 1, lat, lng, src]);
+                } else {
+                    const ex = grouped.get(acc);
+                    ex[2] += 1;
+                    if (!ex[3] && lat && lng) { ex[3] = lat; ex[4] = lng; ex[5] = src; }
+                }
+            });
+
+            if (grouped.size > 0) {
+                STD_GROUPS_DATA = Array.from(grouped.values());
+                const totalRows = STD_GROUPS_DATA.reduce((s, r) => s + r[2], 0);
+                document.getElementById('std-source-label').textContent = `تم تحميل ملف "${fileName}" — ${fmt(totalRows)} حالة (${fmt(STD_GROUPS_DATA.length)} حساب داخل الحدود، واستبعاد ${fmt(oobCount)} خارج الحدود).`;
+                logUploadStatus(`تم تحديث المعايير المضمونة (${fmt(totalRows)} حالة / ${fmt(STD_GROUPS_DATA.length)} حساب) من "${fileName}"`);
+                showToast(`تم تحديث المعايير المضمونة (${fmt(totalRows)} حالة) بنجاح!`);
+                return true;
+            }
+            return false;
+        }
+
+        async function processUploadedFiles(files, forceStandards = false) {
+            for (const file of Array.from(files)) {
+                try {
+                    const ext = file.name.split('.').pop().toLowerCase();
+                    let rows = [];
+
+                    if (ext === 'txt' || ext === 'tsv' || ext === 'csv') {
+                        const text = await file.text();
+                        const lines = text.replace(/\r/g, '').split('\n').filter(l => l.trim().length > 0);
+                        if (lines.length < 2) throw new Error('الملف فارغ');
+                        const sep = lines[0].includes('\t') ? '\t' : ',';
+                        const headers = lines[0].split(sep).map((h, i) => h.trim() || `__EMPTY_${i}`);
+                        rows = lines.slice(1).map(line => {
+                            const vals = line.split(sep);
+                            const obj = {};
+                            headers.forEach((h, i) => { obj[h] = (vals[i] || '').trim(); });
+                            return obj;
+                        });
+                    } else {
+                        const buf = await file.arrayBuffer();
+                        const wb = XLSX.read(buf, { type: 'array' });
+                        const sheet = wb.Sheets[wb.SheetNames[0]];
+                        rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+                    }
+
+                    if (!rows.length) {
+                        logUploadStatus(`الملف "${file.name}" لا يحتوي على صفوف مقروءة`, true);
+                        continue;
+                    }
+
+                    const cols = Object.keys(rows[0]);
+                    const isStdFile = forceStandards ||
+                        file.name.includes('المعايير') ||
+                        cols.some(c => /contract account/i.test(c)) && !cols.some(c => /ticket type/i.test(c));
+
+                    if (isStdFile) {
+                        parseGuaranteedStandardsRows(rows, file.name);
+                    } else if (cols.includes('FL') && (cols.includes('Cap') || cols.includes('x'))) {
+                        const newTr = [];
+                        rows.forEach(r => {
+                            const { lat, lng } = normalizeCoords(r['x'] || r['lat'], r['y'] || r['lng']);
+                            if (lat && lng && !isInBounds(lat, lng)) {
+                                DELETED_ITEMS.push({ type: 'محول محمل', id: String(r['FL']), zone: String(r['Transformer'] || 'المجاردة'), lat, lng, reason: 'خارج الحدود الجغرافية' });
+                                return;
+                            }
+                            newTr.push({
+                                fl: String(r['FL']), zone: String(r['Transformer'] || 'المجاردة'),
+                                kva: Number(r['office'] || r['kva']) || 100, val: Number(r['Cap'] || r['val']) || 0,
+                                lat, lng, feeder: String(r['feeder'] || 'غير محدد'),
+                                out_total: Number(r['out_total']) || 0, out_lv: 0, out_master: 0, out_mv: 0, out_subs: 0, cmp_total: 0, cmp_outage: 0, cmp_fin: 0
+                            });
+                        });
+                        if (newTr.length) {
+                            TR_DATA = newTr;
+                            logUploadStatus(`تم تحديث المحولات المحملة (${newTr.length} محول داخل الحدود) من "${file.name}"`);
+                        }
+                    } else if (cols.some(c => c.includes('تاريخ الانقطاع') || c.includes('سبب الانقطاع'))) {
+                        const newMv = [];
+                        rows.forEach((r, idx) => {
+                            const dt = String(r['تاريخ الانقطاع'] || r['التاريخ'] || '').trim();
+                            if (!dt) return;
+                            const st = String(r['المحطة'] || r['المكتب'] || '');
+                            const sIdx = (st.includes('بارق') || st.toUpperCase().includes('BAR')) ? 1 : 0;
+                            newMv.push([sIdx, dt, String(r['وقت الانقطاع'] || '00:00:00'), String(r['سبب الانقطاع'] || 'غير محدد'), String(r['الإجراء المتخذ'] || ''), 30, String(r['مدة الانقطاع'] || '00:30:00'), Number(r['عدد المشتركين المتأثرين']) || 0, Number(r['كبار المشتركين']) || 0, 0, String(r['المغذي'] || 'غير محدد'), String(r['رقم الإشعار'] || `MV-${idx + 1}`)]);
+                        });
+                        if (newMv.length) {
+                            INT_RECORDS = newMv;
+                            populateMonthFilter();
+                            logUploadStatus(`تم تحديث الانقطاعات الطارئة MV (${newMv.length} انقطاع) من "${file.name}"`);
+                        }
+                    } else {
+                        // محاولة أخيرة كمعايير مضمونة
+                        const ok = parseGuaranteedStandardsRows(rows, file.name);
+                        if (!ok) logUploadStatus(`لم يتم التعرف على أعمدة "${file.name}" تلقائياً`, true);
+                    }
+                } catch (err) {
+                    logUploadStatus(`خطأ أثناء قراءة "${file.name}": ${err.message}`, true);
+                }
+            }
+            refreshAll();
+        }
+
+        function saveUpdatedHtml() {
+            try {
+                let html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+                const replaceBlock = (tag, varDecl, data) => {
+                    const re = new RegExp(`\\/\\*__${tag}_START__\\*\\/[\\s\\S]*?\\/\\*__${tag}_END__\\*\\/`);
+                    return html.replace(re, `/*__${tag}_START__*/\n        let ${varDecl} = ${JSON.stringify(data)};\n        /*__${tag}_END__*/`);
+                };
+                html = replaceBlock('TR_DATA', 'TR_DATA', TR_DATA);
+                html = replaceBlock('FL_TOP', 'FL_TOP', FL_TOP);
+                html = replaceBlock('SUB_TOP', 'SUB_TOP', SUB_TOP);
+                html = replaceBlock('DELETED', 'DELETED_ITEMS', DELETED_ITEMS);
+                html = replaceBlock('STD_DATA', 'STD_GROUPS_DATA', STD_GROUPS_DATA);
+
+                const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'index.html';
+                a.click();
+                URL.revokeObjectURL(url);
+                showToast('تم حفظ نسخة index.html المحدثة جاهزة للرفع على Netlify!');
+            } catch (e) {
+                showToast('تعذر حفظ النسخة: ' + e.message);
+            }
+        }
+
+        // =========================================================================
+        // 10. التهيئة المركزية وربط الأحداث
+        // =========================================================================
+        function populateMonthFilter() {
+            const sel = document.getElementById('filter-month');
+            if (!sel) return;
+            const months = Array.from(new Set(INT_RECORDS.map(r => String(r[1]).slice(0, 7)))).sort();
+            sel.innerHTML = `<option value="all">الشهر (MV): جميع الأشهر</option>` +
+                months.map(m => `<option value="${m}">${MONTHS_AR[m.slice(5, 7)] || m} ${m.slice(0, 4)}</option>`).join('');
+            sel.value = appState.month;
+        }
+
+        function refreshAll() {
+            try {
+                const data = getFilteredDatasets();
+                updateKPIs(data);
+                updateCharts(data);
+                updateTables(data);
+                if (map) updateMap(data, false);
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            } catch (err) {
+                console.error('refreshAll error:', err);
+            }
+        }
+
+        function bindEvents() {
+            // التبويبات الـ 7
+            document.querySelectorAll('#main-tabs .tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+            });
+
+            // الفلاتر
+            document.getElementById('filter-sector').addEventListener('change', e => {
+                appState.sector = e.target.value;
+                appState.mvPage = 1; appState.stdPage = 1;
+                refreshAll();
+            });
+            document.getElementById('filter-month').addEventListener('change', e => {
+                appState.month = e.target.value;
+                appState.mvPage = 1;
+                refreshAll();
+            });
+            document.getElementById('filter-search').addEventListener('input', e => {
+                appState.search = e.target.value;
+                appState.mvPage = 1; appState.stdPage = 1;
+                refreshAll();
+            });
+            document.getElementById('btn-reset-filters').addEventListener('click', () => {
+                appState.sector = 'all'; appState.month = 'all'; appState.search = '';
+                appState.mvPage = 1; appState.stdPage = 1;
+                document.getElementById('filter-sector').value = 'all';
+                document.getElementById('filter-month').value = 'all';
+                document.getElementById('filter-search').value = '';
+                refreshAll();
+                showToast('تم إعادة ضبط جميع الفلاتر');
+            });
+
+            // الخريطة والطبقات
+            const bindLayer = (id, key) => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                el.addEventListener('change', () => {
+                    if (!map || !layers[key]) return;
+                    if (el.checked) map.addLayer(layers[key]);
+                    else map.removeLayer(layers[key]);
+                });
+            };
+            bindLayer('layer-tr', 'tr');
+            bindLayer('layer-fl', 'fl');
+            bindLayer('layer-cmp', 'cmp');
+            bindLayer('layer-std', 'std');
+
+            document.getElementById('btn-map-dark').addEventListener('click', () => {
+                if (!map) return;
+                map.removeLayer(baseLayers.sat);
+                map.addLayer(baseLayers.dark);
+                document.getElementById('btn-map-dark').className = 'px-3 py-1 rounded-lg text-xs font-bold bg-sky-500/20 text-sky-300 cursor-pointer';
+                document.getElementById('btn-map-sat').className = 'px-3 py-1 rounded-lg text-xs font-bold text-slate-400 hover:text-white cursor-pointer';
+            });
+            document.getElementById('btn-map-sat').addEventListener('click', () => {
+                if (!map) return;
+                map.removeLayer(baseLayers.dark);
+                map.addLayer(baseLayers.sat);
+                document.getElementById('btn-map-sat').className = 'px-3 py-1 rounded-lg text-xs font-bold bg-sky-500/20 text-sky-300 cursor-pointer';
+                document.getElementById('btn-map-dark').className = 'px-3 py-1 rounded-lg text-xs font-bold text-slate-400 hover:text-white cursor-pointer';
+            });
+            document.getElementById('btn-map-fit').addEventListener('click', () => {
+                if (!map) initMap();
+                updateMap(getFilteredDatasets(), true);
+            });
+
+            // تفعيل التحديد المربع
+            document.getElementById('btn-toggle-box-select').addEventListener('click', function () {
+                appState.boxSelectMode = !appState.boxSelectMode;
+                if (map) {
+                    if (appState.boxSelectMode) {
+                        map.dragging.disable();
+                        document.getElementById('gis-map').style.cursor = 'crosshair';
+                        this.className = 'px-3 py-1.5 rounded-xl bg-sky-500 text-slate-950 text-xs font-extrabold flex items-center gap-1.5 cursor-pointer';
+                        this.querySelector('span').textContent = 'وضع التحديد المربع مفعل (اسحب بالماوس)';
+                    } else {
+                        map.dragging.enable();
+                        document.getElementById('gis-map').style.cursor = '';
+                        this.className = 'px-3 py-1.5 rounded-xl bg-sky-500/15 hover:bg-sky-500/25 text-sky-300 border border-sky-500/40 text-xs font-bold flex items-center gap-1.5 cursor-pointer';
+                        this.querySelector('span').textContent = 'تفعيل التحديد المربع على الخريطة';
+                    }
+                }
+            });
+
+            document.getElementById('btn-export-selected').addEventListener('click', () => {
+                exportJsonToExcel(getSelectedObjects(), 'البيانات_المحددة_من_الخريطة.xlsx', 'المحدد من الخريطة');
+            });
+            document.getElementById('btn-delete-selected').addEventListener('click', () => {
+                const count = SELECTED_IDS.size;
+                Array.from(SELECTED_IDS).forEach(k => window.deleteItemByKey(k, true));
+                SELECTED_IDS.clear();
+                updateSelectionToolbar();
+                refreshAll();
+                showToast(`تم حذف ${count} نقطة ونقلها لأرشيف المحذوفات وتحديث البيانات`);
+            });
+            document.getElementById('btn-clear-selection').addEventListener('click', () => {
+                SELECTED_IDS.clear();
+                updateSelectionToolbar();
+                updateMap(getFilteredDatasets(), false);
+            });
+
+            // نافذة رفع الملفات
+            const uploadModal = document.getElementById('upload-modal');
+            const openUpload = () => { uploadModal.classList.remove('hidden'); uploadModal.classList.add('flex'); };
+            const closeUpload = () => { uploadModal.classList.add('hidden'); uploadModal.classList.remove('flex'); };
+            document.getElementById('btn-open-upload').addEventListener('click', openUpload);
+            document.getElementById('btn-close-upload').addEventListener('click', closeUpload);
+            document.getElementById('btn-close-upload-2').addEventListener('click', closeUpload);
+            document.getElementById('btn-save-html').addEventListener('click', saveUpdatedHtml);
+
+            const dropZone = document.getElementById('drop-zone');
+            const fileInput = document.getElementById('file-upload-input');
+            dropZone.addEventListener('click', () => fileInput.click());
+            dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('border-sky-400'); });
+            dropZone.addEventListener('dragleave', () => dropZone.classList.remove('border-sky-400'));
+            dropZone.addEventListener('drop', e => {
+                e.preventDefault();
+                dropZone.classList.remove('border-sky-400');
+                if (e.dataTransfer.files.length) processUploadedFiles(e.dataTransfer.files, false);
+            });
+            fileInput.addEventListener('change', e => {
+                if (e.target.files.length) processUploadedFiles(e.target.files, false);
+                e.target.value = '';
+            });
+
+            // رفع مباشر من داخل قسم المعايير المضمونة
+            document.getElementById('std-direct-upload').addEventListener('change', e => {
+                if (e.target.files.length) processUploadedFiles(e.target.files, true);
+                e.target.value = '';
+            });
+
+            // نافذة المحذوفة / خارج الحدود
+            const deletedModal = document.getElementById('deleted-modal');
+            document.getElementById('btn-open-deleted').addEventListener('click', () => {
+                renderDeletedTable();
+                deletedModal.classList.remove('hidden');
+                deletedModal.classList.add('flex');
+            });
+            document.getElementById('btn-close-deleted').addEventListener('click', () => {
+                deletedModal.classList.add('hidden');
+                deletedModal.classList.remove('flex');
+            });
+            document.getElementById('btn-export-deleted').addEventListener('click', () => {
+                exportJsonToExcel(DELETED_ITEMS.map(d => ({
+                    'النوع': d.type, 'المعرّف / الحساب': d.id, 'القطاع': d.zone, 'خط العرض Lat': d.lat, 'خط الطول Lng': d.lng, 'سبب الاستبعاد / الحذف': d.reason
+                })), 'بيانات_محذوفة_وخارج_حدود_المجاردة_وبارق.xlsx', 'خارج الحدود والمحذوفة');
+            });
+        }
+
+        function bootstrapApp() {
+            try {
+                populateMonthFilter();
+                bindEvents();
+                refreshAll();
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            } catch (err) {
+                console.error('Bootstrap error:', err);
+            }
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', bootstrapApp);
+        } else {
+            bootstrapApp();
+        }
+    })();
+    </script>
+</body>
+</html>
