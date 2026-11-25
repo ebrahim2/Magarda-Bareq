@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>منظومة الموثوقية والربط المكاني (GIS) — قطاع المجاردة وبارق</title>
+    <title>راصد الشبكة — قطاع المجاردة (المجاردة • بارق • سبت الجارة)</title>
     
     <!-- خط Cairo من Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -144,15 +144,19 @@
                 </div>
                 <div>
                     <div class="flex flex-wrap items-center gap-2">
-                        <h1 class="text-base sm:text-lg font-extrabold text-white tracking-tight">
-                            منظومة موثوقية الشبكة والربط المكاني (GIS) — قطاع المجاردة وبارق
+                        <h1 class="text-base sm:text-xl font-black text-white tracking-tight">
+                            راصد الشبكة — قطاع المجاردة
                         </h1>
-                        <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-sky-500/15 text-sky-400 border border-sky-500/30">
-                            7 أنظمة + محرك توسع ذاتي
+                        <span class="text-[11px] font-extrabold px-2.5 py-0.5 rounded-full bg-sky-500/15 text-sky-400 border border-sky-500/30">
+                            2026
                         </span>
                     </div>
-                    <p class="text-xs text-gray-400 mt-0.5">
-                        منظومة قابلة للتوسع الذاتي: الأعطال • الانقطاعات MV • الشكاوى • المحولات • المعايير • المشتركين 4246 • انقطاعات محطة سبت الجارة + إضافة أي شيت تلقائياً
+                    <p class="text-xs text-gray-400 mt-0.5 flex flex-wrap items-center gap-1.5 font-semibold">
+                        <span class="text-sky-400">المجاردة</span>
+                        <span>•</span>
+                        <span class="text-emerald-400">بارق</span>
+                        <span>•</span>
+                        <span class="text-amber-400">سبت الجارة</span>
                     </p>
                 </div>
             </div>
@@ -230,6 +234,10 @@
                     <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
                     <span>النظرة الشاملة</span>
                 </button>
+                <button data-tab="feeders_guide" class="tab-btn flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold text-cyan-300 hover:text-cyan-200 hover:bg-[#131c31] border border-cyan-500/25 transition-all whitespace-nowrap cursor-pointer">
+                    <i data-lucide="network" class="w-4 h-4 text-cyan-400"></i>
+                    <span>دليل المغذيات والأتمتة (<span id="tab-fdr-guide-count">55</span>)</span>
+                </button>
                 <button data-tab="interruptions" class="tab-btn flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold text-gray-400 hover:text-gray-200 hover:bg-[#131c31] border border-transparent transition-all whitespace-nowrap cursor-pointer">
                     <i data-lucide="zap" class="w-4 h-4 text-violet-400"></i>
                     <span>الانقطاعات الطارئة MV (147)</span>
@@ -280,13 +288,53 @@
     <!-- المحتوى الرئيسي -->
     <main class="flex-1 max-w-[1650px] w-full mx-auto px-4 sm:px-6 py-6 space-y-6">
 
-        <!-- شريط مؤشرات الأداء العليا (5 KPI Cards تتحدث لحظياً مع الفلاتر والحذف) -->
+        <!-- شريط مؤشرات الأداء العليا (6 KPI Cards تفاعلية تتحدث لحظياً حسب الاختيار وتنتقل للقسم بضغطة) -->
         <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3.5">
-            <!-- KPI 1: إجمالي بلاغات الأعطال -->
-            <div class="bg-[#131c31] border border-[#1e293b] hover:border-sky-500/40 rounded-2xl p-4 shadow-lg transition-all">
+            <!-- KPI 1: المغذيات وأطوال الشبكة -->
+            <div onclick="jumpToSectionFromKpi('feeders_guide')" role="button" tabindex="0" title="انقر للانتقال إلى دليل المغذيات والأتمتة" class="bg-[#131c31] border border-cyan-500/30 hover:border-cyan-400 hover:-translate-y-0.5 rounded-2xl p-4 shadow-lg transition-all cursor-pointer group">
                 <div class="flex items-start justify-between">
                     <div>
-                        <p class="text-xs font-bold text-gray-400">إجمالي بلاغات الأعطال</p>
+                        <p class="text-xs font-bold text-gray-400 group-hover:text-cyan-300 transition-colors">المغذيات وأطوال الشبكة</p>
+                        <div class="flex items-baseline gap-1.5 mt-1.5">
+                            <h2 id="kpi-fdr-count" class="text-2xl font-black text-white">55</h2>
+                            <span class="text-xs font-bold text-cyan-400">مغذي</span>
+                        </div>
+                    </div>
+                    <div class="w-10 h-10 rounded-xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-400 shrink-0">
+                        <i data-lucide="network" class="w-5 h-5"></i>
+                    </div>
+                </div>
+                <div class="mt-3 pt-2.5 border-t border-[#1e293b] flex items-center justify-between text-[11px]">
+                    <span id="kpi-fdr-len" class="text-gray-400">الطول: 2,860 كم</span>
+                    <span id="kpi-fdr-auto" class="font-bold text-cyan-400 bg-cyan-500/10 px-1.5 py-0.5 rounded">358 مؤتمت</span>
+                </div>
+            </div>
+
+            <!-- KPI 2: الانقطاعات الطارئة MV -->
+            <div onclick="jumpToSectionFromKpi('interruptions_auto')" role="button" tabindex="0" title="انقر للانتقال إلى سجل الانقطاعات الطارئة MV" class="bg-[#131c31] border border-[#1e293b] hover:border-violet-500 hover:-translate-y-0.5 rounded-2xl p-4 shadow-lg transition-all cursor-pointer group">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <p class="text-xs font-bold text-gray-400 group-hover:text-violet-300 transition-colors">الانقطاعات الطارئة MV</p>
+                        <div class="flex items-baseline gap-1.5 mt-1.5">
+                            <h2 id="kpi-int-total" class="text-2xl font-black text-white">176</h2>
+                            <span class="text-xs font-bold text-violet-400">انقطاع</span>
+                        </div>
+                    </div>
+                    <div class="w-10 h-10 rounded-xl bg-violet-500/15 border border-violet-500/30 flex items-center justify-center text-violet-400 shrink-0">
+                        <i data-lucide="zap" class="w-5 h-5"></i>
+                    </div>
+                </div>
+                <div class="mt-3 pt-2.5 border-t border-[#1e293b] flex items-center justify-between text-[11px]">
+                    <span id="kpi-int-dur" class="text-gray-400 truncate max-w-[145px]">المجاردة وبارق: 147 | سبت: 29</span>
+                    <span id="kpi-int-split" class="font-bold text-violet-400 bg-violet-500/10 px-1.5 py-0.5 rounded shrink-0">عرض الكل ↗</span>
+                </div>
+            </div>
+
+            <!-- KPI 3: بلاغات الأعطال LV -->
+            <div onclick="jumpToSectionFromKpi('outages')" role="button" tabindex="0" title="انقر للانتقال إلى بلاغات الأعطال LV" class="bg-[#131c31] border border-[#1e293b] hover:border-sky-500 hover:-translate-y-0.5 rounded-2xl p-4 shadow-lg transition-all cursor-pointer group">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <p class="text-xs font-bold text-gray-400 group-hover:text-sky-300 transition-colors">بلاغات الأعطال LV</p>
                         <h2 id="kpi-outages-total" class="text-2xl font-black text-white mt-1.5">32,249</h2>
                     </div>
                     <div class="w-10 h-10 rounded-xl bg-sky-500/15 border border-sky-500/30 flex items-center justify-center text-sky-400 shrink-0">
@@ -299,48 +347,11 @@
                 </div>
             </div>
 
-            <!-- KPI 2: الانقطاعات الطارئة MV -->
-            <div class="bg-[#131c31] border border-[#1e293b] hover:border-violet-500/40 rounded-2xl p-4 shadow-lg transition-all">
-                <div class="flex items-start justify-between">
-                    <div>
-                        <p class="text-xs font-bold text-gray-400">الانقطاعات الطارئة MV</p>
-                        <div class="flex items-baseline gap-1.5 mt-1.5">
-                            <h2 id="kpi-int-total" class="text-2xl font-black text-white">147</h2>
-                            <span class="text-xs font-bold text-violet-400">انقطاع</span>
-                        </div>
-                    </div>
-                    <div class="w-10 h-10 rounded-xl bg-violet-500/15 border border-violet-500/30 flex items-center justify-center text-violet-400 shrink-0">
-                        <i data-lucide="zap" class="w-5 h-5"></i>
-                    </div>
-                </div>
-                <div class="mt-3 pt-2.5 border-t border-[#1e293b] flex items-center justify-between text-[11px]">
-                    <span id="kpi-int-dur" class="text-gray-400">المدة: 62.0 ساعة (3,721 د)</span>
-                    <span id="kpi-int-split" class="font-bold text-violet-400 bg-violet-500/10 px-1.5 py-0.5 rounded">بارق 98 | 33: 49</span>
-                </div>
-            </div>
-
-            <!-- KPI 3: المشتركون المتأثرون بالانقطاعات -->
-            <div class="bg-[#131c31] border border-[#1e293b] hover:border-amber-500/40 rounded-2xl p-4 shadow-lg transition-all">
-                <div class="flex items-start justify-between">
-                    <div>
-                        <p class="text-xs font-bold text-gray-400">المشتركون المتأثرون MV</p>
-                        <h2 id="kpi-int-subs" class="text-2xl font-black text-white mt-1.5">145,946</h2>
-                    </div>
-                    <div class="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
-                        <i data-lucide="users" class="w-5 h-5"></i>
-                    </div>
-                </div>
-                <div class="mt-3 pt-2.5 border-t border-[#1e293b] flex items-center justify-between text-[11px]">
-                    <span id="kpi-int-subs-sub" class="text-gray-400">عادي: 145,430 | VIP: 516</span>
-                    <span class="font-bold text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded">2026</span>
-                </div>
-            </div>
-
             <!-- KPI 4: المحولات المحملة -->
-            <div class="bg-[#131c31] border border-[#1e293b] hover:border-rose-500/40 rounded-2xl p-4 shadow-lg transition-all">
+            <div onclick="jumpToSectionFromKpi('transformers')" role="button" tabindex="0" title="انقر للانتقال إلى المحولات المحملة" class="bg-[#131c31] border border-[#1e293b] hover:border-rose-500 hover:-translate-y-0.5 rounded-2xl p-4 shadow-lg transition-all cursor-pointer group">
                 <div class="flex items-start justify-between">
                     <div>
-                        <p class="text-xs font-bold text-gray-400">المحولات المحملة (النشطة)</p>
+                        <p class="text-xs font-bold text-gray-400 group-hover:text-rose-300 transition-colors">المحولات المحملة</p>
                         <div class="flex items-baseline gap-1.5 mt-1.5">
                             <h2 id="kpi-tr-count" class="text-2xl font-black text-white">23</h2>
                             <span class="text-xs font-bold text-rose-400">محول</span>
@@ -357,10 +368,10 @@
             </div>
 
             <!-- KPI 5: شكاوى المشتركين والربط -->
-            <div class="bg-[#131c31] border border-[#1e293b] hover:border-emerald-500/40 rounded-2xl p-4 shadow-lg transition-all">
+            <div onclick="jumpToSectionFromKpi('complaints')" role="button" tabindex="0" title="انقر للانتقال إلى شكاوى المشتركين" class="bg-[#131c31] border border-[#1e293b] hover:border-emerald-500 hover:-translate-y-0.5 rounded-2xl p-4 shadow-lg transition-all cursor-pointer group">
                 <div class="flex items-start justify-between">
                     <div>
-                        <p class="text-xs font-bold text-gray-400">شكاوى المشتركين والربط</p>
+                        <p class="text-xs font-bold text-gray-400 group-hover:text-emerald-300 transition-colors">شكاوى المشتركين</p>
                         <div class="flex items-baseline gap-1.5 mt-1.5">
                             <h2 id="kpi-cmp-total" class="text-2xl font-black text-white">1,710</h2>
                             <span class="text-xs font-bold text-emerald-400">شكوى</span>
@@ -376,11 +387,11 @@
                 </div>
             </div>
 
-            <!-- KPI 6: المعايير المضمونة وقاعدة المشتركين -->
-            <div class="bg-[#131c31] border border-amber-500/30 hover:border-amber-400/60 rounded-2xl p-4 shadow-lg transition-all">
+            <!-- KPI 6: المعايير المضمونة والمشتركون -->
+            <div onclick="jumpToSectionFromKpi('standards')" role="button" tabindex="0" title="انقر للانتقال إلى المعايير المضمونة" class="bg-[#131c31] border border-amber-500/30 hover:border-amber-400 hover:-translate-y-0.5 rounded-2xl p-4 shadow-lg transition-all cursor-pointer group">
                 <div class="flex items-start justify-between">
                     <div>
-                        <p class="text-xs font-bold text-gray-400">المعايير المضمونة والمشتركون</p>
+                        <p class="text-xs font-bold text-gray-400 group-hover:text-amber-300 transition-colors">المعايير المضمونة</p>
                         <div class="flex items-baseline gap-1.5 mt-1.5">
                             <h2 id="kpi-std-total" class="text-2xl font-black text-white">6,242</h2>
                             <span class="text-xs font-bold text-amber-400">مخالفة</span>
@@ -1886,7 +1897,170 @@
             </div>
         </section>
 
-    </main>
+    
+        <!-- ===================================================================== -->
+        <!-- قسم دليل المغذيات والأتمتة الموحد (المجاردة • بارق • سبت الجارة — 55 مغذي) -->
+        <!-- ===================================================================== -->
+        <section id="section-feeders-guide-tab" class="hidden space-y-5">
+            <!-- شريط التنقل والفلاتر السريعة للمواقع الثلاثة -->
+            <div class="bg-[#131c31] border border-cyan-500/30 rounded-2xl p-4 shadow-xl space-y-3">
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-400 shrink-0">
+                            <i data-lucide="network" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-base font-extrabold text-white">دليل المغذيات الموحد وتحليل الأتمتة والموثوقية</h2>
+                            <p class="text-xs text-gray-400">دمج بيانات 55 مغذياً عبر المواقع الثلاثة المستقلة (المجاردة • بارق • سبت الجارة) وربطها بالسجل التشغيلي</p>
+                        </div>
+                    </div>
+
+                    <!-- أزرار اختيار الموقع المستقل -->
+                    <div class="flex flex-wrap items-center gap-1.5 bg-[#0b1120] border border-[#1e293b] rounded-xl p-1" id="fg-loc-pills">
+                        <button type="button" data-fgloc="ALL" class="fg-loc-btn px-3 py-1.5 rounded-lg text-xs font-extrabold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 cursor-pointer">الكل (55)</button>
+                        <button type="button" data-fgloc="المجاردة" class="fg-loc-btn px-3 py-1.5 rounded-lg text-xs font-bold text-gray-400 hover:text-sky-300 border border-transparent cursor-pointer">المجاردة (16)</button>
+                        <button type="button" data-fgloc="بارق" class="fg-loc-btn px-3 py-1.5 rounded-lg text-xs font-bold text-gray-400 hover:text-emerald-300 border border-transparent cursor-pointer">بارق (24)</button>
+                        <button type="button" data-fgloc="سبت الجارة" class="fg-loc-btn px-3 py-1.5 rounded-lg text-xs font-bold text-gray-400 hover:text-amber-300 border border-transparent cursor-pointer">سبت الجارة (15)</button>
+                    </div>
+                </div>
+
+                <!-- فلاتر إضافية + بحث + تصدير Excel مفصل -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5 pt-2 border-t border-[#1e293b]">
+                    <div class="relative lg:col-span-2">
+                        <input type="text" id="fg-search" placeholder="ابحث برمز المغذي (B403) أو الموقع الوظيفي (4400-AJN...) أو المغذي المقابل..." class="w-full bg-[#0b1120] border border-[#1e293b] focus:border-cyan-500 rounded-xl pr-9 pl-3 py-2 text-xs text-gray-100 placeholder-gray-500 outline-none">
+                        <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute right-3 top-2.5 pointer-events-none"></i>
+                    </div>
+                    <select id="fg-filter-net" class="bg-[#0b1120] border border-[#1e293b] focus:border-cyan-500 rounded-xl px-3 py-2 text-xs text-gray-100 font-semibold outline-none cursor-pointer">
+                        <option value="ALL">نوع الشبكة: الكل</option>
+                        <option value="OH">غالبية هوائي (≥ 70%)</option>
+                        <option value="UG">غالبية أرضي (≥ 50%)</option>
+                        <option value="SERA">قائمة الهيئة (سبت الجارة)</option>
+                    </select>
+                    <select id="fg-sort" class="bg-[#0b1120] border border-[#1e293b] focus:border-cyan-500 rounded-xl px-3 py-2 text-xs text-gray-100 font-semibold outline-none cursor-pointer">
+                        <option value="len_desc">الترتيب: الأطول شبكة (كم)</option>
+                        <option value="load_desc">الترتيب: الأعلى حملاً (أمبير)</option>
+                        <option value="subs_desc">الترتيب: الأكثر مشتركين</option>
+                        <option value="auto_desc">الترتيب: الأكثر معدات مؤتمتة</option>
+                        <option value="int_desc">الترتيب: الأكثر انقطاعات MV</option>
+                        <option value="density_desc">الترتيب: الأعلى انقطاعاً / 100 كم</option>
+                    </select>
+                    <button type="button" onclick="exportFeedersMasterExcel()" class="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/40 text-xs font-extrabold cursor-pointer">
+                        <i data-lucide="file-spreadsheet" class="w-4 h-4 text-emerald-400"></i>
+                        <span>تصدير Excel مفصّل (شيتات)</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- بطاقات ملخص المغذيات المختارة -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                <div class="bg-[#131c31] border border-[#1e293b] rounded-2xl p-3.5">
+                    <span class="text-[11px] font-bold text-gray-400">عدد المغذيات</span>
+                    <div id="fg-kpi-cnt" class="text-xl font-black text-white mt-1">55</div>
+                    <span id="fg-kpi-cnt-sub" class="text-[10px] text-cyan-400">16 مجاردة • 24 بارق • 15 سبت</span>
+                </div>
+                <div class="bg-[#131c31] border border-[#1e293b] rounded-2xl p-3.5">
+                    <span class="text-[11px] font-bold text-gray-400">إجمالي أطوال الشبكة</span>
+                    <div id="fg-kpi-len" class="text-xl font-black text-sky-400 mt-1">2,859.6 كم</div>
+                    <span id="fg-kpi-len-sub" class="text-[10px] text-gray-400">هوائي + أرضي</span>
+                </div>
+                <div class="bg-[#131c31] border border-[#1e293b] rounded-2xl p-3.5">
+                    <span class="text-[11px] font-bold text-gray-400">إجمالي المشتركين</span>
+                    <div id="fg-kpi-subs" class="text-xl font-black text-emerald-400 mt-1">50,968</div>
+                    <span id="fg-kpi-subs-sub" class="text-[10px] text-gray-400">موزعين على المغذيات</span>
+                </div>
+                <div class="bg-[#131c31] border border-[#1e293b] rounded-2xl p-3.5">
+                    <span class="text-[11px] font-bold text-gray-400">متوسط الحمل (أمبير)</span>
+                    <div id="fg-kpi-load" class="text-xl font-black text-amber-400 mt-1">78.4 A</div>
+                    <span id="fg-kpi-load-sub" class="text-[10px] text-gray-400">أعلى حمل مسجل</span>
+                </div>
+                <div class="bg-[#131c31] border border-[#1e293b] rounded-2xl p-3.5">
+                    <span class="text-[11px] font-bold text-gray-400">المعدات المؤتمتة</span>
+                    <div id="fg-kpi-auto" class="text-xl font-black text-violet-400 mt-1">358</div>
+                    <span id="fg-kpi-auto-sub" class="text-[10px] text-gray-400">معيد تيار / مجزئ / LBS / RMU</span>
+                </div>
+                <div class="bg-[#131c31] border border-[#1e293b] rounded-2xl p-3.5">
+                    <span class="text-[11px] font-bold text-gray-400">معدل الانقطاع / 100 كم</span>
+                    <div id="fg-kpi-rate" class="text-xl font-black text-rose-400 mt-1">6.2</div>
+                    <span id="fg-kpi-rate-sub" class="text-[10px] text-gray-400">انقطاع MV لكل 100 كم</span>
+                </div>
+            </div>
+
+            <!-- 3 رسوم بيانية تحليلية متكاملة -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+                <!-- رسم 1: مقارنة المواقع الثلاثة -->
+                <div class="lg:col-span-4 bg-[#131c31] border border-[#1e293b] rounded-2xl p-5 shadow-xl flex flex-col">
+                    <h3 class="text-sm font-bold text-white flex items-center gap-2 mb-1">
+                        <i data-lucide="bar-chart-2" class="w-4 h-4 text-cyan-400"></i>
+                        مقارنة المواقع الثلاثة (المجاردة vs بارق vs سبت الجارة)
+                    </h3>
+                    <p class="text-[11px] text-gray-400 mb-3">إجمالي أطوال الشبكة (كم) وعدد المعدات المؤتمتة بكل موقع مستقل</p>
+                    <div class="relative flex-1 min-h-[260px]">
+                        <canvas id="chart-fg-locations"></canvas>
+                    </div>
+                </div>
+
+                <!-- رسم 2: معدل الانقطاع لكل 100 كم (الكثافة العادلة للأعطال) -->
+                <div class="lg:col-span-4 bg-[#131c31] border border-[#1e293b] rounded-2xl p-5 shadow-xl flex flex-col">
+                    <h3 class="text-sm font-bold text-white flex items-center gap-2 mb-1">
+                        <i data-lucide="gauge" class="w-4 h-4 text-rose-400"></i>
+                        أعلى 10 مغذيات في معدل الانقطاع لكل 100 كم
+                    </h3>
+                    <p class="text-[11px] text-gray-400 mb-3">مقياس عادل يكشف المغذيات الأكثر تضرراً مقارنة بطول شبكتها</p>
+                    <div class="relative flex-1 min-h-[260px]">
+                        <canvas id="chart-fg-density"></canvas>
+                    </div>
+                </div>
+
+                <!-- رسم 3: مقارنة 2025 vs 2026 لسبت الجارة / أو الأحمال والأتمتة -->
+                <div class="lg:col-span-4 bg-[#131c31] border border-[#1e293b] rounded-2xl p-5 shadow-xl flex flex-col">
+                    <h3 id="fg-chart3-title" class="text-sm font-bold text-white flex items-center gap-2 mb-1">
+                        <i data-lucide="git-compare" class="w-4 h-4 text-amber-400"></i>
+                        مقارنة انقطاعات سبت الجارة (2025 مقابل 2026)
+                    </h3>
+                    <p id="fg-chart3-sub" class="text-[11px] text-gray-400 mb-3">تطور الانقطاعات السنوية لمغذيات سبت الجارة وقائمة الهيئة</p>
+                    <div class="relative flex-1 min-h-[260px]">
+                        <canvas id="chart-fg-yoy"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- جدول دليل المغذيات الشامل -->
+            <div class="bg-[#131c31] border border-[#1e293b] rounded-2xl p-5 shadow-xl">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+                    <div>
+                        <h3 class="text-base font-bold text-white flex items-center gap-2">
+                            <i data-lucide="table" class="w-5 h-5 text-cyan-400"></i>
+                            الجدول الموحد للمغذيات (<span id="fg-table-count">55</span> مغذي) — اضغط على أي صف لفتح بطاقة المغذي الشاملة
+                        </h3>
+                        <p class="text-xs text-gray-400 mt-0.5">يعرض البيانات الفنية + الانقطاعات MV + الأعطال LV + المحولات المحملة + الشكاوى لكل مغذي</p>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-right border-collapse">
+                        <thead>
+                            <tr class="border-b border-[#1e293b] text-xs font-bold text-gray-400 bg-[#0b1120]/70">
+                                <th class="py-3 px-2.5 rounded-tr-lg">الموقع</th>
+                                <th class="py-3 px-2.5">المغذي</th>
+                                <th class="py-3 px-2.5">الموقع الوظيفي / الجهد</th>
+                                <th class="py-3 px-2.5 text-center">الحمل (A)</th>
+                                <th class="py-3 px-2.5 text-center">المشتركون</th>
+                                <th class="py-3 px-2.5 text-center">الطول (كم)</th>
+                                <th class="py-3 px-2.5 text-center">هوائي / أرضي</th>
+                                <th class="py-3 px-2.5 text-center">المؤتمت</th>
+                                <th class="py-3 px-2.5 text-center">انقطاعات MV</th>
+                                <th class="py-3 px-2.5 text-center">لكل 100 كم</th>
+                                <th class="py-3 px-2.5 text-center">أعطال LV</th>
+                                <th class="py-3 px-2.5">المغذي المقابل</th>
+                                <th class="py-3 px-2.5 text-center rounded-tl-lg">بطاقة 360°</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-feeders-guide" class="divide-y divide-[#1e293b]/60 text-xs"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+</main>
 
     <!-- تذييل الصفحة -->
     <footer class="border-t border-[#1e293b] bg-[#0b1120] py-4 px-6 text-center text-xs text-gray-500">
@@ -2550,67 +2724,140 @@
         // =========================================================================
         // 4. تحديث بطاقات المؤشرات العليا (5 KPI Cards)
         // =========================================================================
+        function getActiveLocationsFilter() {
+            const allSt = (typeof getAllStationsCatalog === 'function') ? getAllStationsCatalog() : [];
+            const chosen = (typeof getSelectedStationObjects === 'function') ? getSelectedStationObjects() : [];
+            const isAll = (typeof selectedStations !== 'undefined') && (selectedStations.size === 0 || selectedStations.size >= allSt.length);
+            if (isAll || chosen.length === 0) {
+                return { isAll: true, hasMaj: true, hasBar: true, hasSj: true };
+            }
+            const hasMaj = chosen.some(s => s.source === 'MB' && s.idx === 0);
+            const hasBar = chosen.some(s => s.source === 'MB' && s.idx === 1);
+            const hasSj  = chosen.some(s => s.source === 'SJ');
+            return { isAll: false, hasMaj, hasBar, hasSj };
+        }
+
+        window.jumpToSectionFromKpi = function(target) {
+            const locF = getActiveLocationsFilter();
+            if (target === 'interruptions_auto') {
+                if (!locF.isAll && locF.hasSj && !locF.hasMaj && !locF.hasBar) {
+                    switchTab('interruptions_sj');
+                } else {
+                    switchTab('interruptions');
+                }
+            } else {
+                switchTab(target);
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
         function updateKPIs(data) {
             const { outFiltered, intFiltered, trFiltered, cmpFiltered } = data;
+            const locF = getActiveLocationsFilter();
 
-            let outTotal = 0, outMaj = 0, outBar = 0;
-            outFiltered.forEach(r => {
-                outTotal += r[4];
-                if (r[0] === 0) outMaj += r[4];
-                else outBar += r[4];
+            // 1. بطاقة المغذيات وأطوال الشبكة (تتفاعل حسب الموقع المختار والبحث)
+            const q = (appState.search || '').trim().toUpperCase();
+            const fdrList = (typeof FEEDERS_MASTER !== 'undefined' ? FEEDERS_MASTER : []).filter(f => {
+                if (!locF.isAll) {
+                    if (f.loc === 'المجاردة' && !locF.hasMaj) return false;
+                    if (f.loc === 'بارق' && !locF.hasBar) return false;
+                    if (f.loc === 'سبت الجارة' && !locF.hasSj) return false;
+                }
+                if (q && !(f.fdr.includes(q) || (f.fl && f.fl.includes(q)) || f.loc.includes(q))) return false;
+                return true;
             });
-            document.getElementById('kpi-outages-total').textContent = fmt(outTotal);
-            document.getElementById('kpi-outages-sub1').textContent = `المجاردة: ${fmt(outMaj)} | بارق: ${fmt(outBar)}`;
-            document.getElementById('kpi-outages-pct').textContent = `${((outTotal / (OUT_BASELINE || 1)) * 100).toFixed(1)}%`;
+            const fdrLenSum = fdrList.reduce((s, f) => s + (f.tot_len || 0), 0);
+            const fdrAutoSum = fdrList.reduce((s, f) => s + (f.auto_tot || 0), 0);
+            const elFdrCnt = document.getElementById('kpi-fdr-count');
+            if (elFdrCnt) elFdrCnt.textContent = fmt(fdrList.length);
+            const elFdrLen = document.getElementById('kpi-fdr-len');
+            if (elFdrLen) elFdrLen.textContent = `الطول: ${fmt(Math.round(fdrLenSum))} كم`;
+            const elFdrAuto = document.getElementById('kpi-fdr-auto');
+            if (elFdrAuto) elFdrAuto.textContent = `${fmt(fdrAutoSum)} مؤتمت`;
 
-            let intCount = intFiltered.length;
-            let totalMins = 0, sub33 = 0, subBareq = 0, normSubs = 0, vipSubs = 0;
-            intFiltered.forEach(rec => {
-                totalMins += rec[5];
-                if (rec[0] === 0) sub33 += 1;
-                else subBareq += 1;
-                normSubs += rec[7];
-                vipSubs += rec[8];
-            });
+            // 2. بطاقة الانقطاعات الطارئة MV (تجمع المجاردة وبارق + سبت الجارة حسب الاختيار)
+            const sjFiltered = (typeof getFilteredSjFeeders === 'function') ? getFilteredSjFeeders() : [];
+            const sjIntSum = locF.hasSj ? sjFiltered.reduce((s, r) => s + (r[6] || 0), 0) : 0;
+            const mbIntSum = (locF.hasMaj || locF.hasBar) ? intFiltered.length : 0;
+
+            let totalMins = 0, sub33 = 0, subBareq = 0;
+            if (locF.hasMaj || locF.hasBar) {
+                intFiltered.forEach(rec => {
+                    totalMins += rec[5];
+                    if (rec[0] === 0) sub33 += 1;
+                    else subBareq += 1;
+                });
+            }
             const totalHours = (totalMins / 60).toFixed(1);
-            document.getElementById('kpi-int-total').textContent = fmt(intCount);
-            document.getElementById('kpi-int-dur').textContent = `المدة: ${totalHours} ساعة (${fmt(Math.round(totalMins))} د)`;
-            document.getElementById('kpi-int-split').textContent = `بارق ${subBareq} | 33: ${sub33}`;
+            const elIntTot = document.getElementById('kpi-int-total');
+            if (elIntTot) elIntTot.textContent = fmt(mbIntSum + sjIntSum);
+            const elIntDur = document.getElementById('kpi-int-dur');
+            if (elIntDur) {
+                if (!locF.isAll && locF.hasSj && !locF.hasMaj && !locF.hasBar) {
+                    const sjCml = sjFiltered.reduce((s, r) => s + (r[5] || 0), 0);
+                    elIntDur.textContent = `سبت الجارة • CML: ${fmt(Math.round(sjCml))}`;
+                } else if (locF.isAll) {
+                    elIntDur.textContent = `م/ب: ${mbIntSum} | سبت الجارة: ${sjIntSum}`;
+                } else {
+                    elIntDur.textContent = `المدة: ${totalHours} س | بارق ${subBareq} • 33: ${sub33}`;
+                }
+            }
 
-            document.getElementById('kpi-int-subs').textContent = fmt(normSubs + vipSubs);
-            document.getElementById('kpi-int-subs-sub').textContent = `عادي: ${fmt(normSubs)} | VIP: ${fmt(vipSubs)}`;
+            // 3. بطاقة بلاغات الأعطال LV
+            const onlySj = (!locF.isAll && locF.hasSj && !locF.hasMaj && !locF.hasBar);
+            let outTotal = 0, outMaj = 0, outBar = 0;
+            if (!onlySj) {
+                outFiltered.forEach(r => {
+                    outTotal += r[4];
+                    if (r[0] === 0) outMaj += r[4];
+                    else outBar += r[4];
+                });
+            }
+            document.getElementById('kpi-outages-total').textContent = onlySj ? '—' : fmt(outTotal);
+            document.getElementById('kpi-outages-sub1').textContent = onlySj
+                ? 'غير متاح لسبت الجارة (MV فقط)'
+                : `المجاردة: ${fmt(outMaj)} | بارق: ${fmt(outBar)}`;
+            document.getElementById('kpi-outages-pct').textContent = onlySj
+                ? 'سبت الجارة'
+                : `${((outTotal / (OUT_BASELINE || 1)) * 100).toFixed(1)}%`;
 
-            const trOutSum = trFiltered.reduce((s, t) => s + t.out_total, 0);
-            const trCmpSum = trFiltered.reduce((s, t) => s + t.cmp_total, 0);
-            document.getElementById('kpi-tr-count').textContent = fmt(trFiltered.length);
-            document.getElementById('kpi-tr-outages').textContent = fmt(trOutSum);
-            document.getElementById('kpi-tr-cmps').textContent = fmt(trCmpSum);
+            // 4. بطاقة المحولات المحملة
+            const trActive = onlySj ? [] : trFiltered;
+            const trOutSum = trActive.reduce((s, t) => s + t.out_total, 0);
+            const trCmpSum = trActive.reduce((s, t) => s + t.cmp_total, 0);
+            document.getElementById('kpi-tr-count').textContent = onlySj ? '0' : fmt(trActive.length);
+            document.getElementById('kpi-tr-outages').textContent = onlySj ? '0' : fmt(trOutSum);
+            document.getElementById('kpi-tr-cmps').textContent = onlySj ? '0' : fmt(trCmpSum);
 
+            // 5. بطاقة شكاوى المشتركين
             let cmpTotal = 0, cmpLinked = 0;
-            cmpFiltered.forEach(c => {
-                cmpTotal += c[4];
-                if (c[2] === 1) cmpLinked += c[4];
-            });
-            document.getElementById('kpi-cmp-total').textContent = fmt(cmpTotal);
+            if (!onlySj) {
+                cmpFiltered.forEach(c => {
+                    cmpTotal += c[4];
+                    if (c[2] === 1) cmpLinked += c[4];
+                });
+            }
+            document.getElementById('kpi-cmp-total').textContent = onlySj ? '—' : fmt(cmpTotal);
             const linkedPct = cmpTotal > 0 ? ((cmpLinked / cmpTotal) * 100).toFixed(1) : '0.0';
-            document.getElementById('kpi-linked-cmps').textContent = `${linkedPct}% مرتبطة`;
+            document.getElementById('kpi-linked-cmps').textContent = onlySj ? 'م/ب فقط' : `${linkedPct}% مرتبطة`;
 
-            const stdViolSum = data.stdFiltered.reduce((acc, s) => acc + s[2], 0);
-            const stdGeoCnt = data.stdFiltered.filter(s => s[3] !== null && s[4] !== null).length;
-            const stdGeoPct = data.stdFiltered.length ? ((stdGeoCnt / data.stdFiltered.length) * 100).toFixed(1) : '0.0';
-            document.getElementById('kpi-std-total').textContent = fmt(stdViolSum);
-            document.getElementById('kpi-std-sub').textContent = `${fmt(data.stdFiltered.length)} حساب • ${stdGeoPct}% جغرافي`;
-            const sbMeters = data.sbFiltered.reduce((acc, s) => acc + s[2], 0);
-            document.getElementById('kpi-subbase-badge').textContent = `${(sbMeters / 1000).toFixed(1)}K عداد`;
+            // 6. بطاقة المعايير المضمونة
+            const stdListActive = onlySj ? [] : data.stdFiltered;
+            const stdViolSum = stdListActive.reduce((acc, s) => acc + s[2], 0);
+            const stdGeoCnt = stdListActive.filter(s => s[3] !== null && s[4] !== null).length;
+            const stdGeoPct = stdListActive.length ? ((stdGeoCnt / stdListActive.length) * 100).toFixed(1) : '0.0';
+            document.getElementById('kpi-std-total').textContent = onlySj ? '—' : fmt(stdViolSum);
+            document.getElementById('kpi-std-sub').textContent = onlySj
+                ? 'نطاق المجاردة وبارق'
+                : `${fmt(stdListActive.length)} حساب • ${stdGeoPct}% جغرافي`;
+            const sbMeters = onlySj ? 0 : data.sbFiltered.reduce((acc, s) => acc + s[2], 0);
+            document.getElementById('kpi-subbase-badge').textContent = onlySj ? 'سبت الجارة' : `${(sbMeters / 1000).toFixed(1)}K عداد`;
             const tabStdBadge = document.getElementById('tab-std-count');
             if (tabStdBadge) tabStdBadge.textContent = fmt(stdViolSum);
             const tabSbBadge = document.getElementById('tab-subbase-count');
             if (tabSbBadge) tabSbBadge.textContent = fmt(data.sbFiltered.length);
         }
 
-        // =========================================================================
-        // 5. تهيئة وتحديث الرسوم البيانية (Chart.js)
-        // =========================================================================
         function initCharts() {
             Chart.defaults.color = '#94a3b8';
             Chart.defaults.font.family = "'Cairo', sans-serif";
@@ -3721,8 +3968,9 @@
             const secStd = document.getElementById('section-standards-tab');
             const secSb  = document.getElementById('section-subbase-tab');
             const secCt  = document.getElementById('section-custom-tab');
+            const secFg  = document.getElementById('section-feeders-guide-tab');
 
-            [secInsights, secOverview, secInt, secSj, secCmpSt, secOut, secTr, secCmp, secMap, secStd, secSb, secCt].forEach(el => {
+            [secInsights, secOverview, secInt, secSj, secCmpSt, secOut, secTr, secCmp, secMap, secStd, secSb, secCt, secFg].forEach(el => {
                 if (el) el.classList.add('hidden');
             });
 
@@ -3730,6 +3978,9 @@
                 secInsights.classList.remove('hidden');
                 secOverview.classList.remove('hidden');
                 secMap.classList.remove('hidden');
+            } else if (tabId === 'feeders_guide') {
+                if (secFg) secFg.classList.remove('hidden');
+                renderFeedersGuideSection();
             } else if (tabId === 'interruptions') {
                 secInt.classList.remove('hidden');
             } else if (tabId === 'interruptions_sj') {
@@ -6691,6 +6942,822 @@
             });
         }
 
+        
+        // =========================================================================
+        // 8. محرك دمج المغذيات الشامل (55 مغذي: المجاردة • بارق • سبت الجارة)
+        //    + بطاقة المغذي الشاملة (360°) + التصدير المفصل متعدد الشيتات
+        // =========================================================================
+        let FEEDERS_MASTER = [{"id": "بارق::B403", "loc": "بارق", "office": "مركز خدمات بارق", "station": "محطة بارق / BAREQ", "fdr": "B403", "fl": "4400-AJN-000003-Q0008", "volt": "13.8 KV", "load_a": 46.0, "load_pct": null, "subs": 842, "tx_ug": 6, "tx_oh": 149, "tx_mun": 2, "tx_tot": 158, "poles_st": 866, "poles_wd": 17, "poles_tot": 883, "net_type": "هوائي / ارضي", "len_main": 13.0, "len_branch": 20.0, "len_oh": 79.47, "len_ug": 2.5, "tot_len": 81.97, "oh_pct": 97.0, "ug_pct": 3.0, "alts": ["B421 (BAREQ)"], "auto_tot": 9, "equip_tot": 16, "equip": {"recloser_ok": 3, "recloser_bad": 0, "sectionalizer_ok": 2, "sectionalizer_bad": 0, "lbs_abs": 7, "smart_lbs": 3, "rmu": 0, "mrmu": 0, "smru": 1, "group_fuse": 4, "jumper": 1, "tie_auto": "—", "spares": "لايوجد قواطع شاغرة"}, "sera_list": null, "int_2025": null}, {"id": "بارق::B404", "loc": "بارق", "office": "مركز خدمات بارق", "station": "محطة بارق / BAREQ", "fdr": "B404", "fl": "4400-AJN-000003-Q0011", "volt": "13.8 KV", "load_a": 33.99, "load_pct": null, "subs": 1, "tx_ug": 1, "tx_oh": 0, "tx_mun": 0, "tx_tot": 1, "poles_st": 0, "poles_wd": 0, "poles_tot": 0, "net_type": "ارضي", "len_main": 19.0, "len_branch": 8.0, "len_oh": 0.0, "len_ug": 20.0, "tot_len": 20.0, "oh_pct": 0.0, "ug_pct": 100.0, "alts": ["B417 (MAJARDAH)"], "auto_tot": 1, "equip_tot": 2, "equip": {"recloser_ok": 0, "recloser_bad": 0, "sectionalizer_ok": 0, "sectionalizer_bad": 0, "lbs_abs": 0, "smart_lbs": 0, "rmu": 1, "mrmu": 1, "smru": 0, "group_fuse": 0, "jumper": 0, "tie_auto": "—", "spares": "غير محدد"}, "sera_list": null, "int_2025": null}, {"id": "بارق::B405", "loc": "بارق", "office": "مركز خدمات بارق", "station": "محطة بارق / BAREQ", "fdr": "B405", "fl": "4400-AJN-000003-Q0007", "volt": "13.8 KV", "load_a": 76.0, "load_pct": null, "subs": 764, "tx_ug": 10, "tx_oh": 105, "tx_mun": 0, "tx_tot": 115, "poles_st": 515, "poles_wd": 66, "poles_tot": 581, "net_type": "هوائي / ارضي", "len_main": 14.5, "len_branch": 29.1, "len_oh": 54.0, "len_ug": 12.7, "tot_len": 66.7, "oh_pct": 81.0, "ug_pct": 19.0, "alts": ["B440 (BAREQ)"], "auto_tot": 9, "equip_tot": 13, "equip": {"recloser_ok": 2, "recloser_bad": 0, "sectionalizer_ok": 2, "sectionalizer_bad": 0, "lbs_abs": 4, "smart_lbs": 4, "rmu": 0, "mrmu": 0, "smru": 1, "group_fuse": 0, "jumper": 1, "tie_auto": "—", "spares": "غير محدد"}, "sera_list": null, "int_2025": null}, {"id": "بارق::B407", "loc": "بارق", "office": "مركز خدمات بارق", "station": "محطة بارق / BAREQ", "fdr": "B407", "fl": "4400-AJN-000003-Q0012", "volt": "13.8 KV", "load_a": 29.0, "load_pct": null, "subs": 780, "tx_ug": 5, "tx_oh": 55, "tx_mun": 4, "tx_tot": 64, "poles_st": 416, "poles_wd": 18, "poles_tot": 434, "net_type": "هوائي / ارضي", "len_main": 23.78, "len_branch": 17.0, "len_oh": 39.5, "len_ug": 60.0, "tot_len": 99.5, "oh_pct": 39.7, "ug_pct": 60.3, "alts": ["B411 (BAREQ)"], "auto_tot": 11, "equip_tot": 16, "equip": {"recloser_ok": 4, "recloser_bad": 0, "sectionalizer_ok": 3, "sectionalizer_bad": 0, "lbs_abs": 4, "smart_lbs": 3, "rmu": 1, "mrmu": 0, "smru": 1, "group_fuse": 2, "jumper": 0, "tie_auto": "—", "spares": "غير محدد"}, "sera_list": null, "int_2025": null}, {"id": "بارق::B411", "loc": "بارق", "office": "مركز خدمات بارق", "station": "محطة بارق / BAREQ", "fdr": "B411", "fl": "4400-AJN-000003-Q0013", "volt": "13.8 KV", "load_a": 107.99, "load_pct": null, "subs": 780, "tx_ug": 11, "tx_oh": 178, "tx_mun": 13, "tx_tot": 201, "poles_st": 1017, "poles_wd": 40, "poles_tot": 1057, "net_type": "هوائي / ارضي", "len_main": 30.2, "len_branch": 37.4, "len_oh": 57.1, "len_ug": 10.0, "tot_len": 67.1, "oh_pct": 85.1, "ug_pct": 14.9, "alts": ["B413 (BAREQ)"], "auto_tot": 12, "equip_tot": 52, "equip": {"recloser_ok": 3, "recloser_bad": 0, "sectionalizer_ok": 0, "sectionalizer_bad": 0, "lbs_abs": 2, "smart_lbs": 7, "rmu": 38, "mrmu": 0, "smru": 2, "group_fuse": 3, "jumper": 0, "tie_auto": "—", "spares": "غير محدد"}, "sera_list": null, "int_2025": null}, {"id": "بارق::B412", "loc": "بارق", "office": "مركز خدمات بارق", "station": "محطة بارق / BAREQ", "fdr": "B412", "fl": "4400-AJN-000003-Q0006", "volt": "13.8 KV", "load_a": 63.99, "load_pct": null, "subs": 980, "tx_ug": 8, "tx_oh": 148, "tx_mun": 2, "tx_tot": 158, "poles_st": 851, "poles_wd": 192, "poles_tot": 1043, "net_type": "هوائي / ارضي", "len_main": 17.1, "len_branch": 25.78, "len_oh": 42.2, "len_ug": 7.8, "tot_len": 50.0, "oh_pct": 84.4, "ug_pct": 15.6, "alts": ["B412 (MAJARDAH)"], "auto_tot": 10, "equip_tot": 14, "equip": {"recloser_ok": 2, "recloser_bad": 0, "sectionalizer_ok": 2, "sectionalizer_bad": 0, "lbs_abs": 4, "smart_lbs": 5, "rmu": 0, "mrmu": 0, "smru": 1, "group_fuse": 8, "jumper": 0, "tie_auto": "—", "spares": "غير محدد"}, "sera_list": null, "int_2025": null}, {"id": "بارق::B413", "loc": "بارق", "office": "مركز خدمات بارق", "station": "محطة بارق / BAREQ", "fdr": "B413", "fl": "4400-AJN-000003-Q0014", "volt": "13.8 KV", "load_a": 89.97, "load_pct": null, "subs": 1126, "tx_ug": 6, "tx_oh": 189, "tx_mun": 8, "tx_tot": 203, "poles_st": 976, "poles_wd": 150, "poles_tot": 1126, "net_type": "هوائي / ارضي", "len_main": 29.0, "len_branch": 42.31, "len_oh": 112.0, "len_ug": 10.5, "tot_len": 122.5, "oh_pct": 91.4, "ug_pct": 8.6, "alts": ["B411 (BAREQ)"], "auto_tot": 13, "equip_tot": 22, "equip": {"recloser_ok": 3, "recloser_bad": 0, "sectionalizer_ok": 2, "sectionalizer_bad": 0, "lbs_abs": 9, "smart_lbs": 7, "rmu": 0, "mrmu": 0, "smru": 1, "group_fuse": 5, "jumper": 0, "tie_auto": "—", "spares": "غير محدد"}, "sera_list": null, "int_2025": null}, {"id": "بارق::B414", "loc": "بارق", "office": "مركز خدمات بارق", "station": "محطة بارق / BAREQ", "fdr": "B414", "fl": "4400-AJN-000003-Q0020", "volt": "13.8 KV", "load_a": 61.99, "load_pct": null, "subs": 880, "tx_ug": 4, "tx_oh": 107, "tx_mun": 10, "tx_tot": 121, "poles_st": 565, "poles_wd": 14, "poles_tot": 579, "net_type": "هوائي / ارضي", "len_main": 15.0, "len_branch": 20.0, "len_oh": 35.0, "len_ug": 18.0, "tot_len": 53.0, "oh_pct": 66.0, "ug_pct": 34.0, "alts": [], "auto_tot": 9, "equip_tot": 13, "equip": {"recloser_ok": 1, "recloser_bad": 0, "sectionalizer_ok": 2, "sectionalizer_bad": 0, "lbs_abs": 4, "smart_lbs": 4, "rmu": 0, "mrmu": 0, "smru": 2, "group_fuse": 3, "jumper": 0, "tie_auto": "—", "spares": "غير محدد"}, "sera_list": null, "int_2025": null}, {"id": "بارق::B421", "loc": "بارق", "office": "مركز خدمات بارق", "station": "محطة بارق / BAREQ", "fdr": "B421", "fl": "4400-AJN-000003-Q0005", "volt": "13.8 KV", "load_a": 46.0, "load_pct": null, "subs": 610, "tx_ug": 4, "tx_oh": 68, "tx_mun": 3, "tx_tot": 75, "poles_st": 437, "poles_wd": 31, "poles_tot": 468, "net_type": "هوائي / ارضي", "len_main": 11.5, "len_branch": 19.25, "len_oh": 42.5, "len_ug": 2.0, "tot_len": 44.5, "oh_pct": 95.5, "ug_pct": 4.5, "alts": ["B440 (BAREQ)"], "auto_tot": 12, "equip_tot": 17, "equip": {"recloser_ok": 4, "recloser_bad": 0, "sectionalizer_ok": 3, "sectionalizer_bad": 0, "lbs_abs": 5, "smart_lbs": 4, "rmu": 0, "mrmu": 0, "smru": 1, "group_fuse": 3, "jumper": 0, "tie_auto": "—", "spares": "غير محدد"}, "sera_list": null, "int_2025": null}, {"id": "بارق::B422", "loc": "بارق", "office": "مركز خدمات بارق", "station": "محطة بارق / BAREQ", "fdr": "B422", "fl": "4400-AJN-000003-Q0016", "volt": "13.8 KV", "load_a": 47.99, "load_pct": null, "subs": 439, "tx_ug": 21, "tx_oh": 0, "tx_mun": 0, "tx_tot": 21, "poles_st": 0, "poles_wd": 0, "poles_tot": 0, "net_type": "ارضي", "len_main": 24.0, "len_branch": 0.0, "len_oh": 0.0, "len_ug": 24.0, "tot_len": 24.0, "oh_pct": 0.0, "ug_pct": 100.0, "alts": ["B423 (BAREQ)"], "auto_tot": 9, "equip_tot": 22, "equip": {"recloser_ok": 0, "recloser_bad": 0, "sectionalizer_ok": 0, "sectionalizer_bad": 0, "lbs_abs": 0, "smart_lbs": 0, "rmu": 13, "mrmu": 0, "smru": 9, "group_fuse": 0, "jumper": 0, "tie_auto": "—", "spares": "غير محدد"}, "sera_list": null, "int_2025": null}, {"id": "بارق::B423", "loc": "بارق", "office": "مركز خدمات بارق", "station": "محطة بارق / BAREQ", "fdr": "B423", "fl": "4400-AJN-000003-Q0004", "volt": "13.8 KV", "load_a": 69.99, "load_pct": null, "subs": 900, "tx_ug": 11, "tx_oh": 76, "tx_mun": 4, "tx_tot": 81, "poles_st": 362, "poles_wd": 48, "poles_tot": 410, "net_type": "هوائي / ارضي", "len_main": 22.0, "len_branch": 40.94, "len_oh": 41.0, "len_ug": 8.7, "tot_len": 49.7, "oh_pct": 82.5, "ug_pct": 17.5, "alts": ["B425 (BAREQ)"], "auto_tot": 11, "equip_tot": 15, "equip": {"recloser_ok": 3, "recloser_bad": 0, "sectionalizer_ok": 2, "sectionalizer_bad": 0, "lbs_abs": 4, "smart_lbs": 5, "rmu": 0, "mrmu": 0, "smru": 1, "group_fuse": 3, "jumper": 0, "tie_auto": "—", "spares": "غير محدد"}, "sera_list": null, "int_2025": null}, {"id": "بارق::B425", "loc": "بارق", "office": "مركز خدمات بارق", "station": "محطة بارق / BAREQ", "fdr": "B425", "fl": "4400-AJN-000003-Q0003", "volt": "13.8 KV", "load_a": 63.99, "load_pct": null, "subs": 878, "tx_ug": 6, "tx_oh": 90, "tx_mun": 0, "tx_tot": 96, "poles_st": 386, "poles_wd": 387, "poles_tot": 773, "net_type": "هوائي / ارضي", "len_main": 18.9, "len_branch": 62.03, "len_oh": 65.93, "len_ug": 14.7, "tot_len": 80.63, "oh_pct": 81.8, "ug_pct": 18.2, "alts": ["B423 (BAREQ)"], "auto_tot": 7, "equip_tot": 7, "equip": {"recloser_ok": 1, "recloser_bad": 0, "sectionalizer_ok": 1, "sectionalizer_bad": 0, "lbs_abs": 0, "smart_lbs": 4, "rmu": 0, "mrmu": 0, "smru": 1, "group_fuse": 2, "jumper": 0, "tie_auto": "—", "spares": "غير محدد"}, "sera_list": null, "int_2025": null}, {"id": "بارق::B428", "loc": "بارق", "office": "مركز خدمات بارق", "station": "محطة بارق / BAREQ", "fdr": "B428", "fl": "4400-AJN-000003-Q0018", "volt": "13.8 KV", "load_a": 46.0, "load_pct": null, "subs": 691, "tx_ug": 4, "tx_oh": 86, "tx_mun": 6, "tx_tot": 96, "poles_st": 838, "poles_wd": 0, "poles_tot": 838, "net_type": "هوائي / ارضي", "len_main": 13.0, "len_branch": 19.0, "len_oh": 75.4, "len_ug": 9.6, "tot_len": 85.0, "oh_pct": 88.7, "ug_pct": 11.3, "alts": [], "auto_tot": 9, "equip_tot": 13, "equip": {"recloser_ok": 3, "recloser_bad": 0, "sectionalizer_ok": 2, "sectionalizer_bad": 0, "lbs_abs": 4, "smart_lbs": 3, "rmu": 0, "mrmu": 0, "smru": 1, "group_fuse": 5, "jumper": 0, "tie_auto": "—", "spares": "غير محدد"}, "sera_list": null, "int_2025": null}, {"id": "بارق::B430", "loc": "بارق", "office": "مركز خدمات بارق", "station": "محطة بارق / BAREQ", "fdr": "B430", "fl": "4400-AJN-000003-Q0002", "volt": "13.8 KV", "load_a": 76.0, "load_pct": null, "subs": 738, "tx_ug": 11, "tx_oh": 70, "tx_mun": 0, "tx_tot": 81, "poles_st": 269, "poles_wd": 40, "poles_tot": 309, "net_type": "هوائي / ارضي", "len_main": 9.0, "len_branch": 22.48, "len_oh": 15.2, "len_ug": 15.8, "tot_len": 31.0, "oh_pct": 49.0, "ug_pct": 51.0, "alts": ["B440 (BAREQ)"], "auto_tot": 9, "equip_tot": 10, "equip": {"recloser_ok": 1, "recloser_bad": 0, "sectionalizer_ok": 2, "sectionalizer_bad": 0, "lbs_abs": 1, "smart_lbs": 5, "rmu": 0, "mrmu": 0, "smru": 1, "group_fuse": 0, "jumper": 0, "tie_auto": "—", "spares": "غير محدد"}, "sera_list": null, "int_2025": null}, {"id": "بارق::B431", "loc": "بارق", "office": "مركز خدمات بارق", "station": "محطة بارق / BAREQ", "fdr": "B431", "fl": "", "volt": "13.8 KV", "load_a": 0, "load_pct": null, "subs": 1330, "tx_ug": 0, "tx_oh": 0, "tx_mun": 0, "tx_tot": 132, "poles_st": 0, "poles_wd": 0, "poles_tot": 0, "net_type": "ارضي", "len_main": 0, "len_branch": 0, "len_oh": 0, "len_ug": 0, "tot_len": 0, "oh_pct": 0.0, "ug_pct": 100.0, "alts": ["421 (محايل الشمالية)"], "auto_tot": 0, "equip_tot": 0, "equip": {"recloser_ok": 0, "recloser_bad": 0, "sectionalizer_ok": 0, "sectionalizer_bad": 0, "lbs_abs": 0, "smart_lbs": 0, "rmu": 0, "mrmu": 0, "smru": 0, "group_fuse": 0, "jumper": 0, "tie_auto": "—", "spares": "غير محدد"}, "sera_list": null, "int_2025": null}, {"id": "بارق::B432", "loc": "بارق", "office": "مركز خدمات بارق", "station": "محطة بارق / BAREQ", "fdr": "B432", "fl": "", "volt": "13.8 KV", "load_a": 0, "load_pct": null, "subs": 0, "tx_ug": 0, "tx_oh": 0, "tx_mun": 0, "tx_tot": 0, "poles_st": 0, "poles_wd": 0, "poles_tot": 0, "net_type": "هوائي / أرضي", "len_main": 0, "len_branch": 0, "len_oh": 0, "len_ug": 0, "tot_len": 0, "oh_pct": 0.0, "ug_pct": 0, "alts": [], "auto_tot": 0, "equip_tot": 0, "equip": {"recloser_ok": 0, "recloser_bad": 0, "sectionalizer_ok": 0, "sectionalizer_bad": 0, "lbs_abs": 0, "smart_lbs": 0, "rmu": 0, "mrmu": 0, "smru": 0, "group_fuse": 0, "jumper": 0, "tie_auto": "—", "spares": "غير محدد"}, "sera_list": null, "int_2025": null}, {"id": "بارق::B433", "loc": "بارق", "office": "مركز خدمات بارق", "station": "محطة بارق / BAREQ", "fdr": "B433", "fl": "4400-AJN-000003-Q0017", "volt": "13.8 KV", "load_a": 54.97, "load_pct": null, "subs": 512, "tx_ug": 22, "tx_oh": 0, "tx_mun": 0, "tx_tot": 22, "poles_st": 0, "poles_wd": 0, "poles_tot": 0, "net_type": "ارضي", "len_main": 0, "len_branch": 0, "len_oh": 0.0, "len_ug": 25.0, "tot_len": 25.0, "oh_pct": 0.0, "ug_pct": 100.0, "alts": [], "auto_tot": 8, "equip_tot": 25, "equip": {"recloser_ok": 0, "recloser_bad": 0, "sectionalizer_ok": 0, "sectionalizer_bad": 0, "lbs_abs": 0, "smart_lbs": 0, "rmu": 17, "mrmu": 0, "smru": 8, "group_fuse": 0, "jumper": 0, "tie_auto": "—", "spares": "غير محدد"}, "sera_list": null, "int_2025": null}, {"id": "بارق::B437", "loc": "بارق", "office": "مركز خدمات بارق", "station": "محطة بارق / BAREQ", "fdr": "B437", "fl": "", "volt": "13.8 KV", "load_a": 0, "load_pct": null, "subs": 1271, "tx_ug": 0, "tx_oh": 0, "tx_mun": 0, "tx_tot": 117, "poles_st": 0, "poles_wd": 0, "poles_tot": 0, "net_type": "هوائي / ارضي", "len_main": 0.0, "len_branch": 0.0, "len_oh": 0, "len_ug": 0, "tot_len": 0.0, "oh_pct": 0.0, "ug_pct": 10.0, "alts": ["402 (محايل الشمالية)"], "auto_tot": 0, "equip_tot": 0, "equip": {"recloser_ok": 0, "recloser_bad": 0, "sectionalizer_ok": 0, "sectionalizer_bad": 0, "lbs_abs": 0, "smart_lbs": 0, "rmu": 0, "mrmu": 0, "smru": 0, "group_fuse": 0, "jumper": 0, "tie_auto": "—", "spares": "غير محدد"}, "sera_list": null, "int_2025": null}, {"id": "بارق::B439", "loc": "بارق", "office": "مركز خدمات بارق", "station": "محطة بارق / BAREQ", "fdr": "B439", "fl": "4400-AJN-000003-Q0021", "volt": "13.8 KV", "load_a": 55.99, "load_pct": null, "subs": 500, "tx_ug": 5, "tx_oh": 32, "tx_mun": 0, "tx_tot": 37, "poles_st": 121, "poles_wd": 19, "poles_tot": 139, "net_type": "هوائي / ارضي", "len_main": 0, "len_branch": 0, "len_oh": 8.9, "len_ug": 1.2, "tot_len": 10.1, "oh_pct": 88.1, "ug_pct": 11.9, "alts": [], "auto_tot": 6, "equip_tot": 7, "equip": {"recloser_ok": 1, "recloser_bad": 0, "sectionalizer_ok": 0, "sectionalizer_bad": 0, "lbs_abs": 1, "smart_lbs": 2, "rmu": 0, "mrmu": 0, "smru": 3, "group_fuse": 2, "jumper": 0, "tie_auto": "—", "spares": "غير محدد"}, "sera_list": null, "int_2025": null}, {"id": "بارق::B440", "loc": "بارق", "office": "مركز خدمات بارق", "station": "محطة بارق / BAREQ", "fdr": "B440", "fl": "4400-AJN-000003-Q0009", "volt": "13.8 KV", "load_a": 87.98, "load_pct": null, "subs": 789, "tx_ug": 18, "tx_oh": 96, "tx_mun": 6, "tx_tot": 120, "poles_st": 379, "poles_wd": 109, "poles_tot": 485, "net_type": "هوائي / ارضي", "len_main": 7.0, "len_branch": 17.0, "len_oh": 35.5, "len_ug": 4.0, "tot_len": 39.5, "oh_pct": 89.9, "ug_pct": 10.1, "alts": ["B405 (BAREQ)"], "auto_tot": 12, "equip_tot": 19, "equip": {"recloser_ok": 2, "recloser_bad": 0, "sectionalizer_ok": 5, "sectionalizer_bad": 0, "lbs_abs": 7, "smart_lbs": 3, "rmu": 0, "mrmu": 0, "smru": 2, "group_fuse": 2, "jumper": 0, "tie_auto": "—", "spares": "غير محدد"}, "sera_list": null, "int_2025": null}, {"id": "بارق::B441", "loc": "بارق", "office": "مركز خدمات بارق", "station": "محطة بارق / BAREQ", "fdr": "B441", "fl": "4400-AJN-000003-Q0019", "volt": "13.8 KV", "load_a": 27.98, "load_pct": null, "subs": 455, "tx_ug": 2, "tx_oh": 61, "tx_mun": 1, "tx_tot": 64, "poles_st": 259, "poles_wd": 43, "poles_tot": 302, "net_type": "هوائي / ارضي", "len_main": 6.0, "len_branch": 17.0, "len_oh": 22.3, "len_ug": 8.0, "tot_len": 30.3, "oh_pct": 73.6, "ug_pct": 26.4, "alts": [], "auto_tot": 7, "equip_tot": 9, "equip": {"recloser_ok": 1, "recloser_bad": 0, "sectionalizer_ok": 1, "sectionalizer_bad": 0, "lbs_abs": 2, "smart_lbs": 4, "rmu": 0, "mrmu": 0, "smru": 1, "group_fuse": 1, "jumper": 0, "tie_auto": "—", "spares": "غير محدد"}, "sera_list": null, "int_2025": null}, {"id": "بارق::B446", "loc": "بارق", "office": "مركز خدمات بارق", "station": "محطة بارق / BAREQ", "fdr": "B446", "fl": "4400-AJN-000003-Q0001", "volt": "13.8 KV", "load_a": 47.99, "load_pct": null, "subs": 797, "tx_ug": 4, "tx_oh": 68, "tx_mun": 5, "tx_tot": 77, "poles_st": 253, "poles_wd": 12, "poles_tot": 265, "net_type": "هوائي / ارضي", "len_main": 11.2, "len_branch": 19.43, "len_oh": 23.8, "len_ug": 3.0, "tot_len": 26.8, "oh_pct": 88.8, "ug_pct": 11.2, "alts": ["B405 (MAJARDAH)"], "auto_tot": 16, "equip_tot": 31, "equip": {"recloser_ok": 4, "recloser_bad": 0, "sectionalizer_ok": 3, "sectionalizer_bad": 0, "lbs_abs": 5, "smart_lbs": 4, "rmu": 10, "mrmu": 0, "smru": 5, "group_fuse": 4, "jumper": 0, "tie_auto": "—", "spares": "غير محدد"}, "sera_list": null, "int_2025": null}, {"id": "بارق::B448", "loc": "بارق", "office": "مركز خدمات بارق", "station": "محطة بارق / BAREQ", "fdr": "B448", "fl": "4400-AJN-000003-Q0021", "volt": "13.8 KV", "load_a": 46.0, "load_pct": null, "subs": 291, "tx_ug": 0, "tx_oh": 0, "tx_mun": 0, "tx_tot": 0, "poles_st": 0, "poles_wd": 0, "poles_tot": 0, "net_type": "هوائي / أرضي", "len_main": 0, "len_branch": 0, "len_oh": 0, "len_ug": 0, "tot_len": 0, "oh_pct": 0.0, "ug_pct": 0, "alts": [], "auto_tot": 0, "equip_tot": 0, "equip": {"recloser_ok": 0, "recloser_bad": 0, "sectionalizer_ok": 0, "sectionalizer_bad": 0, "lbs_abs": 0, "smart_lbs": 0, "rmu": 0, "mrmu": 0, "smru": 0, "group_fuse": 0, "jumper": 0, "tie_auto": "—", "spares": "غير محدد"}, "sera_list": null, "int_2025": null}, {"id": "بارق::B449", "loc": "بارق", "office": "مركز خدمات بارق", "station": "محطة بارق / BAREQ", "fdr": "B449", "fl": "4400-AJN-000003-Q0010", "volt": "13.8 KV", "load_a": 61.99, "load_pct": null, "subs": 712, "tx_ug": 2, "tx_oh": 79, "tx_mun": 2, "tx_tot": 83, "poles_st": 402, "poles_wd": 17, "poles_tot": 419, "net_type": "هوائي / ارضي", "len_main": 6.7, "len_branch": 25.73, "len_oh": 29.6, "len_ug": 4.0, "tot_len": 33.6, "oh_pct": 88.1, "ug_pct": 11.9, "alts": ["B412 (BAREQ)"], "auto_tot": 6, "equip_tot": 7, "equip": {"recloser_ok": 1, "recloser_bad": 0, "sectionalizer_ok": 2, "sectionalizer_bad": 0, "lbs_abs": 1, "smart_lbs": 2, "rmu": 0, "mrmu": 0, "smru": 1, "group_fuse": 2, "jumper": 0, "tie_auto": "—", "spares": "غير محدد"}, "sera_list": null, "int_2025": null}, {"id": "المجاردة::B423", "loc": "المجاردة", "office": "مركز خدمات المجاردة", "station": "محطة 33 / المجاردة", "fdr": "B423", "fl": "4400-AJN-000001-Q0010", "volt": "13.8 KV", "load_a": 50.0, "load_pct": null, "subs": 1114, "tx_ug": 10, "tx_oh": 93, "tx_mun": 0, "tx_tot": 103, "poles_st": 8, "poles_wd": 0, "poles_tot": 8, "net_type": "هوائي / ارضي", "len_main": 7.0, "len_branch": 0.0, "len_oh": 7.5, "len_ug": 5.6, "tot_len": 13.1, "oh_pct": 57.3, "ug_pct": 42.7, "alts": ["B411 (BAREQ)"], "auto_tot": 2, "equip_tot": 6, "equip": {"recloser_ok": 1, "recloser_bad": 0, "sectionalizer_ok": 0, "sectionalizer_bad": 0, "lbs_abs": 2, "smart_lbs": 0, "rmu": 2, "mrmu": 0, "smru": 1, "group_fuse": 0, "jumper": 0, "tie_auto": "—", "spares": "لايوجد قواطع شاغرة"}, "sera_list": null, "int_2025": null}, {"id": "المجاردة::B402", "loc": "المجاردة", "office": "مركز خدمات المجاردة", "station": "محطة 33 / المجاردة", "fdr": "B402", "fl": "4400-AJN-000001-Q0005", "volt": "13.8 KV", "load_a": 67.0, "load_pct": null, "subs": 2307, "tx_ug": 16, "tx_oh": 67, "tx_mun": 7, "tx_tot": 90, "poles_st": 169, "poles_wd": 62, "poles_tot": 231, "net_type": "هوائي", "len_main": 10.0, "len_branch": 18.3, "len_oh": 23.49, "len_ug": 4.81, "tot_len": 28.3, "oh_pct": 83.0, "ug_pct": 17.0, "alts": ["B420 (MAJARDAH)"], "auto_tot": 5, "equip_tot": 6, "equip": {"recloser_ok": 1, "recloser_bad": 0, "sectionalizer_ok": 1, "sectionalizer_bad": 0, "lbs_abs": 1, "smart_lbs": 3, "rmu": 0, "mrmu": 0, "smru": 0, "group_fuse": 0, "jumper": 0, "tie_auto": "—", "spares": "غير محدد"}, "sera_list": null, "int_2025": null}, {"id": "المجاردة::B403", "loc": "المجاردة", "office": "مركز خدمات المجاردة", "station": "محطة 33 / المجاردة", "fdr": "B403", "fl": "4400-AJN-000001-Q0016", "volt": "13.8 KV", "load_a": 98.0, "load_pct": null, "subs": 1813, "tx_ug": 12, "tx_oh": 187, "tx_mun": 0, "tx_tot": 199, "poles_st": 418, "poles_wd": 457, "poles_tot": 875, "net_type": "هوائي / ارضي", "len_main": 20.5, "len_branch": 46.0, "len_oh": 76.5, "len_ug": 6.0, "tot_len": 82.5, "oh_pct": 92.7, "ug_pct": 7.3, "alts": ["B407 (MAJARDAH)"], "auto_tot": 4, "equip_tot": 7, "equip": {"recloser_ok": 2, "recloser_bad": 0, "sectionalizer_ok": 2, "sectionalizer_bad": 0, "lbs_abs": 3, "smart_lbs": 0, "rmu": 0, "mrmu": 0, "smru": 0, "group_fuse": 0, "jumper": 0, "tie_auto": "—", "spares": "غير محدد"}, "sera_list": null, "int_2025": null}, {"id": "المجاردة::B404", "loc": "المجاردة", "office": "مركز خدمات المجاردة", "station": "محطة 33 / المجاردة", "fdr": "B404", "fl": "4400-AJN-000001-Q0014", "volt": "13.8 KV", "load_a": 10.0, "load_pct": null, "subs": 1, "tx_ug": 1, "tx_oh": 0, "tx_mun": 0, "tx_tot": 1, "poles_st": 0, "poles_wd": 0, "poles_tot": 0, "net_type": "ارضي", "len_main": 3.6, "len_branch": 0.0, "len_oh": 0.0, "len_ug": 3.6, "tot_len": 3.6, "oh_pct": 0.0, "ug_pct": 100.0, "alts": ["B411 (MAJARDAH)"], "auto_tot": 1, "equip_tot": 1, "equip": {"recloser_ok": 0, "recloser_bad": 0, "sectionalizer_ok": 0, "sectionalizer_bad": 0, "lbs_abs": 0, "smart_lbs": 0, "rmu": 0, "mrmu": 0, "smru": 1, "group_fuse": 0, "jumper": 0, "tie_auto": "—", "spares": "غير محدد"}, "sera_list": null, "int_2025": null}, {"id": "المجاردة::B405", "loc": "المجاردة", "office": "مركز خدمات المجاردة", "station": "محطة 33 / المجاردة", "fdr": "B405", "fl": "4400-AJN-000001-Q0004", "volt": "13.8 KV", "load_a": 101.0, "load_pct": null, "subs": 1106, "tx_ug": 6, "tx_oh": 167, "tx_mun": 5, "tx_tot": 178, "poles_st": 784, "poles_wd": 97, "poles_tot": 881, "net_type": "هوائي / ارضي", "len_main": 11.0, "len_branch": 7.35, "len_oh": 51.0, "len_ug": 17.5, "tot_len": 68.5, "oh_pct": 74.5, "ug_pct": 25.5, "alts": ["B446 (BAREQ)"], "auto_tot": 8, "equip_tot": 13, "equip": {"recloser_ok": 1, "recloser_bad": 0, "sectionalizer_ok": 2, "sectionalizer_bad": 0, "lbs_abs": 3, "smart_lbs": 2, "rmu": 2, "mrmu": 0, "smru": 3, "group_fuse": 2, "jumper": 0, "tie_auto": "—", "spares": "غير محدد"}, "sera_list": null, "int_2025": null}, {"id": "المجاردة::B407", "loc": "المجاردة", "office": "مركز خدمات المجاردة", "station": "محطة 33 / المجاردة", "fdr": "B407", "fl": "4400-AJN-000001-Q0002", "volt": "13.8 KV", "load_a": 43.0, "load_pct": null, "subs": 1472, "tx_ug": 6, "tx_oh": 135, "tx_mun": 0, "tx_tot": 141, "poles_st": 628, "poles_wd": 23, "poles_tot": 651, "net_type": "هوائي / ارضي", "len_main": 12.0, "len_branch": 32.9, "len_oh": 44.0, "len_ug": 3.14, "tot_len": 47.14, "oh_pct": 93.3, "ug_pct": 6.7, "alts": ["B403 (MAJARDAH)"], "auto_tot": 11, "equip_tot": 17, "equip": {"recloser_ok": 2, "recloser_bad": 0, "sectionalizer_ok": 3, "sectionalizer_bad": 0, "lbs_abs": 3, "smart_lbs": 5, "rmu": 3, "mrmu": 0, "smru": 1, "group_fuse": 1, "jumper": 0, "tie_auto": "—", "spares": "غير محدد"}, "sera_list": null, "int_2025": null}, {"id": "المجاردة::B410", "loc": "المجاردة", "office": "مركز خدمات المجاردة", "station": "محطة 33 / المجاردة", "fdr": "B410", "fl": "4400-AJN-000001-Q0008", "volt": "13.8 KV", "load_a": 70.0, "load_pct": null, "subs": 1358, "tx_ug": 42, "tx_oh": 57, "tx_mun": 0, "tx_tot": 90, "poles_st": 15, "poles_wd": 15, "poles_tot": 30, "net_type": "هوائي / ارضي", "len_main": 12.7, "len_branch": 13.8, "len_oh": 15.0, "len_ug": 20.0, "tot_len": 35.0, "oh_pct": 42.9, "ug_pct": 57.1, "alts": ["B414 (MAJARDAH)"], "auto_tot": 4, "equip_tot": 11, "equip": {"recloser_ok": 2, "recloser_bad": 0, "sectionalizer_ok": 2, "sectionalizer_bad": 0, "lbs_abs": 7, "smart_lbs": 0, "rmu": 0, "mrmu": 0, "smru": 0, "group_fuse": 0, "jumper": 0, "tie_auto": "—", "spares": "غير محدد"}, "sera_list": null, "int_2025": null}, {"id": "المجاردة::B411", "loc": "المجاردة", "office": "مركز خدمات المجاردة", "station": "محطة 33 / المجاردة", "fdr": "B411", "fl": "4400-AJN-000001-Q0013", "volt": "13.8 KV", "load_a": 18.0, "load_pct": null, "subs": 1, "tx_ug": 1, "tx_oh": 0, "tx_mun": 0, "tx_tot": 1, "poles_st": 0, "poles_wd": 0, "poles_tot": 0, "net_type": "ارضي", "len_main": 3.6, "len_branch": 0.0, "len_oh": 0.0, "len_ug": 3.6, "tot_len": 3.6, "oh_pct": 0.0, "ug_pct": 100.0, "alts": ["B404 (MAJARDAH)"], "auto_tot": 1, "equip_tot": 1, "equip": {"recloser_ok": 0, "recloser_bad": 0, "sectionalizer_ok": 0, "sectionalizer_bad": 0, "lbs_abs": 0, "smart_lbs": 0, "rmu": 0, "mrmu": 0, "smru": 1, "group_fuse": 0, "jumper": 0, "tie_auto": "—", "spares": "غير محدد"}, "sera_list": null, "int_2025": null}, {"id": "المجاردة::B412", "loc": "المجاردة", "office": "مركز خدمات المجاردة", "station": "محطة 33 / المجاردة", "fdr": "B412", "fl": "4400-AJN-000001-Q0001", "volt": "13.8 KV", "load_a": 24.0, "load_pct": null, "subs": 1032, "tx_ug": 1, "tx_oh": 160, "tx_mun": 4, "tx_tot": 165, "poles_st": 892, "poles_wd": 196, "poles_tot": 1088, "net_type": "هوائي / ارضي", "len_main": 17.0, "len_branch": 23.79, "len_oh": 55.0, "len_ug": 29.0, "tot_len": 84.0, "oh_pct": 65.5, "ug_pct": 34.5, "alts": ["B412 (BAREQ)"], "auto_tot": 13, "equip_tot": 15, "equip": {"recloser_ok": 4, "recloser_bad": 0, "sectionalizer_ok": 0, "sectionalizer_bad": 0, "lbs_abs": 0, "smart_lbs": 9, "rmu": 2, "mrmu": 0, "smru": 0, "group_fuse": 0, "jumper": 0, "tie_auto": "—", "spares": "غير محدد"}, "sera_list": null, "int_2025": null}, {"id": "المجاردة::B413", "loc": "المجاردة", "office": "مركز خدمات المجاردة", "station": "محطة 33 / المجاردة", "fdr": "B413", "fl": "4400-AJN-000001-Q0012", "volt": "13.8 KV", "load_a": 111.0, "load_pct": null, "subs": 1740, "tx_ug": 8, "tx_oh": 176, "tx_mun": 21, "tx_tot": 205, "poles_st": 589, "poles_wd": 142, "poles_tot": 731, "net_type": "هوائي / ارضي", "len_main": 14.1, "len_branch": 32.6, "len_oh": 42.0, "len_ug": 10.0, "tot_len": 52.0, "oh_pct": 80.8, "ug_pct": 19.2, "alts": ["B410 (MAJARDAH)"], "auto_tot": 7, "equip_tot": 14, "equip": {"recloser_ok": 4, "recloser_bad": 0, "sectionalizer_ok": 1, "sectionalizer_bad": 0, "lbs_abs": 7, "smart_lbs": 2, "rmu": 0, "mrmu": 0, "smru": 0, "group_fuse": 1, "jumper": 0, "tie_auto": "—", "spares": "غير محدد"}, "sera_list": null, "int_2025": null}, {"id": "المجاردة::B414", "loc": "المجاردة", "office": "مركز خدمات المجاردة", "station": "محطة 33 / المجاردة", "fdr": "B414", "fl": "4400-AJN-000001-Q0006", "volt": "13.8 KV", "load_a": 81.0, "load_pct": null, "subs": 1276, "tx_ug": 8, "tx_oh": 302, "tx_mun": 17, "tx_tot": 327, "poles_st": 118, "poles_wd": 84, "poles_tot": 126, "net_type": "هوائي / ارضي", "len_main": 27.0, "len_branch": 81.4, "len_oh": 77.5, "len_ug": 20.5, "tot_len": 98.0, "oh_pct": 79.1, "ug_pct": 20.9, "alts": ["B418 (MAJARDAH)"], "auto_tot": 15, "equip_tot": 22, "equip": {"recloser_ok": 3, "recloser_bad": 0, "sectionalizer_ok": 3, "sectionalizer_bad": 0, "lbs_abs": 5, "smart_lbs": 9, "rmu": 2, "mrmu": 0, "smru": 0, "group_fuse": 0, "jumper": 0, "tie_auto": "—", "spares": "غير محدد"}, "sera_list": null, "int_2025": null}, {"id": "المجاردة::B416", "loc": "المجاردة", "office": "مركز خدمات المجاردة", "station": "محطة 33 / المجاردة", "fdr": "B416", "fl": "4400-AJN-000001-Q0003", "volt": "13.8 KV", "load_a": 115.0, "load_pct": null, "subs": 1293, "tx_ug": 66, "tx_oh": 64, "tx_mun": 0, "tx_tot": 134, "poles_st": 100, "poles_wd": 27, "poles_tot": 127, "net_type": "هوائي / ارضي", "len_main": 5.0, "len_branch": 7.0, "len_oh": 6.5, "len_ug": 24.5, "tot_len": 31.0, "oh_pct": 21.0, "ug_pct": 79.0, "alts": ["B407 (MAJARDAH)"], "auto_tot": 8, "equip_tot": 68, "equip": {"recloser_ok": 1, "recloser_bad": 0, "sectionalizer_ok": 0, "sectionalizer_bad": 0, "lbs_abs": 0, "smart_lbs": 0, "rmu": 60, "mrmu": 0, "smru": 7, "group_fuse": 0, "jumper": 0, "tie_auto": "—", "spares": "غير محدد"}, "sera_list": null, "int_2025": null}, {"id": "المجاردة::B417", "loc": "المجاردة", "office": "مركز خدمات المجاردة", "station": "محطة 33 / المجاردة", "fdr": "B417", "fl": "4400-AJN-000001-Q0007", "volt": "13.8 KV", "load_a": 90.0, "load_pct": null, "subs": 1406, "tx_ug": 19, "tx_oh": 191, "tx_mun": 18, "tx_tot": 228, "poles_st": 799, "poles_wd": 107, "poles_tot": 906, "net_type": "هوائي / ارضي", "len_main": 26.3, "len_branch": 24.19, "len_oh": 57.0, "len_ug": 13.2, "tot_len": 70.2, "oh_pct": 81.2, "ug_pct": 18.8, "alts": ["B407 (BAREQ)"], "auto_tot": 14, "equip_tot": 40, "equip": {"recloser_ok": 2, "recloser_bad": 0, "sectionalizer_ok": 2, "sectionalizer_bad": 0, "lbs_abs": 6, "smart_lbs": 6, "rmu": 20, "mrmu": 0, "smru": 4, "group_fuse": 1, "jumper": 1, "tie_auto": "—", "spares": "غير محدد"}, "sera_list": null, "int_2025": null}, {"id": "المجاردة::B418", "loc": "المجاردة", "office": "مركز خدمات المجاردة", "station": "محطة 33 / المجاردة", "fdr": "B418", "fl": "4400-AJN-000001-Q0015", "volt": "13.8 KV", "load_a": 90.0, "load_pct": null, "subs": 1276, "tx_ug": 6, "tx_oh": 279, "tx_mun": 21, "tx_tot": 306, "poles_st": 1237, "poles_wd": 470, "poles_tot": 1707, "net_type": "هوائي / ارضي", "len_main": 39.0, "len_branch": 94.2, "len_oh": 103.0, "len_ug": 30.0, "tot_len": 133.0, "oh_pct": 77.4, "ug_pct": 22.6, "alts": ["B414 (MAJARDAH)"], "auto_tot": 4, "equip_tot": 12, "equip": {"recloser_ok": 2, "recloser_bad": 0, "sectionalizer_ok": 2, "sectionalizer_bad": 0, "lbs_abs": 8, "smart_lbs": 0, "rmu": 0, "mrmu": 0, "smru": 0, "group_fuse": 0, "jumper": 0, "tie_auto": "—", "spares": "غير محدد"}, "sera_list": null, "int_2025": null}, {"id": "المجاردة::B420", "loc": "المجاردة", "office": "مركز خدمات المجاردة", "station": "محطة 33 / المجاردة", "fdr": "B420", "fl": "4400-AJN-000001-Q0011", "volt": "13.8 KV", "load_a": 141.0, "load_pct": null, "subs": 2098, "tx_ug": 27, "tx_oh": 177, "tx_mun": 0, "tx_tot": 105, "poles_st": 180, "poles_wd": 40, "poles_tot": 220, "net_type": "هوائي / ارضي", "len_main": 7.5, "len_branch": 11.4, "len_oh": 16.2, "len_ug": 2.7, "tot_len": 18.9, "oh_pct": 85.7, "ug_pct": 14.3, "alts": ["B402 (MAJARDAH)"], "auto_tot": 16, "equip_tot": 25, "equip": {"recloser_ok": 2, "recloser_bad": 0, "sectionalizer_ok": 2, "sectionalizer_bad": 0, "lbs_abs": 9, "smart_lbs": 12, "rmu": 0, "mrmu": 0, "smru": 0, "group_fuse": 1, "jumper": 1, "tie_auto": "—", "spares": "غير محدد"}, "sera_list": null, "int_2025": null}, {"id": "المجاردة::B421", "loc": "المجاردة", "office": "مركز خدمات المجاردة", "station": "محطة 33 / المجاردة", "fdr": "B421", "fl": "4400-AJN-000001-Q0009", "volt": "13.8 KV", "load_a": 72.0, "load_pct": null, "subs": 911, "tx_ug": 5, "tx_oh": 107, "tx_mun": 0, "tx_tot": 113, "poles_st": 8, "poles_wd": 0, "poles_tot": 8, "net_type": "هوائي / ارضي", "len_main": 7.0, "len_branch": 0.0, "len_oh": 2.0, "len_ug": 5.6, "tot_len": 7.6, "oh_pct": 26.3, "ug_pct": 73.7, "alts": ["B413 (BAREQ)"], "auto_tot": 0, "equip_tot": 1, "equip": {"recloser_ok": 0, "recloser_bad": 0, "sectionalizer_ok": 0, "sectionalizer_bad": 0, "lbs_abs": 1, "smart_lbs": 0, "rmu": 0, "mrmu": 0, "smru": 0, "group_fuse": 0, "jumper": 0, "tie_auto": "—", "spares": "غير محدد"}, "sera_list": null, "int_2025": null}, {"id": "سبت الجارة::B429", "loc": "سبت الجارة", "office": "مكتب العرضيتين", "station": "محطة سبت الجارة / SABT JARA", "fdr": "B429", "fl": "", "volt": "33 KV", "load_a": 125.0, "load_pct": 34.6, "subs": 754, "tx_ug": 0, "tx_oh": 0, "tx_mun": 0, "tx_tot": 1, "poles_st": 0, "poles_wd": 0, "poles_tot": 0, "net_type": "هوائي", "len_main": 42.15, "len_branch": 36.23, "len_oh": 77.6, "len_ug": 0.78, "tot_len": 78.38, "oh_pct": 99.0, "ug_pct": 1.0, "alts": ["نمرةB422"], "auto_tot": 3, "equip_tot": 4, "equip": {"recloser_ok": 1, "recloser_bad": 0, "sectionalizer_ok": 2, "sectionalizer_bad": 0, "lbs_abs": 0, "smart_lbs": 0, "rmu": 1, "mrmu": 0, "smru": 0, "group_fuse": 0, "jumper": 0, "tie_auto": "نعم", "spares": "—"}, "sera_list": "لا", "int_2025": 1}, {"id": "سبت الجارة::B402", "loc": "سبت الجارة", "office": "مكتب القنفذة", "station": "محطة سبت الجارة / SABT JARA", "fdr": "B402", "fl": "", "volt": "33 KV", "load_a": 132.0, "load_pct": 36.6, "subs": 2692, "tx_ug": 0, "tx_oh": 0, "tx_mun": 0, "tx_tot": 0, "poles_st": 0, "poles_wd": 0, "poles_tot": 0, "net_type": "هوائي", "len_main": 101.87, "len_branch": 104.41, "len_oh": 204.22, "len_ug": 2.06, "tot_len": 206.28, "oh_pct": 99.0, "ug_pct": 1.0, "alts": ["سبت الجارةB409"], "auto_tot": 8, "equip_tot": 8, "equip": {"recloser_ok": 2, "recloser_bad": 0, "sectionalizer_ok": 1, "sectionalizer_bad": 0, "lbs_abs": 0, "smart_lbs": 5, "rmu": 0, "mrmu": 0, "smru": 0, "group_fuse": 0, "jumper": 0, "tie_auto": "نعم", "spares": "—"}, "sera_list": "2025", "int_2025": 1}, {"id": "سبت الجارة::B409", "loc": "سبت الجارة", "office": "مكتب القنفذة", "station": "محطة سبت الجارة / SABT JARA", "fdr": "B409", "fl": "", "volt": "33 KV", "load_a": 151.0, "load_pct": 41.8, "subs": 2028, "tx_ug": 0, "tx_oh": 0, "tx_mun": 0, "tx_tot": 0, "poles_st": 0, "poles_wd": 0, "poles_tot": 0, "net_type": "هوائي", "len_main": 42.81, "len_branch": 84.57, "len_oh": 126.1, "len_ug": 1.27, "tot_len": 127.37, "oh_pct": 99.0, "ug_pct": 1.0, "alts": ["سبت الجارةB427", "سبت الجارةB402", "سبت الجارةB407"], "auto_tot": 6, "equip_tot": 6, "equip": {"recloser_ok": 0, "recloser_bad": 0, "sectionalizer_ok": 4, "sectionalizer_bad": 0, "lbs_abs": 0, "smart_lbs": 2, "rmu": 0, "mrmu": 0, "smru": 0, "group_fuse": 0, "jumper": 0, "tie_auto": "نعم", "spares": "—"}, "sera_list": "2025", "int_2025": 10}, {"id": "سبت الجارة::B403", "loc": "سبت الجارة", "office": "مكتب القنفذة", "station": "محطة سبت الجارة / SABT JARA", "fdr": "B403", "fl": "", "volt": "33 KV", "load_a": 85.0, "load_pct": 23.5, "subs": 0, "tx_ug": 0, "tx_oh": 0, "tx_mun": 0, "tx_tot": 0, "poles_st": 0, "poles_wd": 0, "poles_tot": 0, "net_type": "هوائي", "len_main": 0.0, "len_branch": 0.55, "len_oh": 0.54, "len_ug": 0.01, "tot_len": 0.55, "oh_pct": 99.0, "ug_pct": 1.0, "alts": ["سبت الجارةB408", "سبت الجارةB426"], "auto_tot": 5, "equip_tot": 5, "equip": {"recloser_ok": 1, "recloser_bad": 0, "sectionalizer_ok": 3, "sectionalizer_bad": 0, "lbs_abs": 0, "smart_lbs": 1, "rmu": 0, "mrmu": 0, "smru": 0, "group_fuse": 0, "jumper": 0, "tie_auto": "نعم", "spares": "—"}, "sera_list": "2025", "int_2025": 2}, {"id": "سبت الجارة::B408", "loc": "سبت الجارة", "office": "مكتب القنفذة", "station": "محطة سبت الجارة / SABT JARA", "fdr": "B408", "fl": "", "volt": "33 KV", "load_a": 205.3, "load_pct": 56.9, "subs": 541, "tx_ug": 0, "tx_oh": 0, "tx_mun": 0, "tx_tot": 0, "poles_st": 0, "poles_wd": 0, "poles_tot": 0, "net_type": "هوائي", "len_main": 15.82, "len_branch": 30.93, "len_oh": 46.29, "len_ug": 0.47, "tot_len": 46.76, "oh_pct": 99.0, "ug_pct": 1.0, "alts": ["سبت الجارةB403", "سبت الجارةB428"], "auto_tot": 3, "equip_tot": 3, "equip": {"recloser_ok": 1, "recloser_bad": 0, "sectionalizer_ok": 1, "sectionalizer_bad": 0, "lbs_abs": 0, "smart_lbs": 1, "rmu": 0, "mrmu": 0, "smru": 0, "group_fuse": 0, "jumper": 0, "tie_auto": "لا", "spares": "—"}, "sera_list": "2025", "int_2025": 2}, {"id": "سبت الجارة::B407", "loc": "سبت الجارة", "office": "مكتب القنفذة", "station": "محطة سبت الجارة / SABT JARA", "fdr": "B407", "fl": "", "volt": "33 KV", "load_a": 175.0, "load_pct": 48.5, "subs": 1185, "tx_ug": 0, "tx_oh": 0, "tx_mun": 0, "tx_tot": 0, "poles_st": 0, "poles_wd": 0, "poles_tot": 0, "net_type": "هوائي", "len_main": 0.0, "len_branch": 40.99, "len_oh": 40.58, "len_ug": 0.41, "tot_len": 40.99, "oh_pct": 99.0, "ug_pct": 1.0, "alts": ["سبت الجارةB409", "سبت الجارةB417"], "auto_tot": 5, "equip_tot": 5, "equip": {"recloser_ok": 2, "recloser_bad": 0, "sectionalizer_ok": 1, "sectionalizer_bad": 0, "lbs_abs": 0, "smart_lbs": 2, "rmu": 0, "mrmu": 0, "smru": 0, "group_fuse": 0, "jumper": 0, "tie_auto": "نعم", "spares": "—"}, "sera_list": "لا", "int_2025": 1}, {"id": "سبت الجارة::B426", "loc": "سبت الجارة", "office": "مكتب القنفذة", "station": "محطة سبت الجارة / SABT JARA", "fdr": "B426", "fl": "", "volt": "33 KV", "load_a": 205.3, "load_pct": 56.9, "subs": 1712, "tx_ug": 0, "tx_oh": 0, "tx_mun": 0, "tx_tot": 0, "poles_st": 0, "poles_wd": 0, "poles_tot": 0, "net_type": "هوائي", "len_main": 39.59, "len_branch": 77.46, "len_oh": 115.88, "len_ug": 1.17, "tot_len": 117.05, "oh_pct": 99.0, "ug_pct": 1.0, "alts": ["سبت الجارةB403", "سبت الجارةB428", "سبت الجارةB408"], "auto_tot": 5, "equip_tot": 5, "equip": {"recloser_ok": 1, "recloser_bad": 0, "sectionalizer_ok": 1, "sectionalizer_bad": 0, "lbs_abs": 0, "smart_lbs": 3, "rmu": 0, "mrmu": 0, "smru": 0, "group_fuse": 0, "jumper": 0, "tie_auto": "نعم", "spares": "—"}, "sera_list": "2025", "int_2025": null}, {"id": "سبت الجارة::B427", "loc": "سبت الجارة", "office": "مكتب القنفذة", "station": "محطة سبت الجارة / SABT JARA", "fdr": "B427", "fl": "", "volt": "33 KV", "load_a": 132.0, "load_pct": 36.6, "subs": 1683, "tx_ug": 0, "tx_oh": 0, "tx_mun": 0, "tx_tot": 0, "poles_st": 0, "poles_wd": 0, "poles_tot": 0, "net_type": "هوائي", "len_main": 79.7, "len_branch": 136.55, "len_oh": 214.08, "len_ug": 2.16, "tot_len": 216.24, "oh_pct": 99.0, "ug_pct": 1.0, "alts": ["سبت الجارةb409", "القوزB422"], "auto_tot": 10, "equip_tot": 10, "equip": {"recloser_ok": 2, "recloser_bad": 0, "sectionalizer_ok": 6, "sectionalizer_bad": 0, "lbs_abs": 0, "smart_lbs": 1, "rmu": 0, "mrmu": 0, "smru": 1, "group_fuse": 0, "jumper": 0, "tie_auto": "نعم", "spares": "—"}, "sera_list": "2024", "int_2025": 9}, {"id": "سبت الجارة::B428", "loc": "سبت الجارة", "office": "مكتب القنفذة", "station": "محطة سبت الجارة / SABT JARA", "fdr": "B428", "fl": "", "volt": "33 KV", "load_a": 85.0, "load_pct": 23.5, "subs": 1827, "tx_ug": 0, "tx_oh": 0, "tx_mun": 0, "tx_tot": 0, "poles_st": 0, "poles_wd": 0, "poles_tot": 0, "net_type": "هوائي", "len_main": 48.4, "len_branch": 95.54, "len_oh": 142.5, "len_ug": 1.44, "tot_len": 143.94, "oh_pct": 99.0, "ug_pct": 1.0, "alts": ["سبت الجارةb408", "المركزية CPS-B412"], "auto_tot": 10, "equip_tot": 10, "equip": {"recloser_ok": 2, "recloser_bad": 0, "sectionalizer_ok": 5, "sectionalizer_bad": 0, "lbs_abs": 0, "smart_lbs": 3, "rmu": 0, "mrmu": 0, "smru": 0, "group_fuse": 0, "jumper": 0, "tie_auto": "نعم", "spares": "—"}, "sera_list": "2025", "int_2025": 3}, {"id": "سبت الجارة::B417", "loc": "سبت الجارة", "office": "مكتب القنفذة", "station": "محطة سبت الجارة / SABT JARA", "fdr": "B417", "fl": "", "volt": "33 KV", "load_a": 120.0, "load_pct": 33.2, "subs": 1276, "tx_ug": 0, "tx_oh": 0, "tx_mun": 0, "tx_tot": 0, "poles_st": 0, "poles_wd": 0, "poles_tot": 0, "net_type": "هوائي", "len_main": 34.53, "len_branch": 30.25, "len_oh": 64.12, "len_ug": 0.65, "tot_len": 64.77, "oh_pct": 99.0, "ug_pct": 1.0, "alts": ["سبت الجارةb407", "المركزيةB409"], "auto_tot": 4, "equip_tot": 4, "equip": {"recloser_ok": 1, "recloser_bad": 0, "sectionalizer_ok": 0, "sectionalizer_bad": 0, "lbs_abs": 0, "smart_lbs": 2, "rmu": 0, "mrmu": 0, "smru": 1, "group_fuse": 0, "jumper": 0, "tie_auto": "نعم", "spares": "—"}, "sera_list": "2025", "int_2025": 4}, {"id": "سبت الجارة::B418", "loc": "سبت الجارة", "office": "مكتب القنفذة", "station": "محطة سبت الجارة / SABT JARA", "fdr": "B418", "fl": "", "volt": "33 KV", "load_a": 0.0, "load_pct": 0.0, "subs": 0, "tx_ug": 0, "tx_oh": 0, "tx_mun": 0, "tx_tot": 0, "poles_st": 0, "poles_wd": 0, "poles_tot": 0, "net_type": "هوائي", "len_main": 0, "len_branch": 0, "len_oh": 0.0, "len_ug": 0.0, "tot_len": 0, "oh_pct": 81.0, "ug_pct": 0.0, "alts": ["سبت الجارةB427"], "auto_tot": 0, "equip_tot": 0, "equip": {"recloser_ok": 0, "recloser_bad": 0, "sectionalizer_ok": 0, "sectionalizer_bad": 0, "lbs_abs": 0, "smart_lbs": 0, "rmu": 0, "mrmu": 0, "smru": 0, "group_fuse": 0, "jumper": 0, "tie_auto": "لا", "spares": "—"}, "sera_list": "لا", "int_2025": 8}, {"id": "سبت الجارة::B419", "loc": "سبت الجارة", "office": "مكتب القنفذة", "station": "محطة سبت الجارة / SABT JARA", "fdr": "B419", "fl": "", "volt": "33 KV", "load_a": 0, "load_pct": null, "subs": 0, "tx_ug": 0, "tx_oh": 0, "tx_mun": 0, "tx_tot": 0, "poles_st": 0, "poles_wd": 0, "poles_tot": 0, "net_type": "هوائي", "len_main": 0, "len_branch": 0, "len_oh": 0.0, "len_ug": 0.0, "tot_len": 0, "oh_pct": 0.0, "ug_pct": 0.0, "alts": [], "auto_tot": 0, "equip_tot": 0, "equip": {"recloser_ok": 0, "recloser_bad": 0, "sectionalizer_ok": 0, "sectionalizer_bad": 0, "lbs_abs": 0, "smart_lbs": 0, "rmu": 0, "mrmu": 0, "smru": 0, "group_fuse": 0, "jumper": 0, "tie_auto": "نعم", "spares": "—"}, "sera_list": "لا", "int_2025": null}, {"id": "سبت الجارة::B420", "loc": "سبت الجارة", "office": "مكتب القنفذة", "station": "محطة سبت الجارة / SABT JARA", "fdr": "B420", "fl": "", "volt": "33 KV", "load_a": 0, "load_pct": null, "subs": 0, "tx_ug": 0, "tx_oh": 0, "tx_mun": 0, "tx_tot": 0, "poles_st": 0, "poles_wd": 0, "poles_tot": 0, "net_type": "هوائي", "len_main": 0, "len_branch": 0, "len_oh": 0.0, "len_ug": 0.0, "tot_len": 0, "oh_pct": 0.0, "ug_pct": 0.0, "alts": [], "auto_tot": 0, "equip_tot": 0, "equip": {"recloser_ok": 0, "recloser_bad": 0, "sectionalizer_ok": 0, "sectionalizer_bad": 0, "lbs_abs": 0, "smart_lbs": 0, "rmu": 0, "mrmu": 0, "smru": 0, "group_fuse": 0, "jumper": 0, "tie_auto": "غير محدد", "spares": "—"}, "sera_list": "لا", "int_2025": null}, {"id": "سبت الجارة::B423", "loc": "سبت الجارة", "office": "مكتب القنفذة", "station": "محطة سبت الجارة / SABT JARA", "fdr": "B423", "fl": "", "volt": "33 KV", "load_a": 0, "load_pct": null, "subs": 0, "tx_ug": 0, "tx_oh": 0, "tx_mun": 0, "tx_tot": 0, "poles_st": 0, "poles_wd": 0, "poles_tot": 0, "net_type": "هوائي", "len_main": 0, "len_branch": 0, "len_oh": 0.0, "len_ug": 0.0, "tot_len": 0, "oh_pct": 0.0, "ug_pct": 0.0, "alts": [], "auto_tot": 0, "equip_tot": 0, "equip": {"recloser_ok": 0, "recloser_bad": 0, "sectionalizer_ok": 0, "sectionalizer_bad": 0, "lbs_abs": 0, "smart_lbs": 0, "rmu": 0, "mrmu": 0, "smru": 0, "group_fuse": 0, "jumper": 0, "tie_auto": "غير محدد", "spares": "—"}, "sera_list": "لا", "int_2025": null}, {"id": "سبت الجارة::B412", "loc": "سبت الجارة", "office": "مكتب القنفذة", "station": "محطة سبت الجارة / SABT JARA", "fdr": "B412", "fl": "", "volt": "33 KV", "load_a": 0, "load_pct": null, "subs": 0, "tx_ug": 0, "tx_oh": 0, "tx_mun": 0, "tx_tot": 0, "poles_st": 0, "poles_wd": 0, "poles_tot": 0, "net_type": "هوائي", "len_main": 0, "len_branch": 0, "len_oh": 0.0, "len_ug": 0.0, "tot_len": 0, "oh_pct": 0.0, "ug_pct": 0.0, "alts": [], "auto_tot": 0, "equip_tot": 0, "equip": {"recloser_ok": 0, "recloser_bad": 0, "sectionalizer_ok": 0, "sectionalizer_bad": 0, "lbs_abs": 0, "smart_lbs": 0, "rmu": 0, "mrmu": 0, "smru": 0, "group_fuse": 0, "jumper": 0, "tie_auto": "غير محدد", "spares": "—"}, "sera_list": "لا", "int_2025": null}];
+
+        let fgState = {
+            loc: 'ALL',
+            net: 'ALL',
+            sort: 'len_desc',
+            search: ''
+        };
+
+        function computeFeederOperationalMetrics(f) {
+            let intMv = 0, intDur = 0, intSubs = 0, intCml = 0;
+            let mvEvents = [];
+            let outLv = 0, outMaster = 0, outTotal = 0;
+            let trList = [];
+            let cmpSubList = [];
+            let stdSubList = [];
+
+            if (f.loc === 'سبت الجارة') {
+                const sjRows = (typeof SJ_FEEDERS !== 'undefined' ? SJ_FEEDERS : []).filter(r => {
+                    const code = String(r[3] || '').trim().toUpperCase();
+                    const full = String(r[4] || '').trim().toUpperCase();
+                    return code === f.fdr || full.startsWith(f.fdr + ' ') || full.endsWith('/ ' + f.fdr);
+                });
+                sjRows.forEach(r => {
+                    intMv += (r[6] || 0);
+                    intCml += (r[5] || 0);
+                    mvEvents.push({
+                        "الموقع": "سبت الجارة",
+                        "المغذي": f.fdr,
+                        "تكرار الانقطاع 2026": r[6] || 0,
+                        "انقطاع كلي (ALL)": r[7] || 0,
+                        "انقطاع جزئي (PART)": r[8] || 0,
+                        "إجمالي دقائق المشتركين (CML)": Math.round(r[5] || 0),
+                        "انقطاعات 2025": f.int_2025 ?? '—'
+                    });
+                });
+            } else {
+                const targetSubIdx = f.loc === 'بارق' ? 1 : 0;
+                const intRows = (typeof INT_RECORDS !== 'undefined' ? INT_RECORDS : []).filter(rec => {
+                    if (rec[0] !== targetSubIdx) return false;
+                    const fCode = String(rec[10] || '').split(' ')[0].trim().toUpperCase();
+                    return fCode === f.fdr;
+                });
+                intRows.forEach(rec => {
+                    intMv += 1;
+                    intDur += (rec[5] || 0);
+                    const sTot = (rec[7] || 0) + (rec[8] || 0);
+                    intSubs += sTot;
+                    intCml += (rec[5] || 0) * sTot;
+                    mvEvents.push({
+                        "رقم الإشعار": rec[11],
+                        "التاريخ": rec[1],
+                        "الوقت": rec[2],
+                        "المحطة": SUB_NAMES[rec[0]] || f.loc,
+                        "المغذي": rec[10],
+                        "سبب الانقطاع": rec[3],
+                        "الإجراء المتخذ": rec[4],
+                        "المدة (دقيقة)": rec[5],
+                        "مشتركين عادي": rec[7],
+                        "مشتركين VIP": rec[8]
+                    });
+                });
+
+                if (f.fl) {
+                    (typeof OUT_SUM !== 'undefined' ? OUT_SUM : []).forEach(r => {
+                        if (String(r[1] || '').trim().toUpperCase() === f.fl) {
+                            outTotal += (r[4] || 0);
+                            if (r[2] === 0) outLv += (r[4] || 0);
+                            else outMaster += (r[4] || 0);
+                        }
+                    });
+                    trList = (typeof TR_DATA !== 'undefined' ? TR_DATA : []).filter(t => String(t.feeder || '').trim().toUpperCase() === f.fl);
+                    cmpSubList = (typeof SUB_TOP !== 'undefined' ? SUB_TOP : []).filter(s => String(s[4] || '').trim().toUpperCase() === f.fl);
+                    stdSubList = (typeof STD_ACCOUNTS !== 'undefined' ? STD_ACCOUNTS : []).filter(s => String(s[10] || '').trim().toUpperCase() === f.fl);
+                }
+            }
+
+            const intPer100Km = f.tot_len > 0 ? roundNum((intMv / f.tot_len) * 100, 1) : 0;
+            return {
+                intMv, intDur: roundNum(intDur, 1), intSubs, intCml: Math.round(intCml),
+                intPer100Km, mvEvents, outTotal, outLv, outMaster, trList, cmpSubList, stdSubList
+            };
+        }
+
+        function roundNum(n, d = 1) {
+            const p = Math.pow(10, d);
+            return Math.round((Number(n) || 0) * p) / p;
+        }
+
+        function getEnrichedFeeders() {
+            const qGlobal = (appState.search || '').trim().toUpperCase();
+            const qLocal = (fgState.search || '').trim().toUpperCase();
+            const locF = getActiveLocationsFilter();
+
+            return FEEDERS_MASTER.map(f => ({
+                ...f,
+                ops: computeFeederOperationalMetrics(f)
+            })).filter(f => {
+                if (fgState.loc !== 'ALL' && f.loc !== fgState.loc) return false;
+                if (fgState.loc === 'ALL' && !locF.isAll) {
+                    if (f.loc === 'المجاردة' && !locF.hasMaj) return false;
+                    if (f.loc === 'بارق' && !locF.hasBar) return false;
+                    if (f.loc === 'سبت الجارة' && !locF.hasSj) return false;
+                }
+                if (fgState.net === 'OH' && f.oh_pct < 70) return false;
+                if (fgState.net === 'UG' && f.ug_pct < 50) return false;
+                if (fgState.net === 'SERA' && (!f.sera_list || f.sera_list === 'لا')) return false;
+
+                const hay = `${f.loc} ${f.fdr} ${f.fl} ${f.office} ${(f.alts || []).join(' ')}`.toUpperCase();
+                if (qGlobal && !hay.includes(qGlobal)) return false;
+                if (qLocal && !hay.includes(qLocal)) return false;
+                return true;
+            });
+        }
+
+        function renderFeedersGuideSection() {
+            const list = getEnrichedFeeders();
+            const tabBadge = document.getElementById('tab-fdr-guide-count');
+            if (tabBadge) tabBadge.textContent = list.length;
+
+            // تحديث أزرار المواقع الثلاثة
+            document.querySelectorAll('.fg-loc-btn').forEach(btn => {
+                const v = btn.dataset.fgloc;
+                if (v === fgState.loc) {
+                    btn.className = "fg-loc-btn px-3 py-1.5 rounded-lg text-xs font-extrabold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 cursor-pointer";
+                } else {
+                    btn.className = "fg-loc-btn px-3 py-1.5 rounded-lg text-xs font-bold text-gray-400 hover:text-gray-200 border border-transparent cursor-pointer";
+                }
+            });
+
+            // بطاقات الملخص
+            const totLen = list.reduce((s, f) => s + f.tot_len, 0);
+            const totSubs = list.reduce((s, f) => s + f.subs, 0);
+            const validLoads = list.filter(f => f.load_a > 0);
+            const avgLoad = validLoads.length ? (validLoads.reduce((s, f) => s + f.load_a, 0) / validLoads.length) : 0;
+            const maxLoad = validLoads.reduce((m, f) => Math.max(m, f.load_a), 0);
+            const totAuto = list.reduce((s, f) => s + f.auto_tot, 0);
+            const totInt = list.reduce((s, f) => s + f.ops.intMv, 0);
+            const rate100 = totLen > 0 ? ((totInt / totLen) * 100).toFixed(1) : '0.0';
+
+            const cMaj = list.filter(f => f.loc === 'المجاردة').length;
+            const cBar = list.filter(f => f.loc === 'بارق').length;
+            const cSj  = list.filter(f => f.loc === 'سبت الجارة').length;
+
+            document.getElementById('fg-kpi-cnt').textContent = fmt(list.length);
+            document.getElementById('fg-kpi-cnt-sub').textContent = `${cMaj} مجاردة • ${cBar} بارق • ${cSj} سبت الجارة`;
+            document.getElementById('fg-kpi-len').textContent = `${fmt(roundNum(totLen, 1))} كم`;
+            const ohSum = list.reduce((s, f) => s + f.len_oh, 0);
+            const ugSum = list.reduce((s, f) => s + f.len_ug, 0);
+            document.getElementById('fg-kpi-len-sub').textContent = `هوائي ${fmt(Math.round(ohSum))} كم • أرضي ${fmt(Math.round(ugSum))} كم`;
+            document.getElementById('fg-kpi-subs').textContent = fmt(totSubs);
+            document.getElementById('fg-kpi-load').textContent = `${avgLoad.toFixed(1)} A`;
+            document.getElementById('fg-kpi-load-sub').textContent = `الذروة: ${maxLoad} A`;
+            document.getElementById('fg-kpi-auto').textContent = fmt(totAuto);
+            document.getElementById('fg-kpi-rate').textContent = rate100;
+
+            // الرسوم البيانية الـ 3
+            renderFeedersGuideCharts(list);
+
+            // ترتيب الجدول
+            const sorted = [...list].sort((a, b) => {
+                if (fgState.sort === 'load_desc') return b.load_a - a.load_a;
+                if (fgState.sort === 'subs_desc') return b.subs - a.subs;
+                if (fgState.sort === 'auto_desc') return b.auto_tot - a.auto_tot;
+                if (fgState.sort === 'int_desc') return b.ops.intMv - a.ops.intMv;
+                if (fgState.sort === 'density_desc') return b.ops.intPer100Km - a.ops.intPer100Km;
+                return b.tot_len - a.tot_len;
+            });
+
+            document.getElementById('fg-table-count').textContent = fmt(sorted.length);
+            const tbody = document.getElementById('tbody-feeders-guide');
+            if (sorted.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="13" class="py-8 text-center text-gray-500">لا توجد مغذيات مطابقة للفلتر الحالي</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = sorted.map(f => {
+                const locBadge = f.loc === 'المجاردة'
+                    ? `<span class="px-2 py-0.5 rounded-md bg-sky-500/15 text-sky-300 border border-sky-500/30 font-bold">المجاردة</span>`
+                    : (f.loc === 'بارق'
+                        ? `<span class="px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-bold">بارق</span>`
+                        : `<span class="px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-300 border border-amber-500/30 font-bold">سبت الجارة</span>`);
+
+                const seraTag = (f.sera_list && f.sera_list !== 'لا')
+                    ? `<span class="mr-1 px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300 text-[10px] font-extrabold border border-rose-500/30" title="قائمة الهيئة">هيئة ${f.sera_list}</span>`
+                    : '';
+
+                const flOrVolt = f.fl
+                    ? `<span class="font-mono text-[11px] text-gray-300">${f.fl}</span>`
+                    : `<span class="px-2 py-0.5 rounded bg-violet-500/15 text-violet-300 font-bold">${f.volt} • ${f.office}</span>`;
+
+                const loadTxt = f.load_pct !== null
+                    ? `${f.load_a} A <span class="text-[10px] text-amber-400 block">(${f.load_pct}%)</span>`
+                    : (f.load_a > 0 ? `${f.load_a} A` : '—');
+
+                const rateBadge = f.ops.intPer100Km >= 15
+                    ? `<span class="px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 font-extrabold">${f.ops.intPer100Km}</span>`
+                    : (f.ops.intPer100Km >= 6
+                        ? `<span class="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-bold">${f.ops.intPer100Km}</span>`
+                        : `<span class="text-gray-400">${f.ops.intPer100Km}</span>`);
+
+                const yoyBadge = (f.int_2025 !== null)
+                    ? `<span class="text-[10px] text-gray-400 block">2025: ${f.int_2025}</span>`
+                    : '';
+
+                return `
+                    <tr onclick="openFeeder360Modal('${f.id}')" class="hover:bg-cyan-500/5 transition-colors cursor-pointer">
+                        <td class="py-2.5 px-2.5 whitespace-nowrap">${locBadge}</td>
+                        <td class="py-2.5 px-2.5 font-black text-white whitespace-nowrap">${f.fdr}${seraTag}</td>
+                        <td class="py-2.5 px-2.5 whitespace-nowrap">${flOrVolt}</td>
+                        <td class="py-2.5 px-2.5 text-center font-bold text-amber-300">${loadTxt}</td>
+                        <td class="py-2.5 px-2.5 text-center text-gray-200 font-semibold">${fmt(f.subs)}</td>
+                        <td class="py-2.5 px-2.5 text-center font-extrabold text-sky-300">${f.tot_len > 0 ? f.tot_len.toFixed(1) : '—'}</td>
+                        <td class="py-2.5 px-2.5 text-center text-[11px]">
+                            <span class="text-emerald-400">${f.oh_pct}%</span> / <span class="text-violet-400">${f.ug_pct}%</span>
+                        </td>
+                        <td class="py-2.5 px-2.5 text-center">
+                            <span class="px-2 py-0.5 rounded-lg bg-violet-500/15 text-violet-300 font-extrabold">${f.auto_tot}</span>
+                        </td>
+                        <td class="py-2.5 px-2.5 text-center font-extrabold text-white">${f.ops.intMv}${yoyBadge}</td>
+                        <td class="py-2.5 px-2.5 text-center">${rateBadge}</td>
+                        <td class="py-2.5 px-2.5 text-center text-gray-300 font-semibold">${f.loc === 'سبت الجارة' ? '—' : fmt(f.ops.outTotal)}</td>
+                        <td class="py-2.5 px-2.5 text-[11px] text-cyan-300">${(f.alts && f.alts.length) ? f.alts.join(' • ') : '—'}</td>
+                        <td class="py-2.5 px-2.5 text-center">
+                            <button type="button" onclick="event.stopPropagation(); openFeeder360Modal('${f.id}')" class="px-2.5 py-1 rounded-lg bg-cyan-500/15 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/30 text-[11px] font-bold cursor-pointer">
+                                عرض 360°
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function renderFeedersGuideCharts(list) {
+            if (typeof Chart === 'undefined') return;
+            // Chart 1: مقارنة المواقع الثلاثة
+            const locs = ['المجاردة', 'بارق', 'سبت الجارة'];
+            const allEnriched = FEEDERS_MASTER.map(f => ({ ...f, ops: computeFeederOperationalMetrics(f) }));
+            const lenByLoc = locs.map(l => roundNum(allEnriched.filter(f => f.loc === l).reduce((s, f) => s + f.tot_len, 0), 1));
+            const autoByLoc = locs.map(l => allEnriched.filter(f => f.loc === l).reduce((s, f) => s + f.auto_tot, 0));
+
+            const c1 = document.getElementById('chart-fg-locations');
+            if (c1) {
+                if (charts.fgLoc) charts.fgLoc.destroy();
+                charts.fgLoc = new Chart(c1, {
+                    type: 'bar',
+                    data: {
+                        labels: locs,
+                        datasets: [
+                            { label: 'إجمالي الطول (كم)', data: lenByLoc, backgroundColor: ['#0ea5e9', '#10b981', '#f59e0b'], borderRadius: 8, yAxisID: 'y' },
+                            { label: 'المعدات المؤتمتة', data: autoByLoc, type: 'line', borderColor: '#a78bfa', backgroundColor: '#a78bfa', tension: 0.3, borderWidth: 3, pointRadius: 5, yAxisID: 'y1' }
+                        ]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { legend: { labels: { color: '#cbd5e1', font: { family: 'Cairo', size: 11 } } } },
+                        scales: {
+                            x: { ticks: { color: '#e2e8f0', font: { family: 'Cairo', weight: 'bold' } }, grid: { display: false } },
+                            y: { position: 'right', ticks: { color: '#38bdf8' }, grid: { color: '#1e293b' } },
+                            y1: { position: 'left', ticks: { color: '#a78bfa' }, grid: { display: false } }
+                        }
+                    }
+                });
+            }
+
+            // Chart 2: أعلى 10 مغذيات في معدل الانقطاع لكل 100 كم
+            const topDensity = [...list].filter(f => f.tot_len >= 3 && f.ops.intMv > 0)
+                .sort((a, b) => b.ops.intPer100Km - a.ops.intPer100Km).slice(0, 10);
+            const c2 = document.getElementById('chart-fg-density');
+            if (c2) {
+                if (charts.fgDen) charts.fgDen.destroy();
+                charts.fgDen = new Chart(c2, {
+                    type: 'bar',
+                    data: {
+                        labels: topDensity.map(f => `${f.fdr} (${f.loc})`),
+                        datasets: [{
+                            label: 'انقطاع / 100 كم',
+                            data: topDensity.map(f => f.ops.intPer100Km),
+                            backgroundColor: topDensity.map(f => f.loc === 'المجاردة' ? '#0ea5e9' : (f.loc === 'بارق' ? '#10b981' : '#f59e0b')),
+                            borderRadius: 6
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+                        onClick: (_, els) => {
+                            if (els && els.length && topDensity[els[0].index]) openFeeder360Modal(topDensity[els[0].index].id);
+                        },
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: { ticks: { color: '#94a3b8' }, grid: { color: '#1e293b' } },
+                            y: { ticks: { color: '#e2e8f0', font: { family: 'Cairo', size: 11 } }, grid: { display: false } }
+                        }
+                    }
+                });
+            }
+
+            // Chart 3: مقارنة 2025 vs 2026 لسبت الجارة (أو أعلى 10 مغذيات حملاً عند اختيار المجاردة/بارق)
+            const c3 = document.getElementById('chart-fg-yoy');
+            if (c3) {
+                if (charts.fgYoy) charts.fgYoy.destroy();
+                const sjWithHistory = list.filter(f => f.loc === 'سبت الجارة' && (f.int_2025 !== null || f.ops.intMv > 0));
+                if (sjWithHistory.length > 0 && (fgState.loc === 'ALL' || fgState.loc === 'سبت الجارة')) {
+                    document.getElementById('fg-chart3-title').innerHTML = `<i data-lucide="git-compare" class="w-4 h-4 text-amber-400"></i> مقارنة انقطاعات سبت الجارة (2025 مقابل 2026)`;
+                    document.getElementById('fg-chart3-sub').textContent = 'تطور الانقطاعات السنوية لمغذيات سبت الجارة (انقر لفتح بطاقة المغذي)';
+                    charts.fgYoy = new Chart(c3, {
+                        type: 'bar',
+                        data: {
+                            labels: sjWithHistory.map(f => f.fdr),
+                            datasets: [
+                                { label: 'انقطاعات 2025', data: sjWithHistory.map(f => f.int_2025 || 0), backgroundColor: '#64748b', borderRadius: 5 },
+                                { label: 'انقطاعات 2026', data: sjWithHistory.map(f => f.ops.intMv), backgroundColor: '#f59e0b', borderRadius: 5 }
+                            ]
+                        },
+                        options: {
+                            responsive: true, maintainAspectRatio: false,
+                            onClick: (_, els) => {
+                                if (els && els.length && sjWithHistory[els[0].index]) openFeeder360Modal(sjWithHistory[els[0].index].id);
+                            },
+                            plugins: { legend: { labels: { color: '#cbd5e1', font: { family: 'Cairo', size: 11 } } } },
+                            scales: {
+                                x: { ticks: { color: '#e2e8f0', font: { size: 10 } }, grid: { display: false } },
+                                y: { ticks: { color: '#94a3b8' }, grid: { color: '#1e293b' } }
+                            }
+                        }
+                    });
+                } else {
+                    document.getElementById('fg-chart3-title').innerHTML = `<i data-lucide="activity" class="w-4 h-4 text-amber-400"></i> أعلى 10 مغذيات حملاً (أمبير) وعدد معداتها المؤتمتة`;
+                    document.getElementById('fg-chart3-sub').textContent = 'مقارنة الأحمال الذروية مع مستوى الأتمتة بالموقع المختار';
+                    const topLoads = [...list].filter(f => f.load_a > 0).sort((a, b) => b.load_a - a.load_a).slice(0, 10);
+                    charts.fgYoy = new Chart(c3, {
+                        type: 'bar',
+                        data: {
+                            labels: topLoads.map(f => f.fdr),
+                            datasets: [
+                                { label: 'الحمل (أمبير)', data: topLoads.map(f => f.load_a), backgroundColor: '#f59e0b', borderRadius: 6, yAxisID: 'y' },
+                                { label: 'المؤتمت', data: topLoads.map(f => f.auto_tot), type: 'line', borderColor: '#38bdf8', backgroundColor: '#38bdf8', borderWidth: 2.5, yAxisID: 'y1' }
+                            ]
+                        },
+                        options: {
+                            responsive: true, maintainAspectRatio: false,
+                            onClick: (_, els) => {
+                                if (els && els.length && topLoads[els[0].index]) openFeeder360Modal(topLoads[els[0].index].id);
+                            },
+                            plugins: { legend: { labels: { color: '#cbd5e1', font: { family: 'Cairo', size: 11 } } } },
+                            scales: {
+                                x: { ticks: { color: '#e2e8f0', font: { size: 10 } }, grid: { display: false } },
+                                y: { position: 'right', ticks: { color: '#f59e0b' }, grid: { color: '#1e293b' } },
+                                y1: { position: 'left', ticks: { color: '#38bdf8' }, grid: { display: false } }
+                            }
+                        }
+                    });
+                }
+            }
+            safeLucide();
+        }
+
+        // =========================================================================
+        // بطاقة المغذي الشاملة (360° Feeder Profile Modal)
+        // =========================================================================
+        window.openFeeder360Modal = function(feederId) {
+            const f = FEEDERS_MASTER.find(x => x.id === feederId);
+            if (!f) return;
+            const ops = computeFeederOperationalMetrics(f);
+
+            document.getElementById('f360-title').textContent = `بطاقة المغذي الشاملة: ${f.fdr}`;
+            document.getElementById('f360-loc-badge').textContent = `${f.loc} • ${f.station}`;
+            const seraBadge = document.getElementById('f360-sera-badge');
+            if (f.sera_list && f.sera_list !== 'لا') {
+                seraBadge.textContent = `قائمة الهيئة (${f.sera_list})`;
+                seraBadge.classList.remove('hidden');
+            } else {
+                seraBadge.classList.add('hidden');
+            }
+            document.getElementById('f360-subtitle').textContent = f.fl
+                ? `الموقع الوظيفي: ${f.fl} | الجهد: ${f.volt}`
+                : `${f.office} | الجهد: ${f.volt}`;
+
+            document.getElementById('f360-export-btn').onclick = () => exportSingleFeederExcel(f, ops);
+
+            const eq = f.equip || {};
+            const eqItems = [
+                ['معيد تيار (يعمل)', eq.recloser_ok],
+                ['معيد تيار (لا يعمل)', eq.recloser_bad],
+                ['مجزئ (يعمل)', eq.sectionalizer_ok],
+                ['مجزئ (لا يعمل)', eq.sectionalizer_bad],
+                ['SMART LBS / مؤتمت', eq.smart_lbs],
+                ['LBS-ABS / غير مؤتمت', eq.lbs_abs],
+                ['RMU وحدات حلقية', eq.rmu],
+                ['SMRU / MRMU', (eq.smru || 0) + (eq.mrmu || 0)],
+                ['فيوزات / Group Fuse', eq.group_fuse],
+                ['Jumper', eq.jumper]
+            ].filter(x => x[1] > 0);
+
+            const mvHtml = ops.mvEvents.length === 0
+                ? `<p class="text-gray-500 py-2">لا توجد انقطاعات MV مسجلة على هذا المغذي.</p>`
+                : `<div class="overflow-x-auto max-h-48 overflow-y-auto border border-[#1e293b] rounded-xl">
+                    <table class="w-full text-right text-[11px]">
+                        <thead class="bg-[#0b1120] text-gray-400">
+                            <tr>${Object.keys(ops.mvEvents[0]).map(k => `<th class="py-2 px-2">${k}</th>`).join('')}</tr>
+                        </thead>
+                        <tbody class="divide-y divide-[#1e293b]">
+                            ${ops.mvEvents.map(ev => `<tr>${Object.values(ev).map(v => `<td class="py-1.5 px-2 text-gray-200">${v}</td>`).join('')}</tr>`).join('')}
+                        </tbody>
+                    </table>
+                   </div>`;
+
+            const trHtml = ops.trList.length === 0 ? '' : `
+                <div class="bg-[#0b1120]/70 border border-rose-500/30 rounded-xl p-3">
+                    <h4 class="font-bold text-rose-300 mb-2">🔥 المحولات المحملة المرتبطة بالمغذي (${ops.trList.length} محول)</h4>
+                    <div class="flex flex-wrap gap-2">
+                        ${ops.trList.map(t => `<span class="px-2.5 py-1 rounded-lg bg-rose-500/15 text-rose-200 border border-rose-500/30 font-mono">${t.fl} (${t.kva} kVA • ${t.out_total} عطل • ${t.cmp_total} شكوى)</span>`).join('')}
+                    </div>
+                </div>`;
+
+            const cmpHtml = ops.cmpSubList.length === 0 ? '' : `
+                <div class="bg-[#0b1120]/70 border border-emerald-500/30 rounded-xl p-3">
+                    <h4 class="font-bold text-emerald-300 mb-2">📩 المشتركون المتقاطعون بالشكاوى والأعطال على المغذي (${ops.cmpSubList.length} مشترك)</h4>
+                    <div class="overflow-x-auto max-h-40 overflow-y-auto">
+                        <table class="w-full text-right text-[11px]">
+                            <thead class="text-gray-400 border-b border-[#1e293b]">
+                                <tr><th class="py-1.5 px-2">رقم الحساب</th><th class="py-1.5 px-2">اسم المشترك</th><th class="py-1.5 px-2">نوع الشكوى</th><th class="py-1.5 px-2 text-center">الأعطال</th><th class="py-1.5 px-2 text-center">الشكاوى</th></tr>
+                            </thead>
+                            <tbody class="divide-y divide-[#1e293b]">
+                                ${ops.cmpSubList.map(s => `<tr><td class="py-1.5 px-2 font-mono text-cyan-300">${s[0]}</td><td class="py-1.5 px-2 text-white">${s[1]}</td><td class="py-1.5 px-2 text-amber-300">${s[7]}</td><td class="py-1.5 px-2 text-center">${s[5]}</td><td class="py-1.5 px-2 text-center font-bold text-emerald-300">${s[6]}</td></tr>`).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>`;
+
+            document.getElementById('f360-body').innerHTML = `
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                    <div class="bg-[#0b1120] border border-[#1e293b] rounded-xl p-3">
+                        <span class="text-gray-400 block">الحمل / التحميل</span>
+                        <strong class="text-base font-black text-amber-400">${f.load_a} A ${f.load_pct !== null ? '(' + f.load_pct + '%)' : ''}</strong>
+                    </div>
+                    <div class="bg-[#0b1120] border border-[#1e293b] rounded-xl p-3">
+                        <span class="text-gray-400 block">إجمالي المشتركين</span>
+                        <strong class="text-base font-black text-emerald-400">${fmt(f.subs)}</strong>
+                    </div>
+                    <div class="bg-[#0b1120] border border-[#1e293b] rounded-xl p-3">
+                        <span class="text-gray-400 block">طول الشبكة (هوائي/أرضي)</span>
+                        <strong class="text-base font-black text-sky-400">${f.tot_len} كم</strong>
+                        <span class="text-[10px] text-gray-400 block">رئيسي ${f.len_main} • تفريعة ${f.len_branch}</span>
+                    </div>
+                    <div class="bg-[#0b1120] border border-[#1e293b] rounded-xl p-3">
+                        <span class="text-gray-400 block">الانقطاعات MV / 100 كم</span>
+                        <strong class="text-base font-black text-rose-400">${ops.intMv} (${ops.intPer100Km} / 100كم)</strong>
+                        ${f.int_2025 !== null ? `<span class="text-[10px] text-gray-400 block">انقطاعات 2025: ${f.int_2025}</span>` : ''}
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div class="bg-[#0b1120]/70 border border-[#1e293b] rounded-xl p-3 space-y-1.5">
+                        <h4 class="font-bold text-cyan-300">🔌 مسارات التغذية البديلة (المغذيات المقابلة)</h4>
+                        <p class="text-gray-200 font-semibold">${(f.alts && f.alts.length) ? f.alts.join('  •  ') : 'لا يوجد مغذي مقابل مسجل'}</p>
+                        ${f.tx_tot > 0 || f.poles_tot > 0 ? `<p class="text-[11px] text-gray-400 pt-1">المحولات: <strong class="text-white">${f.tx_tot}</strong> (أرضي ${f.tx_ug} • هوائي ${f.tx_oh} • بلدية ${f.tx_mun}) | الأعمدة: <strong class="text-white">${f.poles_tot}</strong> (حديد ${f.poles_st} • خشب ${f.poles_wd})</p>` : ''}
+                        ${eq.tie_auto && eq.tie_auto !== '—' ? `<p class="text-[11px] text-gray-400">أتمتة نقطة الربط: <strong class="text-emerald-300">${eq.tie_auto}</strong></p>` : ''}
+                        ${eq.spares && eq.spares !== '—' ? `<p class="text-[11px] text-gray-400">القواطع الشاغرة: <strong class="text-gray-200">${eq.spares}</strong></p>` : ''}
+                    </div>
+
+                    <div class="bg-[#0b1120]/70 border border-[#1e293b] rounded-xl p-3 space-y-2">
+                        <h4 class="font-bold text-violet-300">⚙️ معدات الشبكة والأتمتة (المؤتمت: ${f.auto_tot})</h4>
+                        <div class="flex flex-wrap gap-1.5">
+                            ${eqItems.length ? eqItems.map(([lbl, val]) => `<span class="px-2 py-0.5 rounded-md bg-violet-500/15 text-violet-200 border border-violet-500/30">${lbl}: <strong>${val}</strong></span>`).join('') : '<span class="text-gray-500">لا توجد معدات مسجلة</span>'}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-[#0b1120]/70 border border-violet-500/30 rounded-xl p-3">
+                    <h4 class="font-bold text-violet-300 mb-2">⚡ سجل الانقطاعات الطارئة MV على المغذي (${ops.intMv})</h4>
+                    ${mvHtml}
+                </div>
+
+                ${trHtml}
+                ${cmpHtml}
+            `;
+
+            const modal = document.getElementById('feeder-360-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            safeLucide();
+        };
+
+        window.closeFeeder360Modal = function() {
+            const modal = document.getElementById('feeder-360-modal');
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        };
+
+        // =========================================================================
+        // 9. التصدير المفصّل متعدد الشيتات (Multi-Sheet Excel مع عرض أعمدة تلقائي)
+        // =========================================================================
+        function autoFitSheetColumns(ws, rows) {
+            if (!rows || !rows.length) return;
+            const keys = Object.keys(rows[0]);
+            ws['!cols'] = keys.map(k => {
+                let maxLen = String(k).length + 4;
+                rows.slice(0, 200).forEach(r => {
+                    const v = String(r[k] ?? '');
+                    if (v.length + 3 > maxLen) maxLen = Math.min(55, v.length + 3);
+                });
+                return { wch: Math.max(12, maxLen) };
+            });
+        }
+
+        function buildMultiSheetWorkbook(sheetsMap, filename) {
+            if (typeof XLSX === 'undefined') {
+                showToast("مكتبة Excel غير متاحة حالياً!");
+                return;
+            }
+            const wb = XLSX.utils.book_new();
+            wb.Workbook = { Views: [{ RTL: true }] };
+            let addedSheets = 0;
+
+            Object.entries(sheetsMap).forEach(([sName, rows]) => {
+                if (!rows || rows.length === 0) return;
+                const clean = rows.map(r => {
+                    const o = {};
+                    Object.keys(r).forEach(k => { if (!k.startsWith('_')) o[k] = r[k]; });
+                    return o;
+                });
+                const ws = XLSX.utils.json_to_sheet(clean);
+                autoFitSheetColumns(ws, clean);
+                const safeTitle = String(sName).replace(/[\\/?*[\]]/g, '_').slice(0, 31);
+                XLSX.utils.book_append_sheet(wb, ws, safeTitle);
+                addedSheets += 1;
+            });
+
+            if (addedSheets === 0) {
+                showToast("لا توجد بيانات متاحة للتصدير!");
+                return;
+            }
+            XLSX.writeFile(wb, filename);
+            showToast(`تم تصدير ملف Excel مفصّل (${addedSheets} أوراق عمل): ${filename}`);
+        }
+
+        // إعادة تعريف exportRecordsToExcel لتفريد التفاصيل (الشكاوى / الأعطال / المحولات / المعايير) في شيتات مستقلة
+        exportRecordsToExcel = function(records, filename, sheetName = "الملخص") {
+            if (!records || records.length === 0) {
+                showToast("لا توجد سجلات لتصديرها!");
+                return;
+            }
+
+            const summaryRows = [];
+            const detailComplaints = [];
+            const detailFaults = [];
+            const detailStandards = [];
+            const detailTransformers = [];
+
+            records.forEach(r => {
+                const copy = {};
+                Object.keys(r).forEach(k => { if (!k.startsWith('_')) copy[k] = r[k]; });
+                summaryRows.push(copy);
+
+                const recType = String(r['نوع السجل'] || '');
+                const idVal = String(r['المعرف / رقم الحساب'] || '').trim();
+                const flVal = String(r['موقع المحول (FL)'] || '').trim();
+                const fdrVal = String(r['المغذي (Feeder)'] || '').trim();
+
+                if (recType.includes('مشترك') || recType.includes('معايير')) {
+                    const subTopMatch = (typeof SUB_TOP !== 'undefined' ? SUB_TOP : []).find(s => String(s[0]) === idVal);
+                    if (subTopMatch) {
+                        const cmpTypesList = String(subTopMatch[7] || '').split(/[،,|/]+/).map(x => x.trim()).filter(Boolean);
+                        const totC = subTopMatch[6] || cmpTypesList.length || 1;
+                        if (cmpTypesList.length > 1) {
+                            cmpTypesList.forEach((ct, idx) => {
+                                detailComplaints.push({
+                                    "رقم الحساب": subTopMatch[0],
+                                    "اسم المشترك": subTopMatch[1],
+                                    "المنطقة": subTopMatch[2],
+                                    "موقع المحول (FL)": subTopMatch[3] || 'غير محدد',
+                                    "المغذي": subTopMatch[4],
+                                    "تسلسل الشكوى": `${idx + 1} من ${totC}`,
+                                    "تصنيف الشكوى": ct,
+                                    "إجمالي أعطال المشترك": subTopMatch[5]
+                                });
+                            });
+                        } else {
+                            detailComplaints.push({
+                                "رقم الحساب": subTopMatch[0],
+                                "اسم المشترك": subTopMatch[1],
+                                "المنطقة": subTopMatch[2],
+                                "موقع المحول (FL)": subTopMatch[3] || 'غير محدد',
+                                "المغذي": subTopMatch[4],
+                                "إجمالي الشكاوى المسجلة": totC,
+                                "نوع الشكوى الرئيسي": subTopMatch[7] || 'غير محدد',
+                                "إجمالي أعطال المشترك": subTopMatch[5]
+                            });
+                        }
+                    }
+
+                    const stdMatch = (typeof STD_ACCOUNTS !== 'undefined' ? STD_ACCOUNTS : []).find(s => String(s[0]) === idVal);
+                    if (stdMatch) {
+                        detailStandards.push({
+                            "رقم الحساب": stdMatch[0],
+                            "اسم المشترك": stdMatch[11] || 'مشترك',
+                            "المنطقة": stdMatch[1] === 1 ? 'بارق' : 'المجاردة',
+                            "عدد مخالفات المعايير": stdMatch[2],
+                            "موقع المحول (FL)": stdMatch[9] || 'غير محدد',
+                            "المغذي": stdMatch[10] || 'غير محدد',
+                            "الأعطال المرتبطة": stdMatch[6],
+                            "الشكاوى المرتبطة": stdMatch[7],
+                            "على محول محمل": stdMatch[8] === 1 ? 'نعم' : 'لا',
+                            "مصنّع العداد": stdMatch[12] || '—'
+                        });
+                    }
+                }
+
+                if (recType.includes('محول') || recType.includes('بؤرة')) {
+                    const targetFl = flVal || idVal;
+                    const trObj = (typeof TR_DATA !== 'undefined' ? TR_DATA : []).find(t => t.fl === targetFl);
+                    if (trObj) {
+                        detailTransformers.push({
+                            "موقع المحول (FL)": trObj.fl,
+                            "المنطقة": trObj.zone,
+                            "المغذي": trObj.feeder,
+                            "السعة (kVA)": trObj.kva,
+                            "قيمة التحميل": trObj.val,
+                            "إجمالي الأعطال": trObj.out_total,
+                            "أعطال LV": trObj.out_lv,
+                            "أعطال Master": trObj.out_master,
+                            "أعطال MV": trObj.out_mv,
+                            "عدد المشتركين المتأثرين": trObj.out_subs,
+                            "الشكاوى المرتبطة": trObj.cmp_total,
+                            "مخالفات المعايير": trObj.std_total
+                        });
+                    }
+                    const flObj = (typeof FL_TOP !== 'undefined' ? FL_TOP : []).find(x => x[0] === targetFl);
+                    if (flObj) {
+                        detailFaults.push({
+                            "الموقع الوظيفي (FL)": flObj[0],
+                            "المنطقة": ZONES[flObj[1]] || 'المجاردة',
+                            "المغذي": flObj[2],
+                            "إجمالي الأعطال": flObj[3],
+                            "أعطال LV": flObj[4],
+                            "أعطال Master": flObj[5],
+                            "المشتركون المتأثرون": flObj[6],
+                            "الشكاوى المرتبطة": flObj[7]
+                        });
+                    }
+                    const linkedSubs = (typeof SUB_TOP !== 'undefined' ? SUB_TOP : []).filter(s => s[3] === targetFl);
+                    linkedSubs.forEach(s => {
+                        detailComplaints.push({
+                            "موقع المحول (FL)": targetFl,
+                            "رقم الحساب": s[0],
+                            "اسم المشترك": s[1],
+                            "المنطقة": s[2],
+                            "المغذي": s[4],
+                            "نوع الشكوى": s[7],
+                            "عدد الشكاوى": s[6],
+                            "عدد الأعطال": s[5]
+                        });
+                    });
+                }
+
+                if (fdrVal && fdrVal !== 'غير محدد') {
+                    const fSumRows = (typeof OUT_SUM !== 'undefined' ? OUT_SUM : []).filter(o => o[1] === fdrVal);
+                    fSumRows.forEach(o => {
+                        detailFaults.push({
+                            "المغذي (Feeder)": o[1],
+                            "المنطقة": ZONES[o[0]] || 'المجاردة',
+                            "نوع البلاغ": OUT_TYPES[o[2]] || 'غير محدد',
+                            "قناة البلاغ": OUT_CHANS[o[3]] || 'غير محدد',
+                            "عدد البلاغات": o[4]
+                        });
+                    });
+                }
+            });
+
+            const sheets = {};
+            sheets[sheetName || "الملخص"] = summaryRows;
+            if (detailComplaints.length > 0) sheets["تفاصيل الشكاوى"] = detailComplaints;
+            if (detailFaults.length > 0) sheets["تفاصيل الأعطال"] = detailFaults;
+            if (detailTransformers.length > 0) sheets["تفاصيل المحولات"] = detailTransformers;
+            if (detailStandards.length > 0) sheets["المعايير المضمونة"] = detailStandards;
+
+            buildMultiSheetWorkbook(sheets, filename.endsWith('.xlsx') ? filename : filename.replace(/\.csv$/i, '.xlsx'));
+        };
+
+        window.exportFeedersMasterExcel = function() {
+            const list = getEnrichedFeeders();
+            const summary = list.map(f => ({
+                "الموقع": f.loc,
+                "المحطة": f.station,
+                "رمز المغذي": f.fdr,
+                "الموقع الوظيفي": f.fl || '—',
+                "الجهد": f.volt,
+                "قائمة الهيئة": f.sera_list || '—',
+                "الحمل (أمبير)": f.load_a,
+                "نسبة التحميل %": f.load_pct !== null ? f.load_pct : '—',
+                "عدد المشتركين": f.subs,
+                "طول الرئيسي (كم)": f.len_main,
+                "طول التفريعات (كم)": f.len_branch,
+                "إجمالي الطول (كم)": f.tot_len,
+                "نسبة الهوائي %": f.oh_pct,
+                "نسبة الأرضي %": f.ug_pct,
+                "إجمالي المؤتمت": f.auto_tot,
+                "انقطاعات MV 2026": f.ops.intMv,
+                "انقطاعات 2025": f.int_2025 !== null ? f.int_2025 : '—',
+                "معدل الانقطاع / 100 كم": f.ops.intPer100Km,
+                "أعطال LV": f.loc === 'سبت الجارة' ? '—' : f.ops.outTotal,
+                "المغذيات المقابلة": (f.alts || []).join(' | ') || '—'
+            }));
+
+            const equipRows = list.map(f => ({
+                "الموقع": f.loc,
+                "رمز المغذي": f.fdr,
+                "إجمالي المؤتمت": f.auto_tot,
+                "معيد تيار (يعمل)": f.equip.recloser_ok,
+                "معيد تيار (لا يعمل)": f.equip.recloser_bad,
+                "مجزئ (يعمل)": f.equip.sectionalizer_ok,
+                "مجزئ (لا يعمل)": f.equip.sectionalizer_bad,
+                "SMART LBS": f.equip.smart_lbs,
+                "LBS-ABS": f.equip.lbs_abs,
+                "RMU": f.equip.rmu,
+                "SMRU / MRMU": (f.equip.smru || 0) + (f.equip.mrmu || 0),
+                "فيوزات / Group Fuse": f.equip.group_fuse,
+                "أتمتة نقطة الربط": f.equip.tie_auto,
+                "القواطع الشاغرة": f.equip.spares
+            }));
+
+            const mvDetails = [];
+            list.forEach(f => {
+                f.ops.mvEvents.forEach(ev => mvDetails.push({ "الموقع": f.loc, "رمز المغذي": f.fdr, ...ev }));
+            });
+
+            buildMultiSheetWorkbook({
+                "دليل المغذيات الموحد": summary,
+                "معدات الشبكة والأتمتة": equipRows,
+                "سجل الانقطاعات MV": mvDetails
+            }, "دليل_المغذيات_الموحد_قطاع_المجاردة_2026.xlsx");
+        };
+
+        window.exportSingleFeederExcel = function(f, ops) {
+            const mainRow = [{
+                "الموقع": f.loc,
+                "المحطة": f.station,
+                "رمز المغذي": f.fdr,
+                "الموقع الوظيفي": f.fl || '—',
+                "الجهد": f.volt,
+                "الحمل (أمبير)": f.load_a,
+                "نسبة التحميل %": f.load_pct !== null ? f.load_pct : '—',
+                "المشتركون": f.subs,
+                "إجمالي الطول (كم)": f.tot_len,
+                "هوائي %": f.oh_pct,
+                "أرضي %": f.ug_pct,
+                "المعدات المؤتمتة": f.auto_tot,
+                "انقطاعات MV 2026": ops.intMv,
+                "انقطاعات 2025": f.int_2025 !== null ? f.int_2025 : '—',
+                "معدل الانقطاع / 100 كم": ops.intPer100Km,
+                "أعطال LV": ops.outTotal,
+                "المغذي المقابل": (f.alts || []).join(' | ') || '—'
+            }];
+
+            const sheets = {
+                "بطاقة المغذي": mainRow,
+                "الانقطاعات MV": ops.mvEvents,
+                "المحولات المحملة": ops.trList.map(t => ({
+                    "موقع المحول FL": t.fl, "السعة kVA": t.kva, "التحميل": t.val,
+                    "إجمالي الأعطال": t.out_total, "الشكاوى": t.cmp_total, "المعايير": t.std_total
+                })),
+                "شكاوى المشتركين": ops.cmpSubList.map(s => ({
+                    "رقم الحساب": s[0], "الاسم": s[1], "المحول FL": s[3],
+                    "نوع الشكوى": s[7], "عدد الشكاوى": s[6], "عدد الأعطال": s[5]
+                }))
+            };
+            buildMultiSheetWorkbook(sheets, `بطاقة_المغذي_${f.fdr}_${f.loc}.xlsx`);
+        };
+
+        function bindFeedersGuideEvents() {
+            document.querySelectorAll('.fg-loc-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    fgState.loc = btn.dataset.fgloc;
+                    renderFeedersGuideSection();
+                });
+            });
+            const fgSearch = document.getElementById('fg-search');
+            if (fgSearch) {
+                fgSearch.addEventListener('input', (e) => {
+                    fgState.search = e.target.value;
+                    renderFeedersGuideSection();
+                });
+            }
+            const fgNet = document.getElementById('fg-filter-net');
+            if (fgNet) {
+                fgNet.addEventListener('change', (e) => {
+                    fgState.net = e.target.value;
+                    renderFeedersGuideSection();
+                });
+            }
+            const fgSort = document.getElementById('fg-sort');
+            if (fgSort) {
+                fgSort.addEventListener('change', (e) => {
+                    fgState.sort = e.target.value;
+                    renderFeedersGuideSection();
+                });
+            }
+        }
+
+        // تحديث دالة refreshAll لتحديث دليل المغذيات تلقائياً عند تغيير الفلتر العلوي
+        const _origRefreshAll = refreshAll;
+        refreshAll = function(autoFitMap = false) {
+            _origRefreshAll(autoFitMap);
+            if (appState.activeTab === 'feeders_guide') {
+                renderFeedersGuideSection();
+            }
+        };
+
+
         function bootstrapApp() {
             if (window._appBootstrapped) return;
             window._appBootstrapped = true;
@@ -6704,6 +7771,7 @@
                 renderCustomTabsNav();
                 syncCustomMapLayers();
                 bindEvents();
+                bindFeedersGuideEvents();
                 refreshAll(true);
                 switchTab('overview');
             } catch (err) {
@@ -6718,5 +7786,37 @@
             bootstrapApp();
         }
     </script>
+
+    <!-- نافذة بطاقة المغذي الشاملة (360° Feeder Profile Modal) -->
+    <div id="feeder-360-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 backdrop-blur-sm p-3 sm:p-5">
+        <div class="bg-[#131c31] border border-cyan-500/40 rounded-2xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+            <div class="p-4 border-b border-[#1e293b] flex items-center justify-between bg-[#0b1120]/80">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-cyan-400">
+                        <i data-lucide="cpu" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <h3 id="f360-title" class="text-base sm:text-lg font-black text-white">بطاقة المغذي</h3>
+                            <span id="f360-loc-badge" class="text-xs font-extrabold px-2.5 py-0.5 rounded-full bg-sky-500/20 text-sky-300 border border-sky-500/30"></span>
+                            <span id="f360-sera-badge" class="hidden text-xs font-extrabold px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40"></span>
+                        </div>
+                        <p id="f360-subtitle" class="text-xs text-gray-400 mt-0.5 font-mono"></p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button id="f360-export-btn" type="button" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/40 text-xs font-bold cursor-pointer">
+                        <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+                        <span>تصدير Excel للمغذي</span>
+                    </button>
+                    <button type="button" onclick="closeFeeder360Modal()" class="text-gray-400 hover:text-white p-1.5 rounded-lg hover:bg-[#1e293b] cursor-pointer">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+            <div id="f360-body" class="p-4 sm:p-5 overflow-y-auto space-y-4 text-xs"></div>
+        </div>
+    </div>
+
 </body>
 </html>
