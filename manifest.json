@@ -1,0 +1,27 @@
+{
+  "name": "منظومة متابعة الأداء التشغيلي",
+  "short_name": "الأداء التشغيلي",
+  "description": "لوحة متابعة الأداء التشغيلي والمغذيات والشكاوى والمعايير المضمونة لقطاعات المجاردة وبارق وسبت الجارة",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "dir": "rtl",
+  "lang": "ar",
+  "background_color": "#0B1220",
+  "theme_color": "#0B1220",
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
